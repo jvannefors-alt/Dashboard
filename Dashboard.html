@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f2eb;--bg2:#edeae1;--bg3:#e0dcd2;
+  --ink:#1a1814;--ink2:#3a3730;--ink3:#8a877e;--ink4:#b8b4aa;
+  --accent:#2d5a3d;--accent-light:#e4ede6;--accent-mid:#1d4a2e;
+  --warn:#8b3a1a;--warn-light:#f5ece7;
+  --rule:#d4cfc4;--rule2:#c4bfb4;
+  --now-bg:#ffffff;
+  --next-bg:#f5f2eb;
+  --later-bg:#efece4;
+  --done-bg:#e8f0ea;
+  --serif:'Instrument Serif',Georgia,serif;
+  --mono:'DM Mono',monospace;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#141210;--bg2:#1c1a17;--bg3:#252219;
+    --ink:#f0ece3;--ink2:#d0ccc3;--ink3:#6e6a62;--ink4:#3e3b35;
+    --accent:#6aaa7e;--accent-light:#1a2e1f;--accent-mid:#4a8a5e;
+    --warn:#d4784a;--warn-light:#2a1a12;
+    --rule:#2e2b24;--rule2:#3a3730;
+    --now-bg:#1e1c18;
+    --next-bg:#181614;
+    --later-bg:#141210;
+    --done-bg:#1a2e1f;
+  }
+}
+html{font-size:16px}
+body{background:var(--bg);color:var(--ink);font-family:var(--mono);font-weight:300;min-height:100vh}
+
+/* HEADER */
+.header{border-bottom:1px solid var(--rule);padding:2rem 2.5rem 1.5rem;display:flex;align-items:baseline;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.header h1{font-family:var(--serif);font-size:2rem;font-weight:400;letter-spacing:-0.01em;line-height:1}
+.header .subtitle{font-size:0.68rem;color:var(--ink3);letter-spacing:0.12em;text-transform:uppercase;margin-top:0.35rem}
+.header-right{display:flex;align-items:center;gap:1rem}
+.week-label{font-size:0.68rem;color:var(--ink3);letter-spacing:0.1em;text-transform:uppercase}
+.reset-btn{font-family:var(--mono);font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;background:none;border:1px solid var(--rule);color:var(--ink3);padding:0.4rem 0.8rem;cursor:pointer;border-radius:2px;transition:all 0.15s}
+.reset-btn:hover{border-color:var(--ink3);color:var(--ink2)}
+
+/* FOCUS */
+.focus-strip{background:var(--bg2);border-bottom:1px solid var(--rule);padding:1.25rem 2.5rem}
+.focus-label{font-size:0.62rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink3);margin-bottom:0.6rem}
+.focus-items{display:flex;flex-wrap:wrap;gap:0.4rem 1.5rem}
+.focus-item{font-size:0.78rem;color:var(--ink2);position:relative;padding-left:0.9rem}
+.focus-item::before{content:'—';position:absolute;left:0;color:var(--ink3)}
+
+/* MAIN GRID */
+.main{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+
+/* DOMAIN */
+.domain{border-right:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+.domain:last-child{border-right:none}
+.domain-header{padding:1.1rem 1.5rem 0.9rem;border-bottom:1px solid var(--rule);display:flex;align-items:baseline;justify-content:space-between}
+.domain-title{font-family:var(--serif);font-size:1.05rem;font-weight:400;font-style:italic;color:var(--ink);letter-spacing:0.01em}
+.domain-count{font-size:0.62rem;color:var(--ink3);letter-spacing:0.08em}
+
+/* TIER */
+.tier{padding:0.9rem 1.5rem;border-bottom:1px solid var(--rule)}
+.tier:last-child{border-bottom:none}
+.tier-label{font-size:0.6rem;letter-spacing:0.16em;text-transform:uppercase;margin-bottom:0.6rem;display:flex;align-items:center;gap:0.5rem}
+.tier-label::after{content:'';flex:1;height:1px;background:var(--rule)}
+.tier-label.now{color:var(--accent);font-weight:500}
+.tier-label.next{color:var(--ink3)}
+.tier-label.later{color:var(--ink4)}
+
+.tier.now-tier{background:var(--now-bg)}
+.tier.next-tier{background:var(--next-bg)}
+.tier.later-tier{background:var(--later-bg)}
+
+/* TASK — NOW (interactive) */
+.task{display:flex;align-items:flex-start;gap:0.65rem;padding:0.3rem 0;cursor:pointer;transition:opacity 0.2s}
+.task:hover .task-text{color:var(--ink)}
+.task-check{width:14px;height:14px;border:1px solid var(--rule2);border-radius:2px;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;background:transparent}
+.task:hover .task-check{border-color:var(--accent)}
+.task-check svg{opacity:0;transition:opacity 0.15s}
+.task.done .task-check{background:var(--accent);border-color:var(--accent)}
+.task.done .task-check svg{opacity:1}
+.task.done .task-text{text-decoration:line-through;color:var(--ink3);opacity:0.5}
+.task-text{font-size:0.78rem;color:var(--ink2);line-height:1.5;flex:1;transition:color 0.15s}
+
+/* STATIC items — NEXT / LATER (not interactive) */
+.static-item{display:flex;align-items:flex-start;gap:0.65rem;padding:0.28rem 0}
+.static-bullet{width:4px;height:4px;border-radius:50%;background:var(--ink4);flex-shrink:0;margin-top:6px}
+.static-text-next{font-size:0.76rem;color:var(--ink3);line-height:1.5}
+.static-text-later{font-size:0.74rem;color:var(--ink4);line-height:1.5}
+
+.tier-empty{font-size:0.72rem;color:var(--ink3);font-style:italic;opacity:0.5;padding:0.2rem 0}
+
+/* PROMOTE OVERLAY */
+.promote-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:100;align-items:center;justify-content:center;padding:1.5rem}
+.promote-overlay.visible{display:flex}
+.promote-box{background:var(--bg);border:1px solid var(--rule2);border-radius:4px;padding:1.5rem;max-width:420px;width:100%}
+.promote-title{font-family:var(--serif);font-size:1.1rem;font-style:italic;color:var(--ink);margin-bottom:0.3rem}
+.promote-sub{font-size:0.7rem;color:var(--ink3);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:1rem}
+.promote-option{display:flex;align-items:flex-start;gap:0.8rem;padding:0.65rem 0.8rem;border:1px solid var(--rule);border-radius:3px;cursor:pointer;margin-bottom:0.4rem;transition:all 0.12s;background:transparent}
+.promote-option:hover{border-color:var(--accent);background:var(--accent-light)}
+.promote-option-num{font-size:0.65rem;color:var(--ink3);letter-spacing:0.08em;flex-shrink:0;margin-top:2px;min-width:16px}
+.promote-option-text{font-size:0.8rem;color:var(--ink2);line-height:1.5}
+.promote-skip{font-family:var(--mono);font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;background:none;border:none;color:var(--ink3);cursor:pointer;padding:0.5rem 0;margin-top:0.2rem}
+.promote-skip:hover{color:var(--ink2)}
+
+/* DONE SECTION */
+.done-section{grid-column:1/-1;border-top:2px solid var(--rule);background:var(--done-bg)}
+.done-section-header{padding:1rem 2.5rem;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
+.done-section-title{font-family:var(--serif);font-size:1rem;font-style:italic;color:var(--accent-mid)}
+.done-toggle{font-size:0.65rem;color:var(--ink3);letter-spacing:0.08em;text-transform:uppercase}
+.done-list{padding:0 2.5rem 1.25rem;display:none}
+.done-list.open{display:block}
+.done-entry{display:flex;align-items:baseline;gap:1rem;padding:0.25rem 0;border-bottom:1px solid var(--rule)}
+.done-entry:last-child{border-bottom:none}
+.done-domain{font-size:0.62rem;color:var(--ink3);letter-spacing:0.08em;text-transform:uppercase;min-width:90px;flex-shrink:0}
+.done-text{font-size:0.76rem;color:var(--ink3);text-decoration:line-through;flex:1}
+.done-undo{font-size:0.62rem;color:var(--ink3);letter-spacing:0.06em;cursor:pointer;flex-shrink:0;opacity:0.5}
+.done-undo:hover{opacity:1;color:var(--accent)}
+.done-empty{font-size:0.76rem;color:var(--ink3);font-style:italic;opacity:0.5;padding:0.25rem 0}
+
+/* OBSERVATIONS */
+.observations{grid-column:1/-1;border-top:1px solid var(--rule);background:var(--bg2);padding:1.5rem 2.5rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.5rem}
+.obs-label{font-size:0.6rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink3);margin-bottom:0.4rem}
+.obs-label.warn{color:var(--warn)}
+.obs-text{font-size:0.76rem;color:var(--ink2);line-height:1.6}
+
+/* PARKING */
+.parking{grid-column:1/-1;border-top:1px solid var(--rule);padding:1rem 2.5rem;display:flex;align-items:baseline;gap:1.5rem;flex-wrap:wrap}
+.parking-label{font-size:0.6rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink3);flex-shrink:0}
+.parking-items{display:flex;flex-wrap:wrap;gap:0.35rem 0.8rem}
+.parking-tag{font-size:0.7rem;color:var(--ink3);padding:0.2rem 0.6rem;border:1px solid var(--rule);border-radius:2px}
+
+/* ANIMATIONS */
+@keyframes fadeSlideOut{0%{opacity:1;max-height:60px;padding-top:0.3rem;padding-bottom:0.3rem}60%{opacity:0;max-height:60px}100%{opacity:0;max-height:0;padding-top:0;padding-bottom:0}}
+.task.removing{animation:fadeSlideOut 0.45s forwards;overflow:hidden;pointer-events:none}
+
+@keyframes slideIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.task.entering{animation:slideIn 0.3s ease forwards}
+
+/* RESPONSIVE */
+@media(max-width:640px){
+  .header,.focus-strip,.observations,.parking,.done-section-header,.done-list{padding-left:1.25rem;padding-right:1.25rem}
+  .domain-header,.tier{padding-left:1.25rem;padding-right:1.25rem}
+  .main{grid-template-columns:1fr}
+  .domain{border-right:none}
+}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:var(--rule);border-radius:2px}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div>
+    <h1>Dashboard</h1>
+    <div class="subtitle">Jonas Vannerfors · Life OS</div>
+  </div>
+  <div class="header-right">
+    <span class="week-label" id="week-label"></span>
+    <button class="reset-btn" onclick="resetDone()">Reset week</button>
+  </div>
+</header>
+
+<div class="focus-strip">
+  <div class="focus-label">Weekly focus</div>
+  <div class="focus-items">
+    <span class="focus-item">Shift from work mode to transition mode</span>
+    <span class="focus-item">Create clarity on employment, mortgage and financial implications</span>
+    <span class="focus-item">Activate career options through simple outreach</span>
+    <span class="focus-item">Keep move and life admin moving without overload</span>
+    <span class="focus-item">Protect bandwidth during uncertainty</span>
+  </div>
+</div>
+
+<div class="main" id="main"></div>
+
+<!-- Promote overlay -->
+<div class="promote-overlay" id="promote-overlay">
+  <div class="promote-box">
+    <div class="promote-title">Pull something into Now?</div>
+    <div class="promote-sub" id="promote-domain-label">From Next</div>
+    <div id="promote-options"></div>
+    <button class="promote-skip" onclick="closePromote()">Skip — nothing yet</button>
+  </div>
+</div>
+
+<script>
+const DATA = [
+  {
+    id:'transition', title:'Transition',
+    now:['Contact HR re: mortgage benefit / reduced rate implications','Stop skatteväxling','Fix pensions admin','Open notes → list possible job / study paths (10 min only)','Follow up master\'s materials: thesis, presentation, archive','Save SRC materials'],
+    next:['Clarify financial runway and housing implications','Map realistic career directions','Decide near-term job search posture'],
+    later:['Longer-term repositioning','Start företag (park until transition clearer)']
+  },
+  {
+    id:'thesis', title:'Master thesis',
+    now:['Fix Word package for thesis'],
+    next:['Define thesis work streams','Review existing draft materials'],
+    later:['Full thesis project — see separate thread']
+  },
+  {
+    id:'move', title:'Move',
+    now:['Start packing → fill 1 box'],
+    next:['Research storage options','Plan plant relocation (buy pots)','Outline move logistics','Finalize deductions / documentation'],
+    later:['Execute move plan']
+  },
+  {
+    id:'housing', title:'Buying / housing',
+    now:['Open Excel → add 5 houses'],
+    next:['Apply for lånelöfte','Track listings weekly','Clarify mortgage conditions after employment change'],
+    later:['Explore land + build','Contact Värmdö kommun','Deeper house-buying analysis']
+  },
+  {
+    id:'life', title:'Life / social / energy',
+    now:['Wash camper vans','Update phone number in WhatsApp groups + key services','Update Swish / BankID linked number','Resolve Sam gift + food plan','Sort calendar sync (phone → computer)','Rensa Gmail'],
+    next:['Text Karin → quick check-in','Decide re: Kristian\'s disputation','Coffee with Kristian','Coffee with Karin'],
+    later:['Klippklätterkurs Lofoten? (park)','Keep social planning light']
+  },
+  {
+    id:'career', title:'Career / education',
+    now:['Message 2 people → propose coffee / career conversation','Open LinkedIn → shortlist 5 relevant roles or organisations','Check Swedfund, Accenture, Systemiq roles'],
+    next:['Draw on network: Kristian, Karin, Josef, Shruti, PA','Explore study paths: economic history, anthropology, systems theory, AI','Revisit supervisory / nature agenda compendium angle','Explore public, advisory and transition roles','One lecture / talk per week (habit to build)'],
+    later:['Positioning / direction','Skill development: non-defensiveness + negotiation']
+  },
+  {
+    id:'reading', title:'Reading / thinking',
+    now:['Read 2–3 pages: Panarchy (optional)'],
+    next:['Skim Global Risks Report','Learn: FTP / treasury profit logic','Read Resilience Thinking','Explore: humanity\'s development from a fox\'s perspective'],
+    later:['Scaling rewilding projects','The Resilience Company','Substack: resilience as corporate strategic imperative']
+  },
+  {
+    id:'ai', title:'AI / tech projects',
+    now:['Set up Claude Pro'],
+    next:['Second brain / AI project (define scope first)','Housing pipeline project','Learn from YouTube + network'],
+    later:['FF Tactics (park — fun, not urgent)','Broader AI exploration']
+  },
+];
+
+const OBSERVATIONS=[
+  {label:'Highest leverage',warn:false,text:'The HR / skatteväxling / mortgage cluster is the knot. Resolve it before anything else moves.'},
+  {label:'Overload risk',warn:true,text:'Career exploration can explode fast. Keep NOW narrow: two outreaches, one role scan. That\'s it.'},
+  {label:'Avoidance pattern to watch',warn:true,text:'Strategic exploration can become a way to avoid uncomfortable practical admin. HR and skatteväxling come first.'},
+  {label:'What can safely wait',warn:false,text:'Deep study exploration, Resilience Company thinking, house-buying analysis, broad job-market mapping.'},
+];
+
+const PARKING=['Long-form strategic thinking','Full job market mapping','Deep academic exploration','Dynamic life OS development','Substack','Företag'];
+
+// State
+let state = {done:{}, promoted:{}};
+try { const s = localStorage.getItem('dashboard-v2'); if(s) state = JSON.parse(s); } catch(e){}
+
+function save(){ try{localStorage.setItem('dashboard-v2',JSON.stringify(state));}catch(e){} }
+
+function tid(domainId,tier,idx){ return `${domainId}|${tier}|${idx}`; }
+
+// Promoted items: stored as {domainId: [text, text, ...]}
+function getNowItems(domain){
+  const base = domain.now.filter((_,i)=>!state.done[tid(domain.id,'now',i)]);
+  const promoted = state.promoted[domain.id] || [];
+  return {base, promoted};
+}
+
+function getNextItems(domain){
+  return domain.next.filter((_,i)=>{
+    const t = state.promoted[domain.id]||[];
+    return !t.includes(domain.next[i]) && !state.done[tid(domain.id,'next',i)];
+  });
+}
+
+// Render check SVG
+function chk(){ return `<div class="task-check"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`; }
+
+function renderDomain(domain){
+  const activeBases = domain.now.filter((_,i)=>!state.done[tid(domain.id,'now',i)]);
+  const promoted = state.promoted[domain.id]||[];
+  const activeDone = [
+    ...domain.now.filter((_,i)=>!!state.done[tid(domain.id,'now',i)]),
+    ...promoted.filter(t=>!!state.done[`${domain.id}|promoted|${t}`])
+  ];
+  const nowCount = activeBases.length + promoted.filter(t=>!state.done[`${domain.id}|promoted|${t}`]).length;
+
+  let h = `<div class="domain"><div class="domain-header"><span class="domain-title">${domain.title}</span><span class="domain-count">${nowCount} now</span></div>`;
+
+  // NOW tier
+  h += `<div class="tier now-tier"><div class="tier-label now">Now</div>`;
+  let anyNow = false;
+  domain.now.forEach((text,i)=>{
+    const id = tid(domain.id,'now',i);
+    if(state.done[id]) return;
+    anyNow = true;
+    h += `<div class="task" id="t-${CSS.escape(id)}" onclick="tickNow('${domain.id}','now',${i},'${text.replace(/'/g,"\\'")}')">
+      ${chk()}<span class="task-text">${text}</span></div>`;
+  });
+  promoted.forEach(text=>{
+    const pid = `${domain.id}|promoted|${text}`;
+    if(state.done[pid]) return;
+    anyNow = true;
+    h += `<div class="task promoted" id="t-${CSS.escape(pid)}" onclick="tickPromoted('${domain.id}','${text.replace(/'/g,"\\'")}')">
+      ${chk()}<span class="task-text">${text}</span></div>`;
+  });
+  if(!anyNow) h += `<div class="tier-empty">All done ✓</div>`;
+  h += `</div>`;
+
+  // NEXT tier (static)
+  const nextItems = getNextItems(domain);
+  h += `<div class="tier next-tier"><div class="tier-label next">Next</div>`;
+  if(nextItems.length===0) h += `<div class="tier-empty">Nothing queued</div>`;
+  nextItems.forEach(text=>{
+    h += `<div class="static-item"><div class="static-bullet"></div><span class="static-text-next">${text}</span></div>`;
+  });
+  h += `</div>`;
+
+  // LATER tier (static, dimmer)
+  h += `<div class="tier later-tier"><div class="tier-label later">Later</div>`;
+  if(domain.later.length===0) h += `<div class="tier-empty">Nothing parked</div>`;
+  domain.later.forEach(text=>{
+    h += `<div class="static-item"><div class="static-bullet"></div><span class="static-text-later">${text}</span></div>`;
+  });
+  h += `</div></div>`;
+  return h;
+}
+
+function renderDoneSection(){
+  const entries = [];
+  DATA.forEach(domain=>{
+    domain.now.forEach((text,i)=>{ if(state.done[tid(domain.id,'now',i)]) entries.push({domain:domain.title,text,id:tid(domain.id,'now',i),type:'base',domainId:domain.id}); });
+    (state.promoted[domain.id]||[]).forEach(text=>{ const pid=`${domain.id}|promoted|${text}`; if(state.done[pid]) entries.push({domain:domain.title,text,id:pid,type:'promoted',domainId:domain.id,ptext:text}); });
+  });
+
+  let h = `<div class="done-section" id="done-section"><div class="done-section-header" onclick="toggleDone()"><span class="done-section-title">Done this week</span><span class="done-toggle" id="done-toggle-label">${entries.length} item${entries.length!==1?'s':''} · show</span></div><div class="done-list" id="done-list">`;
+  if(entries.length===0){ h+=`<div class="done-empty">Nothing completed yet.</div>`; }
+  entries.forEach(e=>{
+    h+=`<div class="done-entry"><span class="done-domain">${e.domain}</span><span class="done-text">${e.text}</span><span class="done-undo" onclick="undoItem('${e.id}','${e.type}','${(e.ptext||'').replace(/'/g,"\\'")}','${e.domainId}')">undo</span></div>`;
+  });
+  h+=`</div></div>`;
+  return h;
+}
+
+function renderObservations(){
+  let h=`<div class="observations">`;
+  OBSERVATIONS.forEach(o=>{ h+=`<div><div class="obs-label ${o.warn?'warn':''}">${o.label}</div><div class="obs-text">${o.text}</div></div>`; });
+  h+=`</div>`;
+  return h;
+}
+
+function renderParking(){
+  return `<div class="parking"><span class="parking-label">Parking lot</span><div class="parking-items">${PARKING.map(p=>`<span class="parking-tag">${p}</span>`).join('')}</div></div>`;
+}
+
+function render(){
+  const main = document.getElementById('main');
+  let h = DATA.map(renderDomain).join('');
+  h += `<div style="grid-column:1/-1">`;
+  h += renderDoneSection();
+  h += renderObservations();
+  h += renderParking();
+  h += `</div>`;
+  main.innerHTML = h;
+}
+
+// PROMOTE FLOW
+let pendingPromote = null;
+
+function tickNow(domainId, tier, idx, text){
+  const id = tid(domainId, tier, idx);
+  const el = document.getElementById('t-'+CSS.escape(id));
+  if(!el) return;
+  el.classList.add('done');
+  setTimeout(()=>{
+    el.classList.add('removing');
+    setTimeout(()=>{
+      state.done[id] = true;
+      save();
+      render();
+      // check if next items available
+      const domain = DATA.find(d=>d.id===domainId);
+      const nextAvail = getNextItems(domain);
+      if(nextAvail.length>0){
+        openPromote(domain, nextAvail);
+      }
+    },450);
+  },250);
+}
+
+function tickPromoted(domainId, text){
+  const pid = `${domainId}|promoted|${text}`;
+  const el = document.getElementById('t-'+CSS.escape(pid));
+  if(!el) return;
+  el.classList.add('done');
+  setTimeout(()=>{
+    el.classList.add('removing');
+    setTimeout(()=>{
+      state.done[pid] = true;
+      save();
+      render();
+      const domain = DATA.find(d=>d.id===domainId);
+      const nextAvail = getNextItems(domain);
+      if(nextAvail.length>0) openPromote(domain, nextAvail);
+    },450);
+  },250);
+}
+
+function openPromote(domain, nextItems){
+  pendingPromote = {domain, nextItems};
+  const overlay = document.getElementById('promote-overlay');
+  document.getElementById('promote-domain-label').textContent = domain.title + ' · from Next';
+  let opts = '';
+  nextItems.forEach((text,i)=>{
+    opts += `<div class="promote-option" onclick="doPromote(${i})"><span class="promote-option-num">${i+1}</span><span class="promote-option-text">${text}</span></div>`;
+  });
+  document.getElementById('promote-options').innerHTML = opts;
+  overlay.classList.add('visible');
+}
+
+function doPromote(idx){
+  if(!pendingPromote) return;
+  const {domain, nextItems} = pendingPromote;
+  const text = nextItems[idx];
+  if(!state.promoted[domain.id]) state.promoted[domain.id]=[];
+  state.promoted[domain.id].push(text);
+  save();
+  closePromote();
+  render();
+}
+
+function closePromote(){
+  document.getElementById('promote-overlay').classList.remove('visible');
+  pendingPromote = null;
+}
+
+function undoItem(id, type, ptext, domainId){
+  delete state.done[id];
+  if(type==='promoted' && ptext){
+    const arr = state.promoted[domainId]||[];
+    const idx = arr.indexOf(ptext);
+    if(idx>-1) arr.splice(idx,1);
+    state.promoted[domainId]=arr;
+  }
+  save(); render();
+}
+
+function toggleDone(){
+  const list = document.getElementById('done-list');
+  const label = document.getElementById('done-toggle-label');
+  const isOpen = list.classList.toggle('open');
+  const count = list.querySelectorAll('.done-entry').length;
+  label.textContent = `${count} item${count!==1?'s':''} · ${isOpen?'hide':'show'}`;
+}
+
+function resetDone(){
+  if(confirm('Clear all completed items and reset the week?')){ state={done:{},promoted:{}}; save(); render(); }
+}
+
+function setWeekLabel(){
+  const now=new Date();
+  const start=new Date(now);
+  start.setDate(now.getDate()-now.getDay()+1);
+  const fmt=d=>d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+  document.getElementById('week-label').textContent=`w/c ${fmt(start)}`;
+}
+
+// Close promote on backdrop click
+document.getElementById('promote-overlay').addEventListener('click',function(e){ if(e.target===this) closePromote(); });
+
+setWeekLabel();
+render();
+</script>
+</body>
+</html>
