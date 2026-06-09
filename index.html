@@ -41,6 +41,8 @@ body{background:var(--bg);color:var(--ink);font-family:var(--mono);font-weight:3
 .focus-items{display:flex;flex-wrap:wrap;gap:3px 14px}
 .focus-item{font-size:11px;color:var(--ink2);padding-left:10px;position:relative}
 .focus-item::before{content:'—';position:absolute;left:0;color:var(--ink3)}
+/* loading */
+.loading{display:flex;align-items:center;justify-content:center;padding:3rem;font-size:11px;color:var(--ink3);letter-spacing:.1em;text-transform:uppercase;grid-column:1/-1}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
 .domain{border-right:1px solid var(--rule);border-bottom:1px solid var(--rule)}
 .domain:last-child{border-right:none}
@@ -135,10 +137,10 @@ textarea.dump::placeholder{color:var(--ink4)}
     <span class="focus-item">Protect bandwidth during uncertainty</span>
   </div>
 </div>
-<div class="grid" id="grid"></div>
+<div class="grid" id="grid"><div class="loading">Loading dashboard...</div></div>
 
 <script>
-let DATA=[
+const DEFAULT_DATA=[
   {id:'transition',title:'Transition',meta:null,
    now:['Contact HR re: mortgage benefit / reduced rate implications','Get new private phone number + transfer accounts from work number','Update abonnemang tied to old number','Follow up master\'s materials: thesis, presentation, archive','Save SRC materials'],
    next:['Clarify financial runway and housing implications','Map realistic career directions','Decide near-term job search posture'],
@@ -173,6 +175,8 @@ let DATA=[
    later:['FF Tactics (park)','Broader AI exploration']},
 ];
 
+const DOMAIN_META={thesis:'Aug 19 submission · Aug 28 seminar'};
+
 const OBS=[
   {w:false,lbl:'Highest leverage',txt:'The HR / mortgage / phone number cluster is the immediate knot. Resolve before anything else moves.'},
   {w:true,lbl:'Thesis deadline is real',txt:'Aug 19 is close. Data recon is the critical first gate — Path A vs B determines everything else.'},
@@ -180,10 +184,13 @@ const OBS=[
   {w:false,lbl:'What can safely wait',txt:'Deep study exploration, Resilience Company, house-buying analysis, broad job-market mapping.'},
 ];
 const PARKING=['Long-form strategic thinking','Full job market mapping','Deep academic exploration','Dynamic life OS','Substack','Företag'];
+const DOMAIN_TITLES={transition:'Transition',thesis:'Master thesis',move:'Move',housing:'Buying / housing',life:'Life / social / energy',career:'Career / education',reading:'Reading / thinking',ai:'AI / tech projects'};
 
+let DATA=JSON.parse(JSON.stringify(DEFAULT_DATA));
 let state={done:{},promoted:{}};
-try{const s=localStorage.getItem('ds-v5');if(s)state=JSON.parse(s);}catch(e){}
-function save(){try{localStorage.setItem('ds-v5',JSON.stringify(state));}catch(e){}}
+try{const s=localStorage.getItem('ds-ticks');if(s)state=JSON.parse(s);}catch(e){}
+
+function save(){try{localStorage.setItem('ds-ticks',JSON.stringify(state));}catch(e){}}
 function tid(d,t,i){return `${d}|${t}|${i}`;}
 function getNext(domain){const p=state.promoted[domain.id]||[];return domain.next.filter(t=>!p.includes(t));}
 function chkSvg(){return `<svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3 5.5L8 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;}
@@ -245,6 +252,27 @@ function render(){
   grid.innerHTML=h;
 }
 
+// Load state from Notion on startup
+async function loadFromNotion(){
+  try{
+    const res=await fetch('/api/update');
+    if(!res.ok)throw new Error('Load failed');
+    const data=await res.json();
+    if(data.state && Array.isArray(data.state)){
+      data.state.forEach(u=>{
+        const domain=DATA.find(d=>d.id===u.id);
+        if(!domain)return;
+        if(u.now)domain.now=u.now;
+        if(u.next)domain.next=u.next;
+        if(u.later)domain.later=u.later;
+      });
+    }
+  }catch(e){
+    console.log('Could not load from Notion, using defaults',e);
+  }
+  render();
+}
+
 let pendingPromote=null;
 function tickNow(did,idx){
   const d=DATA.find(x=>x.id===did);
@@ -265,8 +293,17 @@ function tickP(did,txt){
   const promoted=state.promoted[did]||[];
   const pi=promoted.indexOf(txt);
   const el=document.getElementById(`tp-${did}-${pi}`);
-  if(el){el.classList.add('ticking');setTimeout(()=>{el.classList.add('removing');setTimeout(()=>{state.done[`${did}|p|${txt}`]=true;save();render();const avail=getNext(d);if(avail.length){pendingPromote={did,avail};showPromote(did,avail);}},400);},220);}
-  else{state.done[`${did}|p|${txt}`]=true;save();render();}
+  if(el){
+    el.classList.add('ticking');
+    setTimeout(()=>{
+      el.classList.add('removing');
+      setTimeout(()=>{
+        state.done[`${did}|p|${txt}`]=true;save();render();
+        const avail=getNext(d);
+        if(avail.length){pendingPromote={did,avail};showPromote(did,avail);}
+      },400);
+    },220);
+  }
 }
 function showPromote(did,avail){
   const domEl=document.getElementById(`dom-${did}`);
@@ -349,10 +386,13 @@ function setStatus(msg,type){
   if(!el)return;
   el.textContent=msg;el.className='inbox-status'+(type?' '+type:'');
 }
-const now=new Date(),s=new Date(now);
-s.setDate(now.getDate()-now.getDay()+1);
-document.getElementById('wklbl').textContent='w/c '+s.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
-render();
+
+const now=new Date(),wkstart=new Date(now);
+wkstart.setDate(now.getDate()-now.getDay()+1);
+document.getElementById('wklbl').textContent='w/c '+wkstart.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+
+// Load from Notion on startup
+loadFromNotion();
 </script>
 </body>
 </html>
