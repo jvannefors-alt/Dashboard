@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!-- v2 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -256,23 +255,6 @@ function render(){
 // Load state from Notion on startup
 async function loadFromNotion(){
   try{
-    const saved=localStorage.getItem('ds-content');
-    if(saved){
-      const updates=JSON.parse(saved);
-      if(Array.isArray(updates)){
-        updates.forEach(u=>{
-          const domain=DATA.find(d=>d.id===u.id);
-          if(!domain)return;
-          if(u.now)domain.now=u.now;
-          if(u.next)domain.next=u.next;
-          if(u.later)domain.later=u.later;
-        });
-        render();
-        return;
-      }
-    }
-  }catch(e){}
-  try{
     const res=await fetch('/api/update');
     if(!res.ok)throw new Error('Load failed');
     const data=await res.json();
@@ -284,9 +266,28 @@ async function loadFromNotion(){
         if(u.next)domain.next=u.next;
         if(u.later)domain.later=u.later;
       });
+      // Cache locally too
+      try{localStorage.setItem('ds-content',JSON.stringify(data.state));}catch(e){}
+    } else {
+      // Fall back to localStorage if Edge Config empty
+      try{
+        const saved=localStorage.getItem('ds-content');
+        if(saved){
+          const updates=JSON.parse(saved);
+          if(Array.isArray(updates)){
+            updates.forEach(u=>{
+              const domain=DATA.find(d=>d.id===u.id);
+              if(!domain)return;
+              if(u.now)domain.now=u.now;
+              if(u.next)domain.next=u.next;
+              if(u.later)domain.later=u.later;
+            });
+          }
+        }
+      }catch(e){}
     }
   }catch(e){
-    console.log('Could not load from Notion, using defaults',e);
+    console.log('Could not load state, using defaults',e);
   }
   render();
 }
