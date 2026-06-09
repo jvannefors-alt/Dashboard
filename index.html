@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f2eb;--bg2:#edeae1;--bg3:#e4e0d5;
+  --ink:#1a1814;--ink2:#3a3730;--ink3:#8a877e;--ink4:#b8b4aa;
+  --accent:#2d5a3d;--accent2:#e4ede6;
+  --warn:#8b3a1a;
+  --rule:#d4cfc4;--rule2:#c4bfb4;
+  --now:#fff;--next:#f5f2eb;--later:#efece4;
+  --serif:'Instrument Serif',Georgia,serif;
+  --mono:'DM Mono',monospace;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#141210;--bg2:#1c1a17;--bg3:#252219;
+    --ink:#f0ece3;--ink2:#d0ccc3;--ink3:#6e6a62;--ink4:#3e3b35;
+    --accent:#6aaa7e;--accent2:#1a2e1f;
+    --warn:#d4784a;
+    --rule:#2e2b24;--rule2:#3a3730;
+    --now:#1e1c18;--next:#181614;--later:#141210;
+  }
+}
+html{font-size:15px}
+body{background:var(--bg);color:var(--ink);font-family:var(--mono);font-weight:300;min-height:100vh}
+.hd{padding:16px 20px 12px;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.hd h1{font-family:var(--serif);font-size:1.5rem;font-weight:400;font-style:italic}
+.hd-sub{font-size:10px;color:var(--ink3);letter-spacing:.1em;text-transform:uppercase;margin-top:2px}
+.hd-right{display:flex;gap:8px;align-items:center}
+.chip{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);padding:3px 8px;border:1px solid var(--rule);border-radius:2px;cursor:pointer;background:transparent;font-family:var(--mono)}
+.chip:hover{border-color:var(--ink3);color:var(--ink2)}
+.focus{background:var(--bg2);border-bottom:1px solid var(--rule);padding:10px 20px}
+.focus-lbl{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin-bottom:5px}
+.focus-items{display:flex;flex-wrap:wrap;gap:3px 14px}
+.focus-item{font-size:11px;color:var(--ink2);padding-left:10px;position:relative}
+.focus-item::before{content:'—';position:absolute;left:0;color:var(--ink3)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
+.domain{border-right:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+.domain:last-child{border-right:none}
+.dh{padding:10px 14px 8px;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between;align-items:baseline}
+.dh-title{font-family:var(--serif);font-size:.95rem;font-style:italic}
+.dh-meta{font-size:9px;color:var(--warn);margin-top:1px}
+.dh-count{font-size:9px;color:var(--ink3);letter-spacing:.06em}
+.tier{padding:8px 14px;border-bottom:1px solid var(--rule)}
+.tier:last-child{border-bottom:none}
+.tier.now{background:var(--now)}
+.tier.next{background:var(--next)}
+.tier.later{background:var(--later)}
+.tlbl{font-size:9px;letter-spacing:.16em;text-transform:uppercase;margin-bottom:5px;display:flex;align-items:center;gap:6px}
+.tlbl::after{content:'';flex:1;height:1px;background:var(--rule)}
+.tlbl.now{color:var(--accent);font-weight:500}
+.tlbl.next{color:var(--ink3)}
+.tlbl.later{color:var(--ink4)}
+.task{display:flex;gap:8px;padding:3px 0;cursor:pointer;align-items:flex-start}
+.task:hover .chk{border-color:var(--accent)}
+.chk{width:13px;height:13px;border:1px solid var(--rule2);border-radius:2px;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all .15s;background:transparent}
+.chk svg{opacity:0;transition:opacity .15s}
+.task.ticking .chk{background:var(--accent);border-color:var(--accent)}
+.task.ticking .chk svg{opacity:1}
+.task.ticking .tt{text-decoration:line-through;color:var(--ink3);opacity:.5}
+.tt{font-size:12px;color:var(--ink2);flex:1;line-height:1.4}
+.si{display:flex;gap:8px;padding:2px 0;align-items:flex-start}
+.sb{width:3px;height:3px;border-radius:50%;background:var(--ink4);flex-shrink:0;margin-top:5px}
+.st-next{font-size:11px;color:var(--ink3);line-height:1.4}
+.st-later{font-size:11px;color:var(--ink4);line-height:1.4}
+.empty{font-size:11px;color:var(--ink3);font-style:italic;opacity:.5;padding:2px 0}
+.promote-banner{background:var(--accent2);border-top:1px solid var(--rule2);padding:8px 14px}
+.promote-banner-lbl{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+.promote-opt{font-size:11px;color:var(--ink2);padding:4px 8px;border:1px solid var(--rule2);border-radius:2px;cursor:pointer;margin-bottom:3px;background:var(--now);transition:border-color .12s}
+.promote-opt:hover{border-color:var(--accent)}
+.promote-skip{font-size:9px;color:var(--ink3);cursor:pointer;margin-top:4px;letter-spacing:.06em;text-transform:uppercase;display:inline-block}
+.promote-skip:hover{color:var(--ink2)}
+.done-sec{grid-column:1/-1;border-top:2px solid var(--rule);background:var(--accent2)}
+.done-hd{padding:10px 20px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none}
+.done-title{font-family:var(--serif);font-size:.9rem;font-style:italic;color:var(--accent)}
+.done-tog{font-size:9px;color:var(--ink3);letter-spacing:.08em;text-transform:uppercase}
+.done-list{display:none;padding:0 20px 12px}
+.done-list.open{display:block}
+.done-row{display:flex;gap:12px;padding:3px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.done-row:last-child{border:none}
+.done-dom{font-size:9px;color:var(--ink3);letter-spacing:.06em;text-transform:uppercase;min-width:80px;flex-shrink:0}
+.done-txt{font-size:11px;color:var(--ink3);text-decoration:line-through;flex:1}
+.undo{font-size:9px;color:var(--ink3);cursor:pointer;opacity:.5;flex-shrink:0}
+.undo:hover{opacity:1;color:var(--accent)}
+.done-empty{font-size:11px;color:var(--ink3);font-style:italic;opacity:.5}
+.obs{grid-column:1/-1;background:var(--bg2);border-top:1px solid var(--rule);padding:12px 20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.obs-lbl{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin-bottom:3px}
+.obs-lbl.w{color:var(--warn)}
+.obs-txt{font-size:11px;color:var(--ink2);line-height:1.5}
+.park{grid-column:1/-1;border-top:1px solid var(--rule);padding:8px 20px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.park-lbl{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);flex-shrink:0}
+.ptag{font-size:10px;color:var(--ink3);border:1px solid var(--rule);border-radius:2px;padding:2px 7px}
+.inbox{grid-column:1/-1;border-top:2px solid var(--rule2);background:var(--bg3);padding:14px 20px}
+.inbox-lbl{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin-bottom:8px}
+.inbox-row{display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap}
+textarea.dump{flex:1;min-width:200px;min-height:70px;background:var(--bg2);border:1px solid var(--rule2);border-radius:3px;padding:8px 10px;font-family:var(--mono);font-size:12px;font-weight:300;color:var(--ink);resize:vertical;outline:none;line-height:1.5;transition:border-color .15s}
+textarea.dump:focus{border-color:var(--accent)}
+textarea.dump::placeholder{color:var(--ink4)}
+.go-btn{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;background:var(--accent);color:#fff;border:none;padding:10px 16px;border-radius:3px;cursor:pointer;white-space:nowrap;align-self:flex-end;transition:opacity .15s}
+.go-btn:hover{opacity:.85}
+.go-btn:disabled{opacity:.4;cursor:default}
+.inbox-status{font-size:10px;color:var(--ink3);margin-top:6px}
+.inbox-status.err{color:var(--warn)}
+.inbox-status.ok{color:var(--accent)}
+@keyframes fadeOut{0%{opacity:1;max-height:40px}70%{opacity:0;max-height:40px}100%{opacity:0;max-height:0;padding:0;overflow:hidden}}
+.task.removing{animation:fadeOut .4s forwards;pointer-events:none}
+@media(max-width:600px){.grid{grid-template-columns:1fr}.domain{border-right:none}.hd,.focus,.inbox,.obs,.park{padding-left:14px;padding-right:14px}.dh,.tier{padding-left:12px;padding-right:12px}}
+</style>
+</head>
+<body>
+<div class="hd">
+  <div>
+    <h1>Dashboard</h1>
+    <div class="hd-sub">Jonas Vannerfors · Life OS</div>
+  </div>
+  <div class="hd-right">
+    <span class="chip" id="wklbl"></span>
+    <button class="chip" onclick="resetWeek()">Reset week</button>
+  </div>
+</div>
+<div class="focus">
+  <div class="focus-lbl">Weekly focus</div>
+  <div class="focus-items">
+    <span class="focus-item">Shift from work mode to transition mode</span>
+    <span class="focus-item">Resolve employment, mortgage and financial implications</span>
+    <span class="focus-item">Activate career options through simple outreach</span>
+    <span class="focus-item">Keep move and life admin moving without overload</span>
+    <span class="focus-item">Protect bandwidth during uncertainty</span>
+  </div>
+</div>
+<div class="grid" id="grid"></div>
+
+<script>
+let DATA=[
+  {id:'transition',title:'Transition',meta:null,
+   now:['Contact HR re: mortgage benefit / reduced rate implications','Get new private phone number + transfer accounts from work number','Update abonnemang tied to old number','Follow up master\'s materials: thesis, presentation, archive','Save SRC materials'],
+   next:['Clarify financial runway and housing implications','Map realistic career directions','Decide near-term job search posture'],
+   later:['Longer-term repositioning','Start företag (park until transition clearer)']},
+  {id:'thesis',title:'Master thesis',meta:'Aug 19 submission · Aug 28 seminar',
+   now:['Half-day data recon — audit Riksbanken + SCB, assess Path B feasibility → go/no-go','Workshop thesis positioning — resolve framing tension between dated dataset and resubmission','Read thesis end-to-end, annotate against 2026 grading criteria → gap list','Map GMM instrument validity issues — what needs fixing vs better argumentation'],
+   next:['Re-run GMM with corrected instruments, address demand identification thinness','Rewrite limitations section — explicit and confident, not defensive','Near-banks result: reframe as honest inconclusive finding','Literature + narrative update — refresh framing without touching dataset','Full rewrite pass for argumentation tightness'],
+   later:['Polish pass — abstract, introduction, conclusion alignment','Seminar prep — anticipate examiner questions','Submit Aug 19 · Seminar Aug 28']},
+  {id:'move',title:'Move',meta:null,
+   now:['Start packing → fill 1 box'],
+   next:['Research storage options','Plan plant relocation (buy pots)','Outline move logistics','Finalize deductions / documentation'],
+   later:['Execute move plan']},
+  {id:'housing',title:'Buying / housing',meta:null,
+   now:['Open Excel → add 5 houses'],
+   next:['Apply for lånelöfte','Track listings weekly','Clarify mortgage conditions after employment change'],
+   later:['Explore land + build','Contact Värmdö kommun','Deeper house-buying analysis']},
+  {id:'life',title:'Life / social / energy',meta:null,
+   now:['Wash camper vans','Update phone number in WhatsApp groups + key services','Resolve Sam gift + food plan','Rensa Gmail'],
+   next:['Text Karin → quick check-in','Decide re: Kristian\'s disputation','Coffee with Kristian','Coffee with Karin'],
+   later:['Klippklätterkurs Lofoten? (park)']},
+  {id:'career',title:'Career / education',meta:null,
+   now:['Message 2 people → propose coffee / career conversation','Open LinkedIn → shortlist 5 relevant roles or organisations','Check Swedfund, Accenture, Systemiq roles'],
+   next:['Draw on network: Kristian, Karin, Josef, Shruti, PA','Explore study paths: economic history, anthropology, systems theory, AI','Revisit nature agenda compendium angle','Explore public, advisory and transition roles'],
+   later:['Positioning / direction','Skill development: non-defensiveness + negotiation']},
+  {id:'reading',title:'Reading / thinking',meta:null,
+   now:['Read 2–3 pages: Panarchy (optional)'],
+   next:['Skim Global Risks Report','Learn: FTP / treasury profit logic','Read Resilience Thinking'],
+   later:['Scaling rewilding projects','The Resilience Company','Substack: resilience as corporate strategic imperative']},
+  {id:'ai',title:'AI / tech projects',meta:null,
+   now:['Housing pipeline project (define scope)'],
+   next:['Learn from YouTube + network'],
+   later:['FF Tactics (park)','Broader AI exploration']},
+];
+
+const OBS=[
+  {w:false,lbl:'Highest leverage',txt:'The HR / mortgage / phone number cluster is the immediate knot. Resolve before anything else moves.'},
+  {w:true,lbl:'Thesis deadline is real',txt:'Aug 19 is close. Data recon is the critical first gate — Path A vs B determines everything else.'},
+  {w:true,lbl:'Overload risk',txt:'Career exploration can explode fast. Keep NOW narrow: two outreaches, one role scan.'},
+  {w:false,lbl:'What can safely wait',txt:'Deep study exploration, Resilience Company, house-buying analysis, broad job-market mapping.'},
+];
+const PARKING=['Long-form strategic thinking','Full job market mapping','Deep academic exploration','Dynamic life OS','Substack','Företag'];
+
+let state={done:{},promoted:{}};
+try{const s=localStorage.getItem('ds-v5');if(s)state=JSON.parse(s);}catch(e){}
+function save(){try{localStorage.setItem('ds-v5',JSON.stringify(state));}catch(e){}}
+function tid(d,t,i){return `${d}|${t}|${i}`;}
+function getNext(domain){const p=state.promoted[domain.id]||[];return domain.next.filter(t=>!p.includes(t));}
+function chkSvg(){return `<svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3 5.5L8 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;}
+
+function renderDomain(d){
+  const promoted=state.promoted[d.id]||[];
+  const nowActive=d.now.filter((_,i)=>!state.done[tid(d.id,'now',i)]).length+promoted.filter(t=>!state.done[`${d.id}|p|${t}`]).length;
+  let h=`<div class="domain" id="dom-${d.id}"><div class="dh"><div><div class="dh-title">${d.title}</div>${d.meta?`<div class="dh-meta">${d.meta}</div>`:''}</div><span class="dh-count">${nowActive} now</span></div>`;
+  h+=`<div class="tier now"><div class="tlbl now">Now</div>`;
+  let any=false;
+  d.now.forEach((txt,i)=>{
+    if(state.done[tid(d.id,'now',i)])return;
+    any=true;
+    h+=`<div class="task" id="t-${d.id}-${i}" onclick="tickNow('${d.id}',${i})"><div class="chk">${chkSvg()}</div><span class="tt">${txt}</span></div>`;
+  });
+  promoted.forEach((txt,pi)=>{
+    if(state.done[`${d.id}|p|${txt}`])return;
+    any=true;
+    h+=`<div class="task" id="tp-${d.id}-${pi}" onclick="tickP('${d.id}','${txt.replace(/'/g,"\\'")}')"><div class="chk">${chkSvg()}</div><span class="tt">${txt}</span></div>`;
+  });
+  if(!any)h+=`<div class="empty">All done ✓</div>`;
+  h+=`</div>`;
+  const ni=getNext(d);
+  h+=`<div class="tier next"><div class="tlbl next">Next</div>`;
+  if(!ni.length)h+=`<div class="empty">Nothing queued</div>`;
+  ni.forEach(t=>h+=`<div class="si"><div class="sb"></div><span class="st-next">${t}</span></div>`);
+  h+=`</div>`;
+  h+=`<div class="tier later"><div class="tlbl later">Later</div>`;
+  if(!d.later.length)h+=`<div class="empty">Nothing parked</div>`;
+  d.later.forEach(t=>h+=`<div class="si"><div class="sb"></div><span class="st-later">${t}</span></div>`);
+  h+=`</div></div>`;
+  return h;
+}
+
+function renderDone(){
+  const entries=[];
+  DATA.forEach(d=>{
+    d.now.forEach((txt,i)=>{if(state.done[tid(d.id,'now',i)])entries.push({dom:d.title,txt,id:tid(d.id,'now',i),type:'base',did:d.id});});
+    (state.promoted[d.id]||[]).forEach(txt=>{const pid=`${d.id}|p|${txt}`;if(state.done[pid])entries.push({dom:d.title,txt,id:pid,type:'p',did:d.id,ptxt:txt});});
+  });
+  let h=`<div class="done-sec"><div class="done-hd" onclick="toggleDone()"><span class="done-title">Done this week</span><span class="done-tog" id="dtog">${entries.length} item${entries.length!==1?'s':''} · show</span></div><div class="done-list" id="dlist">`;
+  if(!entries.length)h+=`<div class="done-empty">Nothing completed yet.</div>`;
+  entries.forEach(e=>h+=`<div class="done-row"><span class="done-dom">${e.dom}</span><span class="done-txt">${e.txt}</span><span class="undo" onclick="undoItem('${e.id}','${e.type}','${(e.ptxt||'').replace(/'/g,"\\'")}','${e.did}')">undo</span></div>`);
+  h+=`</div></div>`;
+  return h;
+}
+
+function render(){
+  const grid=document.getElementById('grid');
+  let h=DATA.map(renderDomain).join('');
+  h+=`<div style="grid-column:1/-1">`;
+  h+=renderDone();
+  h+=`<div class="obs">`;
+  OBS.forEach(o=>h+=`<div><div class="obs-lbl ${o.w?'w':''}">${o.lbl}</div><div class="obs-txt">${o.txt}</div></div>`);
+  h+=`</div>`;
+  h+=`<div class="park"><span class="park-lbl">Parking lot</span>${PARKING.map(p=>`<span class="ptag">${p}</span>`).join('')}</div>`;
+  h+=`</div>`;
+  h+=`<div class="inbox"><div class="inbox-lbl">Brain dump — type messy thoughts and hit update</div><div class="inbox-row"><textarea class="dump" id="dump" placeholder="e.g. need to call HR, found a house on Hemnet, coffee with Karin next week..."></textarea><button class="go-btn" id="gobtn" onclick="runUpdate()">Update ↗</button></div><div class="inbox-status" id="istatus"></div></div>`;
+  grid.innerHTML=h;
+}
+
+let pendingPromote=null;
+function tickNow(did,idx){
+  const d=DATA.find(x=>x.id===did);
+  const el=document.getElementById(`t-${did}-${idx}`);
+  if(!el)return;
+  el.classList.add('ticking');
+  setTimeout(()=>{
+    el.classList.add('removing');
+    setTimeout(()=>{
+      state.done[tid(did,'now',idx)]=true;save();render();
+      const avail=getNext(d);
+      if(avail.length){pendingPromote={did,avail};showPromote(did,avail);}
+    },400);
+  },220);
+}
+function tickP(did,txt){
+  const d=DATA.find(x=>x.id===did);
+  const promoted=state.promoted[did]||[];
+  const pi=promoted.indexOf(txt);
+  const el=document.getElementById(`tp-${did}-${pi}`);
+  if(el){el.classList.add('ticking');setTimeout(()=>{el.classList.add('removing');setTimeout(()=>{state.done[`${did}|p|${txt}`]=true;save();render();const avail=getNext(d);if(avail.length){pendingPromote={did,avail};showPromote(did,avail);}},400);},220);}
+  else{state.done[`${did}|p|${txt}`]=true;save();render();}
+}
+function showPromote(did,avail){
+  const domEl=document.getElementById(`dom-${did}`);
+  if(!domEl)return;
+  const existing=domEl.querySelector('.promote-banner');
+  if(existing)existing.remove();
+  const banner=document.createElement('div');
+  banner.className='promote-banner';
+  let inner=`<div class="promote-banner-lbl">Pull into Now?</div>`;
+  avail.slice(0,3).forEach((txt,i)=>inner+=`<div class="promote-opt" onclick="doPromote(${i})">${txt}</div>`);
+  inner+=`<span class="promote-skip" onclick="closePromote('${did}')">Skip</span>`;
+  banner.innerHTML=inner;
+  domEl.appendChild(banner);
+}
+function doPromote(idx){
+  if(!pendingPromote)return;
+  const{did,avail}=pendingPromote;
+  const txt=avail[idx];
+  if(!state.promoted[did])state.promoted[did]=[];
+  state.promoted[did].push(txt);
+  save();pendingPromote=null;render();
+}
+function closePromote(did){
+  pendingPromote=null;
+  const domEl=document.getElementById(`dom-${did}`);
+  if(domEl){const b=domEl.querySelector('.promote-banner');if(b)b.remove();}
+}
+function undoItem(id,type,ptxt,did){
+  delete state.done[id];
+  if(type==='p'&&ptxt){const arr=state.promoted[did]||[];const i=arr.indexOf(ptxt);if(i>-1)arr.splice(i,1);state.promoted[did]=arr;}
+  save();render();
+}
+function toggleDone(){
+  const l=document.getElementById('dlist'),t=document.getElementById('dtog');
+  if(!l||!t)return;
+  const open=l.classList.toggle('open');
+  const c=l.querySelectorAll('.done-row').length;
+  t.textContent=`${c} item${c!==1?'s':''} · ${open?'hide':'show'}`;
+}
+function resetWeek(){
+  if(confirm('Reset all done items and start fresh?')){state={done:{},promoted:{}};save();render();}
+}
+
+async function runUpdate(){
+  const dump=document.getElementById('dump').value.trim();
+  if(!dump){setStatus('Type something first.','err');return;}
+  const btn=document.getElementById('gobtn');
+  btn.disabled=true;setStatus('Updating...','');
+  const doneItems=[];
+  DATA.forEach(d=>{
+    d.now.forEach((txt,i)=>{if(state.done[tid(d.id,'now',i)])doneItems.push(txt);});
+    (state.promoted[d.id]||[]).forEach(txt=>{if(state.done[`${d.id}|p|${txt}`])doneItems.push(txt);});
+  });
+  try{
+    const res=await fetch('/api/update',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({dump,done:doneItems,currentDashboard:DATA.map(d=>({id:d.id,now:d.now,next:d.next,later:d.later}))})
+    });
+    if(!res.ok)throw new Error('Server error '+res.status);
+    const data=await res.json();
+    if(!data.success)throw new Error(data.error||'Unknown error');
+    data.updates.forEach(u=>{
+      const domain=DATA.find(d=>d.id===u.id);
+      if(!domain)return;
+      if(u.now)domain.now=u.now;
+      if(u.next)domain.next=u.next;
+      if(u.later)domain.later=u.later;
+    });
+    state={done:{},promoted:{}};save();
+    document.getElementById('dump').value='';
+    render();setStatus('Updated ✓','ok');
+  }catch(e){
+    console.error(e);
+    setStatus('Error: '+e.message,'err');
+  }finally{btn.disabled=false;}
+}
+function setStatus(msg,type){
+  const el=document.getElementById('istatus');
+  if(!el)return;
+  el.textContent=msg;el.className='inbox-status'+(type?' '+type:'');
+}
+const now=new Date(),s=new Date(now);
+s.setDate(now.getDate()-now.getDay()+1);
+document.getElementById('wklbl').textContent='w/c '+s.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+render();
+</script>
+</body>
+</html>
