@@ -255,6 +255,23 @@ function render(){
 // Load state from Notion on startup
 async function loadFromNotion(){
   try{
+    const saved=localStorage.getItem('ds-content');
+    if(saved){
+      const updates=JSON.parse(saved);
+      if(Array.isArray(updates)){
+        updates.forEach(u=>{
+          const domain=DATA.find(d=>d.id===u.id);
+          if(!domain)return;
+          if(u.now)domain.now=u.now;
+          if(u.next)domain.next=u.next;
+          if(u.later)domain.later=u.later;
+        });
+        render();
+        return;
+      }
+    }
+  }catch(e){}
+  try{
     const res=await fetch('/api/update');
     if(!res.ok)throw new Error('Load failed');
     const data=await res.json();
@@ -373,6 +390,8 @@ async function runUpdate(){
       if(u.next)domain.next=u.next;
       if(u.later)domain.later=u.later;
     });
+    // Save dashboard content to localStorage for cross-refresh persistence
+    try{localStorage.setItem('ds-content',JSON.stringify(data.updates));}catch(e){}
     state={done:{},promoted:{}};save();
     document.getElementById('dump').value='';
     render();setStatus('Updated ✓','ok');
