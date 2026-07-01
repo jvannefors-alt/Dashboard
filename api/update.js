@@ -99,6 +99,25 @@ export default async function handler(req, res) {
         return res.status(200).json({ success: true, state: current });
       }
 
+      if (action === 'briefing') {
+        const context = (req.body.context || '').slice(0, 3000);
+        if (!ANTHROPIC_KEY) return res.status(200).json({ success: true, text: null });
+        const prompt = `You are the weekly briefing voice for a personal life dashboard. Speak to the person directly, calm and sharp, like a trusted advisor who knows their situation — not a cheerleader, no exclamation marks. In 2-3 sentences (under 60 words), name what the week is really about using the specific items given, and where it helps, raise ONE pointed observation about drift or tension as a question or invitation — never a scold or a judgement. Use only the facts in the state below; do not invent anything. No lists, no headings, no preamble — write only the briefing.\n\nState:\n${context}\n\nWrite only the briefing.`;
+        try {
+          const rr = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_KEY, 'anthropic-version': '2023-06-01' },
+            body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 200, messages: [{ role: 'user', content: prompt }] })
+          });
+          if (!rr.ok) return res.status(200).json({ success: true, text: null });
+          const dd = await rr.json();
+          const text = (dd.content && dd.content[0] && dd.content[0].text || '').trim();
+          return res.status(200).json({ success: true, text: text || null });
+        } catch (e) {
+          return res.status(200).json({ success: true, text: null });
+        }
+      }
+
       return res.status(400).json({ error: 'Unknown action' });
     } catch (e) {
       console.error('POST error:', e);
