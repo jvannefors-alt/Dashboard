@@ -455,7 +455,7 @@ function renderRitual(){const s=STEPS[step];
 const domOpts=sel=>domains.map(d=>`<option value="${d.id}" ${d.id===sel?'selected':''}>${d.name}</option>`).join('');
 const BEAT={
   inbox(){if(!inbox.length)return '<div class="empty">Inbox clear — nothing caught this week.</div>';
-    return inbox.map(c=>`<div class="row"><div class="body"><div class="ti">${c.text}</div><div class="pick" style="margin-top:8px"><button onclick="fileSet('${c.id}','type','task',this)" data-g="type">Task</button><button onclick="fileSet('${c.id}','type','practice',this)" data-g="type">Practice</button><button onclick="fileSet('${c.id}','type','decision',this)" data-g="type">Decision</button><select onchange="fileSet('${c.id}','dom',this.value)">${domOpts(c.sug)}</select><button onclick="fileIt('${c.id}')">File it →</button></div></div></div>`).join('');},
+    return inbox.map(c=>`<div class="row"><div class="body"><div class="ti">${c.text}</div><div class="pick" style="margin-top:8px"><button onclick="fileSet('${c.id}','type','task',this)" data-g="type">Task</button><button onclick="fileSet('${c.id}','type','practice',this)" data-g="type">Practice</button><button onclick="fileSet('${c.id}','type','decision',this)" data-g="type">Decision</button><select onchange="fileSet('${c.id}','dom',this.value)">${domOpts(c.sug)}</select><button onclick="fileIt('${c.id}')">File it →</button><button class="bad" onclick="discardCapture('${c.id}')">Discard</button></div></div></div>`).join('');},
   lookback(){
     const wk=thisWeekHistory();
     const focusPart=lastFocus.length
@@ -486,6 +486,7 @@ const BEAT={
 };
 function fileSet(cid,k,v,btn){const c=inbox.find(x=>x.id===cid);c[k]=v;if(btn){btn.parentNode.querySelectorAll('[data-g="type"]').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');}}
 function fileIt(cid){const c=inbox.find(x=>x.id===cid);if(!c.type){toast('Pick a type first');return;}const d=domains.find(x=>x.id===(c.dom||c.sug));d.items.push({id:uid(),t:c.text,type:c.type,status:'parked',since:nowISO(),focus:false});inbox=inbox.filter(x=>x.id!==cid);renderRitual();}
+function discardCapture(cid){inbox=inbox.filter(x=>x.id!==cid);renderRitual();scheduleSave();toast('Discarded.');}
 function markHit(k,v,btn){lastFocus[k].hit=v;btn.parentNode.querySelectorAll('button').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');}
 function thisWeekHistory(){const cut=Date.now()-7*864e5;return history.filter(h=>new Date(h.doneAt).getTime()>=cut);}
 function logEmergent(){const el=$('#emgText');const t=(el&&el.value||'').trim();if(!t)return;const d=domains.find(x=>x.id===$('#emgDom').value);history.push({id:uid(),t,type:d.def,domain:d.name,doneAt:new Date().toISOString(),emergent:true,note:''});renderRitual();scheduleSave();toast('Logged to the ledger.');}
