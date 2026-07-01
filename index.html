@@ -87,6 +87,8 @@
   .stalebar{position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--stale)}
   .star{flex:none;width:18px;text-align:center;color:var(--faint);font-size:13px;margin-top:1px;opacity:0;transition:opacity .12s}
   .item:hover .star{opacity:.6}.star.on{opacity:1;color:var(--focus)}
+  .donebtn{flex:none;width:18px;text-align:center;color:var(--faint);font-size:12px;margin-top:1px;opacity:0;transition:opacity .12s;cursor:pointer}
+  .item:hover .donebtn{opacity:.55}.donebtn:hover{color:var(--practice)}
   .empty{padding:9px 16px 4px;color:var(--faint);font-size:11.5px;font-style:italic}
   .scrim{position:fixed;inset:0;background:rgba(8,9,13,.78);backdrop-filter:blur(3px);z-index:40;display:none;padding:18px;overflow-y:auto}
   .scrim.show{display:block}
@@ -156,7 +158,7 @@
     <span><i class="mk task"></i> Task — finish it</span>
     <span><i class="mk practice"></i> Practice — show up for it</span>
     <span><i class="mk decision"></i> Decision — resolve it</span>
-    <span style="color:var(--faint)">click an item to move it · hover for the focus star</span>
+    <span style="color:var(--faint)">click to move · hover for focus ★ and done ✓</span>
   </div>
   <div class="board" id="board"></div>
   <div class="foot">Capture all week — by Notes or the box above. The Monday review does the moving.</div>
@@ -327,7 +329,9 @@ function itemRow(d,i){const stale=i.status==='parked'&&i.age>=STALE;
   const note=i.n?`<div class="inote">${i.n}</div>`:'';
   const age=i.status==='parked'?`<span class="age ${stale?'stale':''}">${i.age}d</span>`:'';
   const flag=stale?'<span class="stalebar"></span>':'';
-  return `<div class="item ${i.status}" onclick="toggleStatus('${d.id}','${i.id}')">${flag}<span class="marker ${i.type}"></span><div class="itxt"><div class="ititle">${i.t}</div>${note}</div>${age}<span class="star ${i.focus?'on':''}" onclick="toggleFocus(event,'${d.id}','${i.id}')">${i.focus?'★':'☆'}</span></div>`;}
+  const done=(i.type==='task'||i.type==='decision')?`<span class="donebtn" title="${i.type==='decision'?'Resolve':'Done'}" onclick="completeItem(event,'${d.id}','${i.id}')">✓</span>`:'';
+  return `<div class="item ${i.status}" onclick="toggleStatus('${d.id}','${i.id}')">${flag}<span class="marker ${i.type}"></span><div class="itxt"><div class="ititle">${i.t}</div>${note}</div>${age}${done}<span class="star ${i.focus?'on':''}" onclick="toggleFocus(event,'${d.id}','${i.id}')">${i.focus?'★':'☆'}</span></div>`;}
+function completeItem(e,did,iid){e.stopPropagation();const x=allItems().find(o=>o.i.id===iid);if(!x)return;const word=x.i.type==='decision'?'Resolved':'Done';x.d.items=x.d.items.filter(it=>it.id!==iid);render();toast(word+' ✓');}
 function card(d){const act=d.items.filter(i=>i.status==='active'),park=d.items.filter(i=>i.status==='parked');
   const n=act.length,full=n>=d.cap,pips=Array.from({length:d.cap},(_,k)=>k<n?'●':'○').join('');
   return `<div class="card" style="--spine:${C[d.def]}"><div class="chead"><div><h2>${d.name}</h2><span class="ptag">${d.def} · ${d.note}</span></div><div class="cap ${full?'full':''}" id="cap-${d.id}"><span class="pips">${pips}</span><br>${n}/${d.cap}</div></div>${act.map(i=>itemRow(d,i)).join('')||'<div class="empty">Nothing active — promote from the lot.</div>'}<div class="section-label">Parking lot</div><div class="divider"></div>${park.map(i=>itemRow(d,i)).join('')||'<div class="empty">Lot is clear.</div>'}</div>`;}
