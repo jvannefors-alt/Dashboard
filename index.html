@@ -272,6 +272,9 @@ const allItems=()=>domains.flatMap(d=>d.items.map(i=>({d,i})));
 const activeCount=d=>d.items.filter(i=>i.status==='active').length;
 const focusCount=()=>allItems().filter(x=>x.i.focus).length;
 function daysToTarget(){const t=new Date();t.setHours(0,0,0,0);return Math.round((new Date(2026,7,19)-t)/864e5);}
+const DAY=86400000;const nowISO=()=>new Date().toISOString();
+function ageDays(i){return i.since?Math.max(0,Math.floor((Date.now()-new Date(i.since).getTime())/DAY)):0;}
+function migrateAges(){allItems().forEach(({i})=>{if(!i.since){const a=(typeof i.age==='number')?i.age:0;i.since=new Date(Date.now()-a*DAY).toISOString();}if('age'in i)delete i.age;});}
 
 /* ---------- persistence ---------- */
 async function loadState(){
@@ -283,9 +286,11 @@ async function loadState(){
     let max=0;allItems().forEach(x=>{const m=/^i(\d+)$/.exec(x.i.id);if(m)max=Math.max(max,+m[1]);});
     inbox.forEach(c=>{const m=/^i(\d+)$/.exec(c.id||'');if(m)max=Math.max(max,+m[1]);});
     nextId=max+1;
+    migrateAges();
     loaded=true;renderClock();render();
   }else{
     const seed=buildSeed();domains=seed.domains;inbox=seed.inbox;lastFocus=seed.lastFocus;history=seed.history;
+    migrateAges();
     loaded=true;renderClock();render();
     scheduleSave(true); // persist the seed on first run
   }
@@ -325,9 +330,9 @@ function buildBriefing(){
   if(busiest&&busiest.ev.length>=2)watch.push(`<b>${busiest.dn.split(' ')[0]}</b> holds ${busiest.ev.length} commitments — a tight day.`);
   domains.filter(d=>activeCount(d)>=d.cap).forEach(d=>watch.push(`<b>${d.name}</b> is at capacity (${d.cap}/${d.cap}) — something ships or parks before more starts.`));
   const nudges=[];
-  allItems().filter(x=>x.i.type==='practice'&&x.i.status==='parked'&&x.i.age>=PRACTICE_DRIFT).sort((a,b)=>b.i.age-a.i.age)
-    .forEach(x=>nudges.push(`<b>${x.i.t}</b> — untended ${x.i.age} days. Tend it this week, or let it rest on purpose?`));
-  allItems().filter(x=>x.i.type==='decision'&&x.i.age>=30).forEach(x=>nudges.push(`<b>${x.i.t}</b> has been open ${x.i.age} days. Moving, or quietly stuck?`));
+  allItems().filter(x=>x.i.type==='practice'&&x.i.status==='parked'&&ageDays(x.i)>=PRACTICE_DRIFT).sort((a,b)=>ageDays(b.i)-ageDays(a.i))
+    .forEach(x=>nudges.push(`<b>${x.i.t}</b> — untended ${ageDays(x.i)} days. Tend it this week, or let it rest on purpose?`));
+  allItems().filter(x=>x.i.type==='decision'&&ageDays(x.i)>=30).forEach(x=>nudges.push(`<b>${x.i.t}</b> has been open ${ageDays(x.i)} days. Moving, or quietly stuck?`));
   if(!thesisFocus.length&&days<=60)nudges.push(`Focus carries no thesis item with ${days} days left — deliberate, or drift?`);
   return {through,watch:watch.slice(0,3),nudges:nudges.slice(0,3)};
 }
@@ -341,15 +346,15 @@ function renderBriefing(){
 
 /* ---------- board ---------- */
 function toggleStatus(did,iid){const d=domains.find(x=>x.id===did),it=d.items.find(x=>x.id===iid);
-  if(it.status==='parked'){if(activeCount(d)>=d.cap){toast(`${d.name} is full (${d.cap}/${d.cap}) — park something first`);flashCap(did);return;}it.status='active';it.age=0;}
-  else{it.status='parked';it.focus=false;}render();}
+  if(it.status==='parked'){if(activeCount(d)>=d.cap){toast(`${d.name} is full (${d.cap}/${d.cap}) — park something first`);flashCap(did);return;}it.status='active';it.since=nowISO();}
+  else{it.status='parked';it.focus=false;it.since=nowISO();}render();}
 function flashCap(did){const c=document.querySelector('#cap-'+did);if(c){c.classList.add('flash');setTimeout(()=>c.classList.remove('flash'),900);}}
 function toggleFocus(e,did,iid){e.stopPropagation();const it=domains.find(x=>x.id===did).items.find(x=>x.id===iid);
   if(it.status!=='active'){toast('Only active items can be focus');return;}
   if(!it.focus&&focusCount()>=MAXFOCUS){toast(`Focus holds ${MAXFOCUS} — drop one first`);return;}it.focus=!it.focus;render();}
-function itemRow(d,i){const stale=i.status==='parked'&&i.age>=STALE;
+function itemRow(d,i){const a=ageDays(i);const stale=i.status==='parked'&&a>=STALE;
   const note=i.n?`<div class="inote">${i.n}</div>`:'';
-  const age=i.status==='parked'?`<span class="age ${stale?'stale':''}">${i.age}d</span>`:'';
+  const age=i.status==='parked'?`<span class="age ${stale?'stale':''}">${a}d</span>`:'';
   const flag=stale?'<span class="stalebar"></span>':'';
   const done=(i.type==='task'||i.type==='decision')?`<span class="donebtn" title="${i.type==='decision'?'Resolve':'Done'}" onclick="completeItem(event,'${d.id}','${i.id}')">✓</span>`:'';
   return `<div class="item ${i.status}" onclick="toggleStatus('${d.id}','${i.id}')">${flag}<span class="marker ${i.type}"></span><div class="itxt"><div class="ititle">${i.t}</div>${note}</div>${age}${done}<span class="star ${i.focus?'on':''}" onclick="toggleFocus(event,'${d.id}','${i.id}')">${i.focus?'★':'☆'}</span></div>`;}
@@ -384,7 +389,7 @@ let step=0;
 function beatHas(k){switch(k){
   case 'inbox':return inbox.length>0;
   case 'done':return allItems().some(x=>x.i.status==='active'&&x.i.type==='task');
-  case 'stale':return allItems().some(x=>x.i.status==='parked'&&x.i.age>=STALE);
+  case 'stale':return allItems().some(x=>x.i.status==='parked'&&ageDays(x.i)>=STALE);
   case 'decision':return allItems().some(x=>x.i.type==='decision');
   default:return true;}}
 function snapshotFocus(){lastFocus=allItems().filter(x=>x.i.focus).map(({d,i})=>({t:i.t,type:i.type,dn:d.name,hit:null}));}
@@ -417,34 +422,34 @@ const BEAT={
   land(){return `<div class="eyebrow">Your week — Google calendar</div><div class="cal">${weekCells()}</div>`;},
   done(){const t=allItems().filter(x=>x.i.status==='active'&&x.i.type==='task');if(!t.length)return '<div class="empty">No active tasks to clear.</div>';
     return t.map(({d,i})=>`<div class="row"><span class="marker task"></span><div class="body"><div class="ti">${i.t}</div><div class="me">${d.name}</div></div><div class="pick"><button class="good" onclick="markDone('${i.id}',this)">Done ✓</button></div></div>`).join('');},
-  stale(){const st=allItems().filter(x=>x.i.status==='parked'&&x.i.age>=STALE);if(!st.length)return '<div class="empty">Nothing has rotted. The lot is honest.</div>';
-    return st.map(({d,i})=>`<div class="row"><span class="marker ${i.type}"></span><div class="body"><div class="ti">${i.t}</div><div class="me">${d.name} · parked ${i.age}d ${i.n?'· '+i.n:''}</div></div><div class="pick"><button class="good" onclick="staleAct('${i.id}','promote',this)">Promote</button><button class="bad" onclick="staleAct('${i.id}','kill',this)">Kill</button><button onclick="staleAct('${i.id}','keep',this)">Keep parked</button></div></div>`).join('');},
+  stale(){const st=allItems().filter(x=>x.i.status==='parked'&&ageDays(x.i)>=STALE);if(!st.length)return '<div class="empty">Nothing has rotted. The lot is honest.</div>';
+    return st.map(({d,i})=>`<div class="row"><span class="marker ${i.type}"></span><div class="body"><div class="ti">${i.t}</div><div class="me">${d.name} · parked ${ageDays(i)}d ${i.n?'· '+i.n:''}</div></div><div class="pick"><button class="good" onclick="staleAct('${i.id}','promote',this)">Promote</button><button class="bad" onclick="staleAct('${i.id}','kill',this)">Kill</button><button onclick="staleAct('${i.id}','keep',this)">Keep parked</button></div></div>`).join('');},
   practice(){const pr=allItems().filter(x=>x.i.type==='practice');
-    return pr.map(({d,i})=>`<div class="row"><span class="marker practice"></span><div class="body"><div class="ti">${i.t}</div><div class="me">${i.n||'no intention set'}${i.status==='parked'?' · untended '+i.age+'d':''}</div><div class="pick" style="margin-top:8px"><button class="good ${i._s==='tended'?'sel':''}" onclick="prSet('${i.id}','tended',this)">tended</button><button class="${i._s==='partial'?'sel':''}" onclick="prSet('${i.id}','partial',this)">partial</button><button class="bad ${i._s==='missed'?'sel':''}" onclick="prSet('${i.id}','missed',this)">didn’t</button><button class="rest ${i._s==='rest'?'sel':''}" onclick="prSet('${i.id}','rest',this)">chose to rest</button></div><input type="text" style="margin-top:8px" placeholder="this week’s intention…" value="${(i.n||'').replace(/^intent:\s?/,'')}" onchange="prIntent('${i.id}',this.value)"></div></div>`).join('');},
+    return pr.map(({d,i})=>`<div class="row"><span class="marker practice"></span><div class="body"><div class="ti">${i.t}</div><div class="me">${i.n||'no intention set'}${i.status==='parked'?' · untended '+ageDays(i)+'d':''}</div><div class="pick" style="margin-top:8px"><button class="good ${i._s==='tended'?'sel':''}" onclick="prSet('${i.id}','tended',this)">tended</button><button class="${i._s==='partial'?'sel':''}" onclick="prSet('${i.id}','partial',this)">partial</button><button class="bad ${i._s==='missed'?'sel':''}" onclick="prSet('${i.id}','missed',this)">didn’t</button><button class="rest ${i._s==='rest'?'sel':''}" onclick="prSet('${i.id}','rest',this)">chose to rest</button></div><input type="text" style="margin-top:8px" placeholder="this week’s intention…" value="${(i.n||'').replace(/^intent:\s?/,'')}" onchange="prIntent('${i.id}',this.value)"></div></div>`).join('');},
   decision(){const de=allItems().filter(x=>x.i.type==='decision');if(!de.length)return '<div class="empty">No open decisions.</div>';
-    return de.map(({d,i})=>`<div class="row"><span class="marker decision"></span><div class="body"><div class="ti">${i.t}</div><div class="me">${d.name} · open ${i.age}d ${i._log?'· logged ✓':''}</div><input type="text" style="margin-top:8px" placeholder="a line of reasoning this week…" onchange="decLog('${i.id}',this.value)"></div><div class="pick"><button class="good" onclick="decResolve('${i.id}',this)">Resolve</button></div></div>`).join('');},
+    return de.map(({d,i})=>`<div class="row"><span class="marker decision"></span><div class="body"><div class="ti">${i.t}</div><div class="me">${d.name} · open ${ageDays(i)}d ${i._log?'· logged ✓':''}</div><input type="text" style="margin-top:8px" placeholder="a line of reasoning this week…" onchange="decLog('${i.id}',this.value)"></div><div class="pick"><button class="good" onclick="decResolve('${i.id}',this)">Resolve</button></div></div>`).join('');},
   setweek(){const active=allItems().filter(x=>x.i.status==='active'),parked=allItems().filter(x=>x.i.status==='parked');
     const act=active.map(({d,i})=>`<div class="row"><span class="marker ${i.type}"></span><div class="body"><div class="ti">${i.t}</div><div class="me">${d.name}</div></div><div class="pick"><button onclick="swToggle('${d.id}','${i.id}')">park</button><button class="${i.focus?'sel':''}" style="${i.focus?'border-color:var(--focus);color:var(--focus)':''}" onclick="swFocus('${d.id}','${i.id}')">${i.focus?'★ focus':'☆ focus'}</button></div></div>`).join('')||'<div class="empty">Nothing active — pull from the lot.</div>';
     const lot=parked.map(({d,i})=>`<div class="row" style="opacity:.85"><span class="marker ${i.type}"></span><div class="body"><div class="ti">${i.t}</div><div class="me">${d.name}</div></div><div class="pick"><button class="good" onclick="swToggle('${d.id}','${i.id}')">pull up →</button></div></div>`).join('')||'<div class="empty">Lot is clear.</div>';
     return `<div class="eyebrow">Your week</div><div class="cal mini" style="margin-bottom:14px">${weekCells()}</div><div style="font-size:12px;color:var(--muted);margin-bottom:6px">Focus: <b class="mono">${focusCount()}</b>/5 — spotlight your 1–5</div>${act}<details class="lot"><summary>Pull from the parking lot (${parked.length})</summary>${lot}</details><div class="eyebrow" style="margin-top:18px">Protect the week</div><div style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-top:4px">Block time for the focus you just set — especially the thesis. Make the week match the plan.</div><a href="https://calendar.google.com" target="_blank" rel="noopener" class="btn" style="display:inline-block;margin-top:8px;text-decoration:none">Open Google Calendar ↗</a>`;},
 };
 function fileSet(cid,k,v,btn){const c=inbox.find(x=>x.id===cid);c[k]=v;if(btn){btn.parentNode.querySelectorAll('[data-g="type"]').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');}}
-function fileIt(cid){const c=inbox.find(x=>x.id===cid);if(!c.type){toast('Pick a type first');return;}const d=domains.find(x=>x.id===(c.dom||c.sug));d.items.push({id:uid(),t:c.text,type:c.type,status:'parked',age:0,focus:false});inbox=inbox.filter(x=>x.id!==cid);renderRitual();}
+function fileIt(cid){const c=inbox.find(x=>x.id===cid);if(!c.type){toast('Pick a type first');return;}const d=domains.find(x=>x.id===(c.dom||c.sug));d.items.push({id:uid(),t:c.text,type:c.type,status:'parked',since:nowISO(),focus:false});inbox=inbox.filter(x=>x.id!==cid);renderRitual();}
 function markHit(k,v,btn){lastFocus[k].hit=v;btn.parentNode.querySelectorAll('button').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');}
 function thisWeekHistory(){const cut=Date.now()-7*864e5;return history.filter(h=>new Date(h.doneAt).getTime()>=cut);}
 function logEmergent(){const el=$('#emgText');const t=(el&&el.value||'').trim();if(!t)return;const d=domains.find(x=>x.id===$('#emgDom').value);history.push({id:uid(),t,type:d.def,domain:d.name,doneAt:new Date().toISOString(),emergent:true,note:''});renderRitual();scheduleSave();toast('Logged to the ledger.');}
 function markDone(iid,btn){const x=allItems().find(o=>o.i.id===iid);pushHistory(x.i,x.d.name);x.d.items=x.d.items.filter(it=>it.id!==iid);btn.closest('.row').style.opacity=.4;btn.outerHTML='<span class="filed">swept ✓</span>';scheduleSave();}
 function staleAct(iid,act,btn){const x=allItems().find(o=>o.i.id===iid),r=btn.closest('.row');
-  if(act==='promote'){if(activeCount(x.d)>=x.d.cap){toast(`${x.d.name} is full — can’t promote`);return;}x.i.status='active';x.i.age=0;r.style.opacity=.4;r.querySelector('.pick').outerHTML='<span class="filed">promoted ✓</span>';}
+  if(act==='promote'){if(activeCount(x.d)>=x.d.cap){toast(`${x.d.name} is full — can’t promote`);return;}x.i.status='active';x.i.since=nowISO();r.style.opacity=.4;r.querySelector('.pick').outerHTML='<span class="filed">promoted ✓</span>';}
   if(act==='kill'){x.d.items=x.d.items.filter(it=>it.id!==iid);r.style.opacity=.4;r.querySelector('.pick').outerHTML='<span class="filed" style="color:var(--stale)">killed ✓</span>';}
-  if(act==='keep'){x.i.age=0;r.style.opacity=.4;r.querySelector('.pick').outerHTML='<span class="filed" style="color:var(--muted)">parked, on purpose ✓</span>';}
+  if(act==='keep'){x.i.since=nowISO();r.style.opacity=.4;r.querySelector('.pick').outerHTML='<span class="filed" style="color:var(--muted)">parked, on purpose ✓</span>';}
   scheduleSave();}
 function prSet(iid,s,btn){const x=allItems().find(o=>o.i.id===iid);x.i._s=s;btn.parentNode.querySelectorAll('button').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');if(s==='rest'){x.i.status='parked';x.i.focus=false;}scheduleSave();}
 function prIntent(iid,v){const x=allItems().find(o=>o.i.id===iid);if(v)x.i.n='intent: '+v;scheduleSave();}
 function decLog(iid,v){const x=allItems().find(o=>o.i.id===iid);if(v){x.i._log=true;x.i.n='last note: '+v;}scheduleSave();}
 function decResolve(iid,btn){const x=allItems().find(o=>o.i.id===iid);pushHistory(x.i,x.d.name);x.d.items=x.d.items.filter(it=>it.id!==iid);btn.closest('.row').style.opacity=.4;btn.closest('.pick').outerHTML='<span class="filed">resolved ✓</span>';scheduleSave();}
 function swToggle(did,iid){const d=domains.find(x=>x.id===did),it=d.items.find(x=>x.id===iid);
-  if(it.status==='active'){it.status='parked';it.focus=false;}else{if(activeCount(d)>=d.cap){toast(`${d.name} is full (${d.cap}/${d.cap})`);return;}it.status='active';it.age=0;}renderRitual();}
+  if(it.status==='active'){it.status='parked';it.focus=false;it.since=nowISO();}else{if(activeCount(d)>=d.cap){toast(`${d.name} is full (${d.cap}/${d.cap})`);return;}it.status='active';it.since=nowISO();}renderRitual();}
 function swFocus(did,iid){const it=domains.find(x=>x.id===did).items.find(x=>x.id===iid);if(it.status!=='active'){toast('Pull it active first');return;}
   if(!it.focus&&focusCount()>=MAXFOCUS){toast('Focus holds 5 — drop one first');return;}it.focus=!it.focus;renderRitual();}
 
