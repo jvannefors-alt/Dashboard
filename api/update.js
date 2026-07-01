@@ -1,14 +1,35 @@
-// api/update.js — Life OS v2 backend
-// Contract:
-//   GET                      -> { success, state }            (state is null on first run; the page seeds it)
-//   POST { action:'save', state }    -> persist the whole board to Edge Config
-//   POST { action:'capture', text }  -> Haiku guesses a domain, thought is appended to the inbox
-//
-// Reuses the existing infra: Edge Config for fast state, Vercel API to write it, Haiku for the guess.
-// Stores under a NEW key ('dashboard_v2') so the old 'dashboard_state' stays as an untouched fallback.
+// api/update.js — Life OS backend on Redis (Upstash via REDIS_URL)
+// Same contract as before, just a bigger, write-friendly store:
+//   GET                              -> { success, state }   (auto-migrates old Edge Config data on first read)
+//   POST { action:'save', state }    -> persist the whole board
+//   POST { action:'capture', text }  -> Haiku guesses a domain, thought appended to inbox
+//   POST { action:'briefing', context } -> Haiku writes the voiced read
+
+import Redis from 'ioredis';
 
 const KEY = 'dashboard_v2';
 const DOMAIN_IDS = ['thesis','career','tree','reading','house','life','build','hobbies'];
+
+let _redis;
+function redis() {
+  if (!_redis) _redis = new Redis(process.env.REDIS_URL, { maxRetriesPerRequest: 3 });
+  return _redis;
+}
+
+// one-time fallback: read the old state out of Edge Config so nothing is lost on the move
+async function edgeGet(key) {
+  const EDGE_CONFIG = process.env.EDGE_CONFIG, VERCEL_API_TOKEN = process.env.VERCEL_API_TOKEN;
+  if (!EDGE_CONFIG || !VERCEL_API_TOKEN) return null;
+  try {
+    const id = EDGE_CONFIG.split('edge-config.vercel.com/')[1].split('?')[0];
+    const r = await fetch(`https://api.vercel.com/v1/edge-config/${id}/item/${key}`, {
+      headers: { 'Authorization': `Bearer ${VERCEL_API_TOKEN}` }
+    });
+    if (!r.ok) return null;
+    const d = await r.json();
+    return d.value || null;
+  } catch (e) { return null; }
+}
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -17,34 +38,7 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
-  const VERCEL_API_TOKEN = process.env.VERCEL_API_TOKEN;
-  const EDGE_CONFIG = process.env.EDGE_CONFIG;
 
-  const ecId = () => EDGE_CONFIG.split('edge-config.vercel.com/')[1].split('?')[0];
-
-  async function readState() {
-    if (!EDGE_CONFIG || !VERCEL_API_TOKEN) return null;
-    try {
-      const r = await fetch(`https://api.vercel.com/v1/edge-config/${ecId()}/item/${KEY}`, {
-        headers: { 'Authorization': `Bearer ${VERCEL_API_TOKEN}` }
-      });
-      if (!r.ok) return null;
-      const data = await r.json();
-      return data.value || null;
-    } catch (e) { return null; }
-  }
-
-  async function writeState(state) {
-    if (!EDGE_CONFIG || !VERCEL_API_TOKEN) throw new Error('Edge Config not configured');
-    const r = await fetch(`https://api.vercel.com/v1/edge-config/${ecId()}/items`, {
-      method: 'PATCH',
-      headers: { 'Authorization': `Bearer ${VERCEL_API_TOKEN}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ items: [{ operation: 'upsert', key: KEY, value: state }] })
-    });
-    if (!r.ok) throw new Error(`Edge Config write failed: ${r.status}`);
-  }
-
-  // light keyword fallback if Haiku is unavailable — mirrors the in-app guesser
   function keywordGuess(t) {
     t = (t || '').toLowerCase();
     if (/thesis|section|defen|seminar|chapter/.test(t)) return 'thesis';
@@ -56,11 +50,10 @@ export default async function handler(req, res) {
     if (/climb|skate|music|graffiti|paint|guitar/.test(t)) return 'hobbies';
     return 'life';
   }
-
   async function guessDomain(text) {
     if (!ANTHROPIC_KEY) return keywordGuess(text);
     try {
-      const prompt = `Sort this captured thought into ONE domain of Jonas's life dashboard.\nDomains: thesis (master thesis), career (career reorientation / job search / PhD), tree (his Substack "The Living Issue Tree"), reading (reading & thinking), house (home search), life (life, energy, money, admin), build (side projects / coding / the dashboard), hobbies (climbing, skating, music, graffiti).\nThought: "${text}"\nReturn ONLY the domain id, nothing else.`;
+      const prompt = `Sort this captured thought into ONE domain of Jonas's life dashboard.\nDomains: thesis, career, tree (his Substack), reading, house, life, build (side projects/coding), hobbies (climbing/skating/music/graffiti).\nThought: "${text}"\nReturn ONLY the domain id.`;
       const r = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_KEY, 'anthropic-version': '2023-06-01' },
@@ -73,29 +66,39 @@ export default async function handler(req, res) {
     } catch (e) { return keywordGuess(text); }
   }
 
-  // ---- GET: load state ----
+  // ---- GET: load state (migrate from Edge Config on first run) ----
   if (req.method === 'GET') {
-    return res.status(200).json({ success: true, state: await readState() });
+    try {
+      const v = await redis().get(KEY);
+      if (v) return res.status(200).json({ success: true, state: JSON.parse(v) });
+      const old = await edgeGet(KEY);
+      if (old) { await redis().set(KEY, JSON.stringify(old)); return res.status(200).json({ success: true, state: old }); }
+      return res.status(200).json({ success: true, state: null });
+    } catch (e) {
+      console.error('GET error:', e);
+      return res.status(200).json({ success: true, state: null });
+    }
   }
 
-  // ---- POST: save or capture ----
+  // ---- POST ----
   if (req.method === 'POST') {
     const { action, state, text } = req.body || {};
     try {
       if (action === 'save') {
         if (!state) return res.status(400).json({ error: 'No state provided' });
-        await writeState(state);
+        await redis().set(KEY, JSON.stringify(state));
         return res.status(200).json({ success: true });
       }
 
       if (action === 'capture') {
         if (!text || !text.trim()) return res.status(400).json({ error: 'No text' });
         const domain = await guessDomain(text);
-        const current = await readState();
+        const raw = await redis().get(KEY);
+        const current = raw ? JSON.parse(raw) : null;
         if (!current) return res.status(409).json({ error: 'No state yet — load the page once first' });
         current.inbox = current.inbox || [];
         current.inbox.push({ id: 'i' + Date.now() + Math.floor(Math.random() * 1000), text: text.trim(), sug: domain });
-        await writeState(current);
+        await redis().set(KEY, JSON.stringify(current));
         return res.status(200).json({ success: true, state: current });
       }
 
@@ -111,8 +114,8 @@ export default async function handler(req, res) {
           });
           if (!rr.ok) return res.status(200).json({ success: true, text: null });
           const dd = await rr.json();
-          const text = (dd.content && dd.content[0] && dd.content[0].text || '').trim();
-          return res.status(200).json({ success: true, text: text || null });
+          const t = (dd.content && dd.content[0] && dd.content[0].text || '').trim();
+          return res.status(200).json({ success: true, text: t || null });
         } catch (e) {
           return res.status(200).json({ success: true, text: null });
         }
