@@ -303,12 +303,25 @@ async function loadState(){
   }
 }
 function currentState(){return {version:'v2.2',domains,inbox,lastFocus,history,briefing:briefingText};}
+let savePending=false;
+function doSave(retry){
+  const body=JSON.stringify({action:'save',state:currentState()});
+  return fetch('/api/update',{method:'POST',headers:{'Content-Type':'application/json'},body})
+    .then(r=>{if(!r.ok)throw r.status;savePending=false;})
+    .catch(err=>{if(!retry){setTimeout(()=>doSave(true),3000);}else{console.error('Save failed:',err);toast('Save failed ('+(err||'network')+') — changes are local');}});
+}
 function scheduleSave(now){
   if(!loaded)return;
+  savePending=true;
   clearTimeout(saveTimer);
-  const doSave=async()=>{try{const r=await fetch('/api/update',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'save',state:currentState()})});if(!r.ok)throw 0;}catch(e){toast('Save failed — changes are local for now');}};
-  if(now)doSave();else saveTimer=setTimeout(doSave,1200);
+  if(now)doSave(false);else saveTimer=setTimeout(()=>doSave(false),1500);
 }
+function flushSave(){
+  if(!loaded||!savePending)return;
+  try{const blob=new Blob([JSON.stringify({action:'save',state:currentState()})],{type:'application/json'});if(navigator.sendBeacon('/api/update',blob))savePending=false;}catch(e){}
+}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flushSave();});
+window.addEventListener('pagehide',flushSave);
 
 function guessDomain(t){t=(t||'').toLowerCase();
   if(/thesis|section|defen|seminar|chapter/.test(t))return 'thesis';
