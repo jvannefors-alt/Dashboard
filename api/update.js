@@ -1,3 +1,15 @@
+// api/update.js — Life OS v2 backend
+// Contract:
+//   GET                      -> { success, state }            (state is null on first run; the page seeds it)
+//   POST { action:'save', state }    -> persist the whole board to Edge Config
+//   POST { action:'capture', text }  -> Haiku guesses a domain, thought is appended to the inbox
+//
+// Reuses the existing infra: Edge Config for fast state, Vercel API to write it, Haiku for the guess.
+// Stores under a NEW key ('dashboard_v2') so the old 'dashboard_state' stays as an untouched fallback.
+
+const KEY = 'dashboard_v2';
+const DOMAIN_IDS = ['thesis','career','tree','reading','house','life','build','hobbies'];
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
@@ -5,106 +17,94 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
-  const NOTION_TOKEN = process.env.NOTION_TOKEN;
-  const NOTION_PAGE_ID = process.env.NOTION_PAGE_ID;
   const VERCEL_API_TOKEN = process.env.VERCEL_API_TOKEN;
   const EDGE_CONFIG = process.env.EDGE_CONFIG;
 
-  if (!ANTHROPIC_KEY || !NOTION_TOKEN || !NOTION_PAGE_ID) {
-    return res.status(500).json({ error: 'Missing environment variables' });
-  }
+  const ecId = () => EDGE_CONFIG.split('edge-config.vercel.com/')[1].split('?')[0];
 
-  // GET — load from Edge Config
-  if (req.method === 'GET') {
+  async function readState() {
+    if (!EDGE_CONFIG || !VERCEL_API_TOKEN) return null;
     try {
-      if (!EDGE_CONFIG || !VERCEL_API_TOKEN) return res.status(200).json({ success: true, state: null });
-      const ecId = EDGE_CONFIG.split('edge-config.vercel.com/')[1].split('?')[0];
-      const r = await fetch(`https://api.vercel.com/v1/edge-config/${ecId}/item/dashboard_state`, {
+      const r = await fetch(`https://api.vercel.com/v1/edge-config/${ecId()}/item/${KEY}`, {
         headers: { 'Authorization': `Bearer ${VERCEL_API_TOKEN}` }
       });
-      if (!r.ok) return res.status(200).json({ success: true, state: null });
+      if (!r.ok) return null;
       const data = await r.json();
-      return res.status(200).json({ success: true, state: data.value || null });
-    } catch(e) {
-      return res.status(200).json({ success: true, state: null });
-    }
+      return data.value || null;
+    } catch (e) { return null; }
   }
 
-  // POST — update dashboard
-  if (req.method === 'POST') {
-    const { dump, done, currentDashboard } = req.body;
-    try {
-      // 1. Call Claude
-      const doneSection = done && done.length ? `\nCompleted items to remove:\n${done.join('\n')}\n` : '';
-      const prompt = `You maintain a life dashboard for Jonas. Current dashboard:\n${JSON.stringify(currentDashboard)}\n${doneSection}\nNew thoughts:\n${dump || '(none)'}\n\nReturn ONLY a JSON array. Each item: {"id":"domain_id","now":[...],"next":[...],"later":[...]}. Domain ids: transition, thesis, move, housing, life, career, reading, ai. Remove completed items, integrate new thoughts, keep NOW actionable this week, preserve existing items, avoid duplication, short verb-first phrases. JSON only, no commentary.`;
+  async function writeState(state) {
+    if (!EDGE_CONFIG || !VERCEL_API_TOKEN) throw new Error('Edge Config not configured');
+    const r = await fetch(`https://api.vercel.com/v1/edge-config/${ecId()}/items`, {
+      method: 'PATCH',
+      headers: { 'Authorization': `Bearer ${VERCEL_API_TOKEN}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items: [{ operation: 'upsert', key: KEY, value: state }] })
+    });
+    if (!r.ok) throw new Error(`Edge Config write failed: ${r.status}`);
+  }
 
-      const claudeRes = await fetch('https://api.anthropic.com/v1/messages', {
+  // light keyword fallback if Haiku is unavailable — mirrors the in-app guesser
+  function keywordGuess(t) {
+    t = (t || '').toLowerCase();
+    if (/thesis|section|defen|seminar|chapter/.test(t)) return 'thesis';
+    if (/job|career|coffee|role|phd|linkedin|appl|recruit|network/.test(t)) return 'career';
+    if (/note|substack|tree|essay|publish|hypothesis/.test(t)) return 'tree';
+    if (/read|book|quote|paper/.test(t)) return 'reading';
+    if (/flat|house|apartment|viewing|mortgage|listing/.test(t)) return 'house';
+    if (/dashboard|build|code|tool|fix|vercel|api|script/.test(t)) return 'build';
+    if (/climb|skate|music|graffiti|paint|guitar/.test(t)) return 'hobbies';
+    return 'life';
+  }
+
+  async function guessDomain(text) {
+    if (!ANTHROPIC_KEY) return keywordGuess(text);
+    try {
+      const prompt = `Sort this captured thought into ONE domain of Jonas's life dashboard.\nDomains: thesis (master thesis), career (career reorientation / job search / PhD), tree (his Substack "The Living Issue Tree"), reading (reading & thinking), house (home search), life (life, energy, money, admin), build (side projects / coding / the dashboard), hobbies (climbing, skating, music, graffiti).\nThought: "${text}"\nReturn ONLY the domain id, nothing else.`;
+      const r = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_KEY, 'anthropic-version': '2023-06-01' },
-        body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 2000, messages: [{ role: 'user', content: prompt }] })
+        body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 20, messages: [{ role: 'user', content: prompt }] })
       });
-      if (!claudeRes.ok) throw new Error(`Claude error: ${claudeRes.status}`);
-      const claudeData = await claudeRes.json();
-      const raw = claudeData.content[0].text.replace(/```json|```/g, '').trim();
-      const updates = JSON.parse(raw);
+      if (!r.ok) return keywordGuess(text);
+      const data = await r.json();
+      const guess = (data.content[0].text || '').trim().toLowerCase().replace(/[^a-z]/g, '');
+      return DOMAIN_IDS.includes(guess) ? guess : keywordGuess(text);
+    } catch (e) { return keywordGuess(text); }
+  }
 
-      // 2. Save to Edge Config FIRST (fast, reliable)
-      if (EDGE_CONFIG && VERCEL_API_TOKEN) {
-        const ecId = EDGE_CONFIG.split('edge-config.vercel.com/')[1].split('?')[0];
-        await fetch(`https://api.vercel.com/v1/edge-config/${ecId}/items`, {
-          method: 'PATCH',
-          headers: { 'Authorization': `Bearer ${VERCEL_API_TOKEN}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ items: [{ operation: 'upsert', key: 'dashboard_state', value: updates }] })
-        });
+  // ---- GET: load state ----
+  if (req.method === 'GET') {
+    return res.status(200).json({ success: true, state: await readState() });
+  }
+
+  // ---- POST: save or capture ----
+  if (req.method === 'POST') {
+    const { action, state, text } = req.body || {};
+    try {
+      if (action === 'save') {
+        if (!state) return res.status(400).json({ error: 'No state provided' });
+        await writeState(state);
+        return res.status(200).json({ success: true });
       }
 
-      // 3. Update Notion in background (don't block response)
-      updateNotion(updates, NOTION_TOKEN, NOTION_PAGE_ID).catch(e => console.error('Notion update failed:', e));
+      if (action === 'capture') {
+        if (!text || !text.trim()) return res.status(400).json({ error: 'No text' });
+        const domain = await guessDomain(text);
+        const current = await readState();
+        if (!current) return res.status(409).json({ error: 'No state yet — load the page once first' });
+        current.inbox = current.inbox || [];
+        current.inbox.push({ id: 'i' + Date.now() + Math.floor(Math.random() * 1000), text: text.trim(), sug: domain });
+        await writeState(current);
+        return res.status(200).json({ success: true, state: current });
+      }
 
-      return res.status(200).json({ success: true, updates });
-    } catch(e) {
+      return res.status(400).json({ error: 'Unknown action' });
+    } catch (e) {
       console.error('POST error:', e);
       return res.status(500).json({ error: e.message });
     }
   }
 
   return res.status(405).json({ error: 'Method not allowed' });
-}
-
-async function updateNotion(updates, token, pageId) {
-  // Get existing blocks
-  const blocksRes = await fetch(`https://api.notion.com/v1/blocks/${pageId}/children?page_size=100`, {
-    headers: { 'Authorization': `Bearer ${token}`, 'Notion-Version': '2022-06-28' }
-  });
-  const blocksData = await blocksRes.json();
-  
-  // Delete in parallel (much faster)
-  await Promise.all((blocksData.results || []).map(block =>
-    fetch(`https://api.notion.com/v1/blocks/${block.id}`, {
-      method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${token}`, 'Notion-Version': '2022-06-28' }
-    })
-  ));
-
-  const domainNames = { transition:'TRANSITION', thesis:'MASTER THESIS', move:'MOVE', housing:'BUYING / HOUSING', life:'LIFE / SOCIAL / ENERGY', career:'CAREER / EDUCATION', reading:'READING / THINKING', ai:'AI / TECH PROJECTS' };
-  const blocks = [];
-  blocks.push({ object:'block', type:'paragraph', paragraph:{ rich_text:[{ type:'text', text:{ content:`Updated: ${new Date().toLocaleDateString('sv-SE',{weekday:'long',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'})}` }, annotations:{ color:'gray' } }] } });
-  blocks.push({ object:'block', type:'divider', divider:{} });
-  updates.forEach(u => {
-    blocks.push({ object:'block', type:'heading_2', heading_2:{ rich_text:[{ type:'text', text:{ content: domainNames[u.id] || u.id.toUpperCase() } }] } });
-    ['now','next','later'].forEach(tier => {
-      blocks.push({ object:'block', type:'heading_3', heading_3:{ rich_text:[{ type:'text', text:{ content: tier.toUpperCase() } }] } });
-      (u[tier]||[]).forEach(item => {
-        blocks.push({ object:'block', type:'bulleted_list_item', bulleted_list_item:{ rich_text:[{ type:'text', text:{ content: item } }] } });
-      });
-    });
-  });
-
-  for (let i = 0; i < blocks.length; i += 100) {
-    await fetch(`https://api.notion.com/v1/blocks/${pageId}/children`, {
-      method: 'PATCH',
-      headers: { 'Authorization': `Bearer ${token}`, 'Notion-Version': '2022-06-28', 'Content-Type': 'application/json' },
-      body: JSON.stringify({ children: blocks.slice(i, i+100) })
-    });
-  }
 }
