@@ -13,7 +13,13 @@
   html,body{background:var(--ink);color:var(--text);font-family:"Hanken Grotesk",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
   body{padding:22px;max-width:1180px;margin:0 auto;min-height:100vh}
   .mono{font-family:"JetBrains Mono",monospace}
-  .cmd{background:linear-gradient(180deg,var(--surface-2),var(--surface));border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+  .cmd{background:linear-gradient(180deg,var(--surface-2),var(--surface));border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;margin-bottom:14px}
+  .cmd-top{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:center}
+  .cmd-capture{display:flex;gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+  .cmd-capture input{flex:1;font-family:"Hanken Grotesk";font-size:13.5px;background:var(--ink);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:10px 13px}
+  .cmd-capture input::placeholder{color:var(--faint)}
+  .cmd-capture button{font-family:"Space Grotesk";font-weight:500;font-size:13px;border:1px solid var(--line);background:var(--surface-2);color:var(--text);border-radius:8px;padding:0 16px;cursor:pointer}
+  .cmd-capture button:hover{background:var(--surface)}
   .clock{min-width:230px}
   .eyebrow{font-family:"Space Grotesk";font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
   .countdown{display:flex;align-items:baseline;gap:9px;margin-top:5px}
@@ -46,16 +52,25 @@
   .bitem b{color:var(--text);font-weight:500}
   .bitem.none{color:var(--faint);font-style:italic;padding-left:0}.bitem.none::before{content:""}
   @media(max-width:560px){.brief-cols{grid-template-columns:1fr;gap:14px}}
-  .capbar{display:flex;gap:8px;margin:0 2px 12px}
-  .capbar input{flex:1;font-family:"Hanken Grotesk";font-size:13.5px;background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:var(--r);padding:11px 14px}
-  .capbar input::placeholder{color:var(--faint)}
-  .capbar button{font-family:"Space Grotesk";font-weight:500;font-size:13px;border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:var(--r);padding:0 16px;cursor:pointer}
-  .capbar button:hover{background:var(--surface-2)}
+  .utilrow{display:flex;flex-direction:column;gap:8px;margin:0 2px 16px}
+  .util{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);padding:0 14px}
+  .util summary{cursor:pointer;font-family:"Space Grotesk";font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);padding:11px 0;list-style:none}
+  .util summary::-webkit-details-marker{display:none}
+  .util summary::before{content:"▸ ";color:var(--faint)}
+  .util[open] summary::before{content:"▾ "}
+  .util[open]{padding-bottom:12px}
+  .util .legend{margin:0}
   .weekwrap{margin:0 2px 14px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);padding:0 14px}
   .weekwrap summary{cursor:pointer;font-family:"Space Grotesk";font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);padding:11px 0;list-style:none}
   .weekwrap summary::-webkit-details-marker{display:none}
   .weekwrap summary::before{content:"▸ ";color:var(--faint)}.weekwrap[open] summary::before{content:"▾ "}
   .weekwrap[open]{padding-bottom:12px}
+  .ledrow{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:12.5px}
+  .ledrow:last-child{border-bottom:none}
+  .ledrow .lt{flex:1;min-width:0;color:var(--muted)}
+  .ledrow .lsrc{font-family:"JetBrains Mono";font-size:9.5px;color:var(--faint)}
+  .ledrow .ld{font-family:"JetBrains Mono";font-size:10px;color:var(--faint);white-space:nowrap}
+  .ledempty{color:var(--faint);font-style:italic;font-size:12px;padding:8px 0}
   .legend{display:flex;gap:16px;flex-wrap:wrap;margin:0 2px 16px;font-size:11.5px;color:var(--muted)}
   .legend span{display:flex;align-items:center;gap:6px}
   .mk{width:11px;height:11px;flex:none;display:inline-block}
@@ -137,28 +152,35 @@
 </head>
 <body>
   <div class="cmd">
-    <div class="clock">
-      <span class="eyebrow">Thesis — hard deadline</span>
-      <div class="countdown"><span class="n mono" id="cd">–</span><span class="u">days to target</span></div>
-      <div class="gauge"><i id="gauge"></i></div>
-      <div class="sub">target <span class="mono">19 Aug</span> · seminar <span class="mono">28 Aug</span> · final <span class="mono">04 Sep</span></div>
+    <div class="cmd-top">
+      <div class="clock">
+        <span class="eyebrow">Thesis — hard deadline</span>
+        <div class="countdown"><span class="n mono" id="cd">–</span><span class="u">days to target</span></div>
+        <div class="gauge"><i id="gauge"></i></div>
+        <div class="sub">target <span class="mono">19 Aug</span> · seminar <span class="mono">28 Aug</span> · final <span class="mono">04 Sep</span></div>
+      </div>
+      <div class="bartools">
+        <div class="inbox" id="inboxBtn"><div><b id="inboxN">0</b> <small>to sort</small></div></div>
+        <button class="ritual" id="ritualBtn">Run weekly review →</button>
+      </div>
     </div>
-    <div class="bartools">
-      <div class="inbox" id="inboxBtn"><div><b id="inboxN">0</b> <small>to sort</small></div></div>
-      <button class="ritual" id="ritualBtn">Run weekly review →</button>
+    <div class="cmd-capture">
+      <input type="text" id="capInput" placeholder="Brain dump — catch a thought, sort it Monday">
+      <button id="capBtn">Capture</button>
     </div>
   </div>
   <div class="brief" id="brief"></div>
-  <div class="capbar">
-    <input type="text" id="capInput" placeholder="Brain dump — catch a thought now, sort it Monday">
-    <button id="capBtn">Capture</button>
-  </div>
-  <details class="weekwrap" id="weekwrap"><summary>Week ahead</summary><div class="cal mini" id="weekstrip"></div></details>
-  <div class="legend">
-    <span><i class="mk task"></i> Task — finish it</span>
-    <span><i class="mk practice"></i> Practice — show up for it</span>
-    <span><i class="mk decision"></i> Decision — resolve it</span>
-    <span style="color:var(--faint)">click to move · hover for focus ★ and done ✓</span>
+  <div class="utilrow">
+    <details class="util" id="weekwrap"><summary>Week ahead</summary><div class="cal mini" id="weekstrip"></div></details>
+    <details class="util" id="ledgerwrap"><summary>Ledger — completed &amp; resolved</summary><div id="ledger"></div></details>
+    <details class="util" id="legendwrap"><summary>Legend</summary>
+      <div class="legend">
+        <span><i class="mk task"></i> Task — finish it</span>
+        <span><i class="mk practice"></i> Practice — show up for it</span>
+        <span><i class="mk decision"></i> Decision — resolve it</span>
+        <span style="color:var(--faint)">click to move · hover for focus ★ and done ✓</span>
+      </div>
+    </details>
   </div>
   <div class="board" id="board"></div>
   <div class="foot">Capture all week — by Notes or the box above. The Monday review does the moving.</div>
@@ -228,7 +250,7 @@ function buildSeed(){
   const ds=JSON.parse(JSON.stringify(SEED_DOMAINS));
   ds.forEach(d=>d.items.forEach(i=>{i.id=uid();i.focus=SEED_FOCUS.includes(i.t);}));
   const ib=SEED_INBOX.map(c=>({id:uid(),text:c.text,sug:c.sug}));
-  return {version:'v2.2',domains:ds,inbox:ib,lastFocus:[]};
+  return {version:'v2.2',domains:ds,inbox:ib,lastFocus:[],history:[]};
 }
 
 /* calendar is a readout (mock until Google OAuth lands in phase 2) */
@@ -243,7 +265,7 @@ const cal={days:[
 ]};
 
 /* ---------- live state (filled by loadState) ---------- */
-let domains=[],inbox=[],lastFocus=[];
+let domains=[],inbox=[],lastFocus=[],history=[];
 let loaded=false,saveTimer=null;
 const STALE=21,MAXFOCUS=5,PRACTICE_DRIFT=14;
 const allItems=()=>domains.flatMap(d=>d.items.map(i=>({d,i})));
@@ -256,19 +278,19 @@ async function loadState(){
   let s=null;
   try{const r=await fetch('/api/update');if(r.ok){const j=await r.json();s=j.state;}}catch(e){}
   if(s&&Array.isArray(s.domains)&&s.domains.length){
-    domains=s.domains;inbox=s.inbox||[];lastFocus=s.lastFocus||[];
+    domains=s.domains;inbox=s.inbox||[];lastFocus=s.lastFocus||[];history=s.history||[];
     // keep the uid counter ahead of any existing ids so new items never collide
     let max=0;allItems().forEach(x=>{const m=/^i(\d+)$/.exec(x.i.id);if(m)max=Math.max(max,+m[1]);});
     inbox.forEach(c=>{const m=/^i(\d+)$/.exec(c.id||'');if(m)max=Math.max(max,+m[1]);});
     nextId=max+1;
     loaded=true;renderClock();render();
   }else{
-    const seed=buildSeed();domains=seed.domains;inbox=seed.inbox;lastFocus=seed.lastFocus;
+    const seed=buildSeed();domains=seed.domains;inbox=seed.inbox;lastFocus=seed.lastFocus;history=seed.history;
     loaded=true;renderClock();render();
     scheduleSave(true); // persist the seed on first run
   }
 }
-function currentState(){return {version:'v2.2',domains,inbox,lastFocus};}
+function currentState(){return {version:'v2.2',domains,inbox,lastFocus,history};}
 function scheduleSave(now){
   if(!loaded)return;
   clearTimeout(saveTimer);
@@ -331,14 +353,18 @@ function itemRow(d,i){const stale=i.status==='parked'&&i.age>=STALE;
   const flag=stale?'<span class="stalebar"></span>':'';
   const done=(i.type==='task'||i.type==='decision')?`<span class="donebtn" title="${i.type==='decision'?'Resolve':'Done'}" onclick="completeItem(event,'${d.id}','${i.id}')">✓</span>`:'';
   return `<div class="item ${i.status}" onclick="toggleStatus('${d.id}','${i.id}')">${flag}<span class="marker ${i.type}"></span><div class="itxt"><div class="ititle">${i.t}</div>${note}</div>${age}${done}<span class="star ${i.focus?'on':''}" onclick="toggleFocus(event,'${d.id}','${i.id}')">${i.focus?'★':'☆'}</span></div>`;}
-function completeItem(e,did,iid){e.stopPropagation();const x=allItems().find(o=>o.i.id===iid);if(!x)return;const word=x.i.type==='decision'?'Resolved':'Done';x.d.items=x.d.items.filter(it=>it.id!==iid);render();toast(word+' ✓');}
+function pushHistory(it,domainName){history.push({id:it.id,t:it.t,type:it.type,domain:domainName,doneAt:new Date().toISOString(),note:it.n||''});}
+function completeItem(e,did,iid){e.stopPropagation();const x=allItems().find(o=>o.i.id===iid);if(!x)return;const word=x.i.type==='decision'?'Resolved':'Done';pushHistory(x.i,x.d.name);x.d.items=x.d.items.filter(it=>it.id!==iid);render();toast(word+' ✓');}
 function card(d){const act=d.items.filter(i=>i.status==='active'),park=d.items.filter(i=>i.status==='parked');
   const n=act.length,full=n>=d.cap,pips=Array.from({length:d.cap},(_,k)=>k<n?'●':'○').join('');
   return `<div class="card" style="--spine:${C[d.def]}"><div class="chead"><div><h2>${d.name}</h2><span class="ptag">${d.def} · ${d.note}</span></div><div class="cap ${full?'full':''}" id="cap-${d.id}"><span class="pips">${pips}</span><br>${n}/${d.cap}</div></div>${act.map(i=>itemRow(d,i)).join('')||'<div class="empty">Nothing active — promote from the lot.</div>'}<div class="section-label">Parking lot</div><div class="divider"></div>${park.map(i=>itemRow(d,i)).join('')||'<div class="empty">Lot is clear.</div>'}</div>`;}
 function weekCells(){return cal.days.map(d=>`<div class="d ${d.today?'today':''}"><div class="dn">${d.dn}</div>${d.ev.map(e=>`<div class="ev" style="--spine:${C[domains.find(x=>x.id===e[2]).def]}"><span class="tm">${e[0]}</span> ${e[1]}</div>`).join('')}</div>`).join('');}
 function renderClock(){const t=new Date();t.setHours(0,0,0,0);const start=new Date(2026,4,1),target=new Date(2026,7,19);
   $('#cd').textContent=daysToTarget();$('#gauge').style.width=Math.max(0,Math.min(100,100*(t-start)/(target-start)))+'%';}
-function render(){$('#board').innerHTML=domains.map(card).join('');renderBriefing();$('#inboxN').textContent=inbox.length;$('#weekstrip').innerHTML=weekCells();scheduleSave();}
+function render(){$('#board').innerHTML=domains.map(card).join('');renderBriefing();renderLedger();$('#inboxN').textContent=inbox.length;$('#weekstrip').innerHTML=weekCells();scheduleSave();}
+function renderLedger(){const el=$('#ledger');if(!el)return;
+  if(!history.length){el.innerHTML='<div class="ledempty">Nothing completed yet. Finish a task or resolve a decision and it lands here.</div>';return;}
+  el.innerHTML=[...history].reverse().slice(0,40).map(h=>{const dt=new Date(h.doneAt).toLocaleDateString('sv-SE',{day:'numeric',month:'short'});const note=h.note?' — '+h.note.replace(/^last note:\s?/,''):'';return `<div class="ledrow"><span class="marker ${h.type}"></span><span class="lt">${h.t}${note}</span><span class="lsrc">${(h.domain||'').split(' ')[0].toUpperCase()}</span><span class="ld">${dt}</span></div>`;}).join('');}
 
 $('#capBtn').onclick=()=>{const v=$('#capInput').value.trim();if(!v)return;inbox.push({id:uid(),text:v,sug:guessDomain(v)});$('#capInput').value='';render();toast('Caught. It’ll wait in the inbox for Monday.');};
 $('#capInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('#capBtn').click();});
@@ -346,12 +372,13 @@ $('#capInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('#capBtn').cl
 /* ---------- ritual ---------- */
 const STEPS=[
   {k:'inbox',t:'Sort the inbox',lede:'Everything you caught this week. Give each a type and a home — that’s the only decision. What to do with it comes later.'},
-  {k:'land',t:'Land',lede:'Before you move anything, see what’s real. The countdown, your actual week, and whether last week’s focus held.'},
+  {k:'lookback',t:'Look back',lede:'Before planning forward, see the week behind — what you set out to do, and what you actually did. Log anything off-plan so the record shows your real week, not just your intended one.'},
+  {k:'land',t:'Week ahead',lede:'Now look forward. Your actual week from the calendar — read it before you set focus.'},
   {k:'done',t:'Clear what’s done',lede:'Sweep finished work off the board. Quick and satisfying.'},
   {k:'stale',t:'The stale pull',lede:'Parked 21 days or more. Each gets a decision now — promote, kill, or keep parked on purpose. Nothing rots silently.'},
   {k:'practice',t:'Practice roll-call',lede:'Every practice, noticed. A missed week is information, not a verdict — “chose to rest” is a real answer. Set one intention each.'},
   {k:'decision',t:'Decision log',lede:'Open decisions. Add a line of reasoning while it’s fresh, or resolve one. Skip what isn’t moving.'},
-  {k:'setweek',t:'Set the week',lede:'Your week’s up top. Spotlight the 1–5 that matter against it, pulling from the lot if needed.'},
+  {k:'setweek',t:'Set the week',lede:'Spotlight the 1–5 that matter, pulling from the lot if needed — then protect them on your calendar.'},
 ];
 let step=0;
 function beatHas(k){switch(k){
@@ -364,7 +391,7 @@ function snapshotFocus(){lastFocus=allItems().filter(x=>x.i.focus).map(({d,i})=>
 function openRitual(at){step=at||0;snapshotFocus();$('#scrim').classList.add('show');renderRitual();}
 function closeRitual(){$('#scrim').classList.remove('show');render();}
 function renderRitual(){const s=STEPS[step];
-  $('#ritTitle').textContent=s.t;$('#ritBeat').textContent='Beat '+step+' of 6';
+  $('#ritTitle').textContent=s.t;$('#ritBeat').textContent='Beat '+step+' of '+(STEPS.length-1);
   $('#ritDots').innerHTML=STEPS.map((st,k)=>{let cls=k<step?'done':k===step?'on':'';if(!cls&&!beatHas(st.k))cls='light';return `<i class="${cls}" title="${beatHas(st.k)?'':'nothing here this week'}"></i>`;}).join('');
   $('#ritBack').style.visibility=step===0?'hidden':'visible';
   $('#ritNext').textContent=step===6?'Finish ✓':'Next →';
@@ -373,7 +400,21 @@ const domOpts=sel=>domains.map(d=>`<option value="${d.id}" ${d.id===sel?'selecte
 const BEAT={
   inbox(){if(!inbox.length)return '<div class="empty">Inbox clear — nothing caught this week.</div>';
     return inbox.map(c=>`<div class="row"><div class="body"><div class="ti">${c.text}</div><div class="pick" style="margin-top:8px"><button onclick="fileSet('${c.id}','type','task',this)" data-g="type">Task</button><button onclick="fileSet('${c.id}','type','practice',this)" data-g="type">Practice</button><button onclick="fileSet('${c.id}','type','decision',this)" data-g="type">Decision</button><select onchange="fileSet('${c.id}','dom',this.value)">${domOpts(c.sug)}</select><button onclick="fileIt('${c.id}')">File it →</button></div></div></div>`).join('');},
-  land(){return `<div class="eyebrow">Your week — Google calendar</div><div class="cal">${weekCells()}</div><div class="eyebrow">Last week’s focus — did it hold?</div>${lastFocus.length?lastFocus.map((f,k)=>`<div class="row"><span class="marker sm ${f.type}"></span><div class="body"><div class="ti">${f.t}</div><div class="me">${f.dn}</div></div><div class="pick"><button class="good ${f.hit===true?'sel':''}" onclick="markHit(${k},true,this)">hit it</button><button class="bad ${f.hit===false?'sel':''}" onclick="markHit(${k},false,this)">slipped</button></div></div>`).join(''):'<div class="empty">No focus was set last week.</div>'}`;},
+  lookback(){
+    const wk=thisWeekHistory();
+    const focusPart=lastFocus.length
+      ? `<div class="eyebrow">Last week’s focus — did it hold?</div>`+lastFocus.map((f,k)=>`<div class="row"><span class="marker sm ${f.type}"></span><div class="body"><div class="ti">${f.t}</div><div class="me">${f.dn}</div></div><div class="pick"><button class="good ${f.hit===true?'sel':''}" onclick="markHit(${k},true,this)">hit it</button><button class="bad ${f.hit===false?'sel':''}" onclick="markHit(${k},false,this)">slipped</button></div></div>`).join('')
+      : `<div class="eyebrow">Last week’s focus</div><div class="empty">None was set.</div>`;
+    const byDom={};wk.forEach(h=>{(byDom[h.domain]=byDom[h.domain]||[]).push(h);});
+    const happened=Object.keys(byDom).length
+      ? Object.entries(byDom).map(([dom,items])=>`<div style="margin-top:8px"><div class="me" style="color:var(--muted);margin-bottom:3px">${dom}</div>${items.map(h=>`<div class="ledrow"><span class="marker ${h.type}"></span><span class="lt">${h.t}${h.emergent?' <span style="color:var(--faint)">(off-plan)</span>':''}</span></div>`).join('')}</div>`).join('')
+      : '<div class="empty">Nothing logged yet this week.</div>';
+    const capture=`<div class="eyebrow" style="margin-top:16px">Did anything off-plan?</div><div class="row"><div class="body"><input type="text" id="emgText" placeholder="something you did that wasn’t on the board…"></div><div class="pick"><select id="emgDom">${domains.map(d=>`<option value="${d.id}">${d.name}</option>`).join('')}</select><button class="good" onclick="logEmergent()">Log it</button></div></div>`;
+    const planned=wk.filter(h=>!h.emergent).length,emergent=wk.filter(h=>h.emergent).length;
+    const mirror=`<div style="font-size:12px;color:var(--muted);margin-top:14px"><b class="mono">${planned}</b> completed on the board · <b class="mono">${emergent}</b> logged off-plan this week.</div>`;
+    return focusPart+`<div class="eyebrow" style="margin-top:16px">What you actually did</div>`+happened+capture+mirror;
+  },
+  land(){return `<div class="eyebrow">Your week — Google calendar</div><div class="cal">${weekCells()}</div>`;},
   done(){const t=allItems().filter(x=>x.i.status==='active'&&x.i.type==='task');if(!t.length)return '<div class="empty">No active tasks to clear.</div>';
     return t.map(({d,i})=>`<div class="row"><span class="marker task"></span><div class="body"><div class="ti">${i.t}</div><div class="me">${d.name}</div></div><div class="pick"><button class="good" onclick="markDone('${i.id}',this)">Done ✓</button></div></div>`).join('');},
   stale(){const st=allItems().filter(x=>x.i.status==='parked'&&x.i.age>=STALE);if(!st.length)return '<div class="empty">Nothing has rotted. The lot is honest.</div>';
@@ -385,12 +426,14 @@ const BEAT={
   setweek(){const active=allItems().filter(x=>x.i.status==='active'),parked=allItems().filter(x=>x.i.status==='parked');
     const act=active.map(({d,i})=>`<div class="row"><span class="marker ${i.type}"></span><div class="body"><div class="ti">${i.t}</div><div class="me">${d.name}</div></div><div class="pick"><button onclick="swToggle('${d.id}','${i.id}')">park</button><button class="${i.focus?'sel':''}" style="${i.focus?'border-color:var(--focus);color:var(--focus)':''}" onclick="swFocus('${d.id}','${i.id}')">${i.focus?'★ focus':'☆ focus'}</button></div></div>`).join('')||'<div class="empty">Nothing active — pull from the lot.</div>';
     const lot=parked.map(({d,i})=>`<div class="row" style="opacity:.85"><span class="marker ${i.type}"></span><div class="body"><div class="ti">${i.t}</div><div class="me">${d.name}</div></div><div class="pick"><button class="good" onclick="swToggle('${d.id}','${i.id}')">pull up →</button></div></div>`).join('')||'<div class="empty">Lot is clear.</div>';
-    return `<div class="eyebrow">Your week</div><div class="cal mini" style="margin-bottom:14px">${weekCells()}</div><div style="font-size:12px;color:var(--muted);margin-bottom:6px">Focus: <b class="mono">${focusCount()}</b>/5 — spotlight your 1–5</div>${act}<details class="lot"><summary>Pull from the parking lot (${parked.length})</summary>${lot}</details>`;},
+    return `<div class="eyebrow">Your week</div><div class="cal mini" style="margin-bottom:14px">${weekCells()}</div><div style="font-size:12px;color:var(--muted);margin-bottom:6px">Focus: <b class="mono">${focusCount()}</b>/5 — spotlight your 1–5</div>${act}<details class="lot"><summary>Pull from the parking lot (${parked.length})</summary>${lot}</details><div class="eyebrow" style="margin-top:18px">Protect the week</div><div style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-top:4px">Block time for the focus you just set — especially the thesis. Make the week match the plan.</div><a href="https://calendar.google.com" target="_blank" rel="noopener" class="btn" style="display:inline-block;margin-top:8px;text-decoration:none">Open Google Calendar ↗</a>`;},
 };
 function fileSet(cid,k,v,btn){const c=inbox.find(x=>x.id===cid);c[k]=v;if(btn){btn.parentNode.querySelectorAll('[data-g="type"]').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');}}
 function fileIt(cid){const c=inbox.find(x=>x.id===cid);if(!c.type){toast('Pick a type first');return;}const d=domains.find(x=>x.id===(c.dom||c.sug));d.items.push({id:uid(),t:c.text,type:c.type,status:'parked',age:0,focus:false});inbox=inbox.filter(x=>x.id!==cid);renderRitual();}
 function markHit(k,v,btn){lastFocus[k].hit=v;btn.parentNode.querySelectorAll('button').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');}
-function markDone(iid,btn){const x=allItems().find(o=>o.i.id===iid);x.d.items=x.d.items.filter(it=>it.id!==iid);btn.closest('.row').style.opacity=.4;btn.outerHTML='<span class="filed">swept ✓</span>';scheduleSave();}
+function thisWeekHistory(){const cut=Date.now()-7*864e5;return history.filter(h=>new Date(h.doneAt).getTime()>=cut);}
+function logEmergent(){const el=$('#emgText');const t=(el&&el.value||'').trim();if(!t)return;const d=domains.find(x=>x.id===$('#emgDom').value);history.push({id:uid(),t,type:d.def,domain:d.name,doneAt:new Date().toISOString(),emergent:true,note:''});renderRitual();scheduleSave();toast('Logged to the ledger.');}
+function markDone(iid,btn){const x=allItems().find(o=>o.i.id===iid);pushHistory(x.i,x.d.name);x.d.items=x.d.items.filter(it=>it.id!==iid);btn.closest('.row').style.opacity=.4;btn.outerHTML='<span class="filed">swept ✓</span>';scheduleSave();}
 function staleAct(iid,act,btn){const x=allItems().find(o=>o.i.id===iid),r=btn.closest('.row');
   if(act==='promote'){if(activeCount(x.d)>=x.d.cap){toast(`${x.d.name} is full — can’t promote`);return;}x.i.status='active';x.i.age=0;r.style.opacity=.4;r.querySelector('.pick').outerHTML='<span class="filed">promoted ✓</span>';}
   if(act==='kill'){x.d.items=x.d.items.filter(it=>it.id!==iid);r.style.opacity=.4;r.querySelector('.pick').outerHTML='<span class="filed" style="color:var(--stale)">killed ✓</span>';}
@@ -399,13 +442,13 @@ function staleAct(iid,act,btn){const x=allItems().find(o=>o.i.id===iid),r=btn.cl
 function prSet(iid,s,btn){const x=allItems().find(o=>o.i.id===iid);x.i._s=s;btn.parentNode.querySelectorAll('button').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');if(s==='rest'){x.i.status='parked';x.i.focus=false;}scheduleSave();}
 function prIntent(iid,v){const x=allItems().find(o=>o.i.id===iid);if(v)x.i.n='intent: '+v;scheduleSave();}
 function decLog(iid,v){const x=allItems().find(o=>o.i.id===iid);if(v){x.i._log=true;x.i.n='last note: '+v;}scheduleSave();}
-function decResolve(iid,btn){const x=allItems().find(o=>o.i.id===iid);x.d.items=x.d.items.filter(it=>it.id!==iid);btn.closest('.row').style.opacity=.4;btn.closest('.pick').outerHTML='<span class="filed">resolved ✓</span>';scheduleSave();}
+function decResolve(iid,btn){const x=allItems().find(o=>o.i.id===iid);pushHistory(x.i,x.d.name);x.d.items=x.d.items.filter(it=>it.id!==iid);btn.closest('.row').style.opacity=.4;btn.closest('.pick').outerHTML='<span class="filed">resolved ✓</span>';scheduleSave();}
 function swToggle(did,iid){const d=domains.find(x=>x.id===did),it=d.items.find(x=>x.id===iid);
   if(it.status==='active'){it.status='parked';it.focus=false;}else{if(activeCount(d)>=d.cap){toast(`${d.name} is full (${d.cap}/${d.cap})`);return;}it.status='active';it.age=0;}renderRitual();}
 function swFocus(did,iid){const it=domains.find(x=>x.id===did).items.find(x=>x.id===iid);if(it.status!=='active'){toast('Pull it active first');return;}
   if(!it.focus&&focusCount()>=MAXFOCUS){toast('Focus holds 5 — drop one first');return;}it.focus=!it.focus;renderRitual();}
 
-$('#ritNext').onclick=()=>{if(step===6){closeRitual();toast('Week set. The read updates on the board.');return;}step++;renderRitual();};
+$('#ritNext').onclick=()=>{if(step===STEPS.length-1){closeRitual();toast('Week set. The read updates on the board.');return;}step++;renderRitual();};
 $('#ritBack').onclick=()=>{if(step>0){step--;renderRitual();}};
 $('#ritualBtn').onclick=()=>openRitual(0);
 $('#inboxBtn').onclick=()=>openRitual(0);
