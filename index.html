@@ -3,417 +3,413 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard</title>
+<title>Life OS</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#f5f2eb;--bg2:#edeae1;--bg3:#e4e0d5;
-  --ink:#1a1814;--ink2:#3a3730;--ink3:#8a877e;--ink4:#b8b4aa;
-  --accent:#2d5a3d;--accent2:#e4ede6;
-  --warn:#8b3a1a;
-  --rule:#d4cfc4;--rule2:#c4bfb4;
-  --now:#fff;--next:#f5f2eb;--later:#efece4;
-  --serif:'Instrument Serif',Georgia,serif;
-  --mono:'DM Mono',monospace;
-}
-@media(prefers-color-scheme:dark){
-  :root{
-    --bg:#141210;--bg2:#1c1a17;--bg3:#252219;
-    --ink:#f0ece3;--ink2:#d0ccc3;--ink3:#6e6a62;--ink4:#3e3b35;
-    --accent:#6aaa7e;--accent2:#1a2e1f;
-    --warn:#d4784a;
-    --rule:#2e2b24;--rule2:#3a3730;
-    --now:#1e1c18;--next:#181614;--later:#141210;
-  }
-}
-html{font-size:15px}
-body{background:var(--bg);color:var(--ink);font-family:var(--mono);font-weight:300;min-height:100vh}
-.hd{padding:16px 20px 12px;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
-.hd h1{font-family:var(--serif);font-size:1.5rem;font-weight:400;font-style:italic}
-.hd-sub{font-size:10px;color:var(--ink3);letter-spacing:.1em;text-transform:uppercase;margin-top:2px}
-.hd-right{display:flex;gap:8px;align-items:center}
-.chip{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);padding:3px 8px;border:1px solid var(--rule);border-radius:2px;cursor:pointer;background:transparent;font-family:var(--mono)}
-.chip:hover{border-color:var(--ink3);color:var(--ink2)}
-.focus{background:var(--bg2);border-bottom:1px solid var(--rule);padding:10px 20px}
-.focus-lbl{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin-bottom:5px}
-.focus-items{display:flex;flex-wrap:wrap;gap:3px 14px}
-.focus-item{font-size:11px;color:var(--ink2);padding-left:10px;position:relative}
-.focus-item::before{content:'—';position:absolute;left:0;color:var(--ink3)}
-/* loading */
-.loading{display:flex;align-items:center;justify-content:center;padding:3rem;font-size:11px;color:var(--ink3);letter-spacing:.1em;text-transform:uppercase;grid-column:1/-1}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
-.domain{border-right:1px solid var(--rule);border-bottom:1px solid var(--rule)}
-.domain:last-child{border-right:none}
-.dh{padding:10px 14px 8px;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between;align-items:baseline}
-.dh-title{font-family:var(--serif);font-size:.95rem;font-style:italic}
-.dh-meta{font-size:9px;color:var(--warn);margin-top:1px}
-.dh-count{font-size:9px;color:var(--ink3);letter-spacing:.06em}
-.tier{padding:8px 14px;border-bottom:1px solid var(--rule)}
-.tier:last-child{border-bottom:none}
-.tier.now{background:var(--now)}
-.tier.next{background:var(--next)}
-.tier.later{background:var(--later)}
-.tlbl{font-size:9px;letter-spacing:.16em;text-transform:uppercase;margin-bottom:5px;display:flex;align-items:center;gap:6px}
-.tlbl::after{content:'';flex:1;height:1px;background:var(--rule)}
-.tlbl.now{color:var(--accent);font-weight:500}
-.tlbl.next{color:var(--ink3)}
-.tlbl.later{color:var(--ink4)}
-.task{display:flex;gap:8px;padding:3px 0;cursor:pointer;align-items:flex-start}
-.task:hover .chk{border-color:var(--accent)}
-.chk{width:13px;height:13px;border:1px solid var(--rule2);border-radius:2px;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all .15s;background:transparent}
-.chk svg{opacity:0;transition:opacity .15s}
-.task.ticking .chk{background:var(--accent);border-color:var(--accent)}
-.task.ticking .chk svg{opacity:1}
-.task.ticking .tt{text-decoration:line-through;color:var(--ink3);opacity:.5}
-.tt{font-size:12px;color:var(--ink2);flex:1;line-height:1.4}
-.si{display:flex;gap:8px;padding:2px 0;align-items:flex-start}
-.sb{width:3px;height:3px;border-radius:50%;background:var(--ink4);flex-shrink:0;margin-top:5px}
-.st-next{font-size:11px;color:var(--ink3);line-height:1.4}
-.st-later{font-size:11px;color:var(--ink4);line-height:1.4}
-.empty{font-size:11px;color:var(--ink3);font-style:italic;opacity:.5;padding:2px 0}
-.promote-banner{background:var(--accent2);border-top:1px solid var(--rule2);padding:8px 14px}
-.promote-banner-lbl{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
-.promote-opt{font-size:11px;color:var(--ink2);padding:4px 8px;border:1px solid var(--rule2);border-radius:2px;cursor:pointer;margin-bottom:3px;background:var(--now);transition:border-color .12s}
-.promote-opt:hover{border-color:var(--accent)}
-.promote-skip{font-size:9px;color:var(--ink3);cursor:pointer;margin-top:4px;letter-spacing:.06em;text-transform:uppercase;display:inline-block}
-.promote-skip:hover{color:var(--ink2)}
-.done-sec{grid-column:1/-1;border-top:2px solid var(--rule);background:var(--accent2)}
-.done-hd{padding:10px 20px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none}
-.done-title{font-family:var(--serif);font-size:.9rem;font-style:italic;color:var(--accent)}
-.done-tog{font-size:9px;color:var(--ink3);letter-spacing:.08em;text-transform:uppercase}
-.done-list{display:none;padding:0 20px 12px}
-.done-list.open{display:block}
-.done-row{display:flex;gap:12px;padding:3px 0;border-bottom:1px solid var(--rule);align-items:baseline}
-.done-row:last-child{border:none}
-.done-dom{font-size:9px;color:var(--ink3);letter-spacing:.06em;text-transform:uppercase;min-width:80px;flex-shrink:0}
-.done-txt{font-size:11px;color:var(--ink3);text-decoration:line-through;flex:1}
-.undo{font-size:9px;color:var(--ink3);cursor:pointer;opacity:.5;flex-shrink:0}
-.undo:hover{opacity:1;color:var(--accent)}
-.done-empty{font-size:11px;color:var(--ink3);font-style:italic;opacity:.5}
-.obs{grid-column:1/-1;background:var(--bg2);border-top:1px solid var(--rule);padding:12px 20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
-.obs-lbl{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin-bottom:3px}
-.obs-lbl.w{color:var(--warn)}
-.obs-txt{font-size:11px;color:var(--ink2);line-height:1.5}
-.park{grid-column:1/-1;border-top:1px solid var(--rule);padding:8px 20px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-.park-lbl{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);flex-shrink:0}
-.ptag{font-size:10px;color:var(--ink3);border:1px solid var(--rule);border-radius:2px;padding:2px 7px}
-.inbox{grid-column:1/-1;border-top:2px solid var(--rule2);background:var(--bg3);padding:14px 20px}
-.inbox-lbl{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin-bottom:8px}
-.inbox-row{display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap}
-textarea.dump{flex:1;min-width:200px;min-height:70px;background:var(--bg2);border:1px solid var(--rule2);border-radius:3px;padding:8px 10px;font-family:var(--mono);font-size:12px;font-weight:300;color:var(--ink);resize:vertical;outline:none;line-height:1.5;transition:border-color .15s}
-textarea.dump:focus{border-color:var(--accent)}
-textarea.dump::placeholder{color:var(--ink4)}
-.go-btn{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;background:var(--accent);color:#fff;border:none;padding:10px 16px;border-radius:3px;cursor:pointer;white-space:nowrap;align-self:flex-end;transition:opacity .15s}
-.go-btn:hover{opacity:.85}
-.go-btn:disabled{opacity:.4;cursor:default}
-.inbox-status{font-size:10px;color:var(--ink3);margin-top:6px}
-.inbox-status.err{color:var(--warn)}
-.inbox-status.ok{color:var(--accent)}
-@keyframes fadeOut{0%{opacity:1;max-height:40px}70%{opacity:0;max-height:40px}100%{opacity:0;max-height:0;padding:0;overflow:hidden}}
-.task.removing{animation:fadeOut .4s forwards;pointer-events:none}
-@media(max-width:600px){.grid{grid-template-columns:1fr}.domain{border-right:none}.hd,.focus,.inbox,.obs,.park{padding-left:14px;padding-right:14px}.dh,.tier{padding-left:12px;padding-right:12px}}
+  :root{--ink:#15171F;--surface:#1C1F28;--surface-2:#242833;--line:#30343F;--text:#E9E7E1;--muted:#888D9B;--faint:#5A5F6C;--task:#E0A455;--practice:#58C9A3;--decision:#B584D9;--stale:#E5654B;--focus:#F3EFE3;--r:10px;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--ink);color:var(--text);font-family:"Hanken Grotesk",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  body{padding:22px;max-width:1180px;margin:0 auto;min-height:100vh}
+  .mono{font-family:"JetBrains Mono",monospace}
+  .cmd{background:linear-gradient(180deg,var(--surface-2),var(--surface));border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+  .clock{min-width:230px}
+  .eyebrow{font-family:"Space Grotesk";font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
+  .countdown{display:flex;align-items:baseline;gap:9px;margin-top:5px}
+  .countdown .n{font-family:"JetBrains Mono";font-weight:600;font-size:30px;line-height:1}
+  .countdown .u{font-family:"JetBrains Mono";font-size:13px;color:var(--muted)}
+  .gauge{height:4px;background:var(--line);border-radius:3px;margin-top:9px;overflow:hidden}
+  .gauge>i{display:block;height:100%;background:linear-gradient(90deg,var(--task),var(--stale));border-radius:3px}
+  .sub{font-size:11.5px;color:var(--faint);margin-top:6px}.sub .mono{color:var(--muted)}
+  .bartools{display:flex;gap:10px;align-items:center}
+  .inbox{display:flex;align-items:center;gap:8px;background:var(--ink);border:1px solid var(--line);border-radius:var(--r);padding:8px 12px;cursor:pointer}
+  .inbox b{font-family:"JetBrains Mono";font-weight:600}.inbox small{color:var(--muted);font-size:11px}
+  .ritual{font-family:"Space Grotesk";font-weight:600;font-size:13px;background:var(--task);color:#1a1205;border:none;border-radius:var(--r);padding:11px 16px;cursor:pointer}
+  .ritual:hover{filter:brightness(1.08)}
+  .brief{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;margin-bottom:14px}
+  .brief-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+  .brief-head .fc{font-family:"JetBrains Mono";font-size:11px;color:var(--faint)}
+  .through{font-family:"Space Grotesk";font-size:16px;line-height:1.45;margin:8px 0 12px;color:var(--text);max-width:74ch}
+  .through .accent{color:var(--task)}
+  .focuschips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+  .chip{display:flex;align-items:center;gap:7px;background:var(--ink);border:1px solid var(--line);border-radius:99px;padding:6px 11px 6px 9px;font-size:12.5px}
+  .chip .dot{width:7px;height:7px;border-radius:99px;flex:none}
+  .chip .src{color:var(--faint);font-size:10.5px;font-family:"JetBrains Mono"}
+  .chip.empty{color:var(--faint);border-style:dashed}
+  .brief-cols{display:grid;grid-template-columns:1fr 1fr;gap:18px;border-top:1px solid var(--line);padding-top:13px}
+  .blabel{font-family:"Space Grotesk";font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);margin-bottom:8px}
+  .bitem{font-size:12.5px;line-height:1.5;color:var(--muted);padding-left:15px;position:relative;margin-bottom:7px}
+  .bitem::before{position:absolute;left:0;top:0}
+  .watch .bitem::before{content:"›";color:var(--faint)}
+  .nudge .bitem::before{content:"?";color:var(--decision);font-family:"JetBrains Mono";font-size:11px}
+  .bitem b{color:var(--text);font-weight:500}
+  .bitem.none{color:var(--faint);font-style:italic;padding-left:0}.bitem.none::before{content:""}
+  @media(max-width:560px){.brief-cols{grid-template-columns:1fr;gap:14px}}
+  .capbar{display:flex;gap:8px;margin:0 2px 12px}
+  .capbar input{flex:1;font-family:"Hanken Grotesk";font-size:13.5px;background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:var(--r);padding:11px 14px}
+  .capbar input::placeholder{color:var(--faint)}
+  .capbar button{font-family:"Space Grotesk";font-weight:500;font-size:13px;border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:var(--r);padding:0 16px;cursor:pointer}
+  .capbar button:hover{background:var(--surface-2)}
+  .weekwrap{margin:0 2px 14px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);padding:0 14px}
+  .weekwrap summary{cursor:pointer;font-family:"Space Grotesk";font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);padding:11px 0;list-style:none}
+  .weekwrap summary::-webkit-details-marker{display:none}
+  .weekwrap summary::before{content:"▸ ";color:var(--faint)}.weekwrap[open] summary::before{content:"▾ "}
+  .weekwrap[open]{padding-bottom:12px}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;margin:0 2px 16px;font-size:11.5px;color:var(--muted)}
+  .legend span{display:flex;align-items:center;gap:6px}
+  .mk{width:11px;height:11px;flex:none;display:inline-block}
+  .mk.task{background:var(--task)}.mk.practice{border:1.5px solid var(--practice);border-radius:99px}
+  .mk.decision{background:var(--decision);transform:rotate(45deg);width:9px;height:9px}
+  .board{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:0 0 12px;position:relative;overflow:hidden}
+  .card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--spine)}
+  .chead{display:flex;align-items:center;justify-content:space-between;padding:13px 14px 11px 16px;border-bottom:1px solid var(--line)}
+  .chead h2{font-family:"Space Grotesk";font-weight:500;font-size:15px}
+  .ptag{font-family:"Space Grotesk";font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--spine);margin-top:2px;display:block}
+  .cap{font-family:"JetBrains Mono";font-size:12px;color:var(--muted);text-align:right;white-space:nowrap}
+  .cap .pips{letter-spacing:1px;font-size:11px}.cap.full{color:var(--stale)}
+  .cap.flash{animation:flash .45s 2}@keyframes flash{50%{color:var(--stale);transform:scale(1.08)}}
+  .section-label{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);padding:11px 16px 5px;font-family:"Space Grotesk"}
+  .divider{height:1px;background:var(--line)}
+  .item{display:flex;align-items:flex-start;gap:11px;padding:8px 14px 8px 16px;cursor:pointer;position:relative}
+  .item:hover{background:var(--surface-2)}
+  .item .marker{margin-top:3px;flex:none;width:12px;height:12px}
+  .marker.task{background:var(--task);border-radius:2px}
+  .marker.practice{border:1.5px solid var(--practice);border-radius:99px}
+  .marker.decision{background:var(--decision);width:10px;height:10px;margin-top:4px;transform:rotate(45deg)}
+  .parked .marker{opacity:.5}
+  .itxt{flex:1;min-width:0}.ititle{font-size:13.5px;line-height:1.3}
+  .parked .ititle{color:var(--muted)}
+  .inote{font-size:11px;color:var(--faint);margin-top:2px;line-height:1.35}
+  .age{font-family:"JetBrains Mono";font-size:10px;color:var(--faint);margin-left:auto;padding-left:8px;white-space:nowrap}
+  .age.stale{color:var(--stale)}
+  .stalebar{position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--stale)}
+  .star{flex:none;width:18px;text-align:center;color:var(--faint);font-size:13px;margin-top:1px;opacity:0;transition:opacity .12s}
+  .item:hover .star{opacity:.6}.star.on{opacity:1;color:var(--focus)}
+  .empty{padding:9px 16px 4px;color:var(--faint);font-size:11.5px;font-style:italic}
+  .scrim{position:fixed;inset:0;background:rgba(8,9,13,.78);backdrop-filter:blur(3px);z-index:40;display:none;padding:18px;overflow-y:auto}
+  .scrim.show{display:block}
+  .rit{max-width:760px;margin:24px auto;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .rithead{padding:16px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .rithead .t{font-family:"Space Grotesk";font-weight:500;font-size:17px}
+  .rithead .beatno{font-family:"JetBrains Mono";font-size:11px;color:var(--muted)}
+  .dots{display:flex;gap:6px}
+  .dots i{width:7px;height:7px;border-radius:99px;background:var(--line)}
+  .dots i.on{background:var(--task)}.dots i.done{background:var(--practice)}.dots i.light{background:transparent;border:1px solid var(--line)}
+  .ritclose{background:transparent;border:none;color:var(--muted);font-size:18px;line-height:1;cursor:pointer;padding:2px 4px}
+  .ritclose:hover{color:var(--text)}
+  .ritbody{padding:20px 22px;min-height:200px}
+  .ritlede{color:var(--muted);font-size:13px;margin-bottom:16px;line-height:1.5}
+  .ritnav{padding:14px 22px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:10px}
+  .btn{font-family:"Space Grotesk";font-weight:500;font-size:13px;border-radius:8px;padding:10px 16px;cursor:pointer;border:1px solid var(--line);background:transparent;color:var(--text)}
+  .btn:hover{background:var(--surface-2)}.btn.primary{background:var(--task);color:#1a1205;border-color:var(--task)}.btn.ghost{color:var(--muted)}
+  .row{display:flex;align-items:flex-start;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}
+  .row:last-child{border-bottom:none}
+  .row .body{flex:1;min-width:0}.row .body .ti{font-size:14px}.row .body .me{font-size:11px;color:var(--faint);margin-top:2px}
+  .pick{display:flex;gap:6px;flex-wrap:wrap}
+  .pick button{font-size:11.5px;font-family:"Hanken Grotesk";border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:7px;padding:6px 10px;cursor:pointer}
+  .pick button:hover{border-color:var(--muted);color:var(--text)}
+  .pick button.sel{background:var(--surface-2);color:var(--text);border-color:var(--focus)}
+  .pick button.good.sel{border-color:var(--practice);color:var(--practice)}
+  .pick button.bad.sel{border-color:var(--stale);color:var(--stale)}
+  .pick button.rest.sel{border-color:var(--decision);color:var(--decision)}
+  select,input[type=text]{font-family:"Hanken Grotesk";font-size:13px;background:var(--ink);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:8px 10px}
+  .ritbody input[type=text]{width:100%}
+  .filed{color:var(--practice);font-size:12px;font-family:"JetBrains Mono"}
+  details.lot{margin-top:14px}details.lot summary{cursor:pointer;color:var(--muted);font-size:12px;padding:6px 0}
+  .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:7px;margin:6px 0 18px}
+  .cal .d{background:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 7px;min-height:96px}
+  .cal.mini .d{min-height:54px;padding:6px 6px}
+  .cal .d .dn{font-family:"JetBrains Mono";font-size:10px;color:var(--muted)}
+  .cal .d.today{border-color:var(--task)}
+  .cal .ev{font-size:10.5px;line-height:1.25;margin-top:5px;padding-left:6px;border-left:2px solid var(--spine,var(--muted));color:var(--text)}
+  .cal.mini .ev{font-size:9.5px;margin-top:4px}
+  .cal .ev .tm{color:var(--faint);font-family:"JetBrains Mono";font-size:9px}
+  .marker.sm{width:10px;height:10px}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);background:var(--surface-2);border:1px solid var(--stale);color:var(--text);padding:10px 16px;border-radius:var(--r);font-size:12.5px;opacity:0;pointer-events:none;transition:.22s;z-index:60;max-width:90vw}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .foot{margin-top:18px;color:var(--faint);font-size:11px;text-align:center;line-height:1.6}
+  @media(max-width:560px){body{padding:14px}.board{grid-template-columns:1fr}.cal{overflow-x:auto}.bartools{width:100%}}
 </style>
 </head>
 <body>
-<div class="hd">
-  <div>
-    <h1>Dashboard</h1>
-    <div class="hd-sub">Jonas Vannerfors · Life OS</div>
+  <div class="cmd">
+    <div class="clock">
+      <span class="eyebrow">Thesis — hard deadline</span>
+      <div class="countdown"><span class="n mono" id="cd">–</span><span class="u">days to target</span></div>
+      <div class="gauge"><i id="gauge"></i></div>
+      <div class="sub">target <span class="mono">19 Aug</span> · seminar <span class="mono">28 Aug</span> · final <span class="mono">04 Sep</span></div>
+    </div>
+    <div class="bartools">
+      <div class="inbox" id="inboxBtn"><div><b id="inboxN">0</b> <small>to sort</small></div></div>
+      <button class="ritual" id="ritualBtn">Run weekly review →</button>
+    </div>
   </div>
-  <div class="hd-right">
-    <span class="chip" id="wklbl"></span>
-    <button class="chip" onclick="resetWeek()">Reset week</button>
+  <div class="brief" id="brief"></div>
+  <div class="capbar">
+    <input type="text" id="capInput" placeholder="Brain dump — catch a thought now, sort it Monday">
+    <button id="capBtn">Capture</button>
   </div>
-</div>
-<div class="focus">
-  <div class="focus-lbl">Weekly focus</div>
-  <div class="focus-items">
-    <span class="focus-item">Shift from work mode to transition mode</span>
-    <span class="focus-item">Resolve employment, mortgage and financial implications</span>
-    <span class="focus-item">Activate career options through simple outreach</span>
-    <span class="focus-item">Keep move and life admin moving without overload</span>
-    <span class="focus-item">Protect bandwidth during uncertainty</span>
+  <details class="weekwrap" id="weekwrap"><summary>Week ahead</summary><div class="cal mini" id="weekstrip"></div></details>
+  <div class="legend">
+    <span><i class="mk task"></i> Task — finish it</span>
+    <span><i class="mk practice"></i> Practice — show up for it</span>
+    <span><i class="mk decision"></i> Decision — resolve it</span>
+    <span style="color:var(--faint)">click an item to move it · hover for the focus star</span>
   </div>
-</div>
-<div class="grid" id="grid"><div class="loading">Loading dashboard...</div></div>
+  <div class="board" id="board"></div>
+  <div class="foot">Capture all week — by Notes or the box above. The Monday review does the moving.</div>
+
+  <div class="scrim" id="scrim">
+    <div class="rit">
+      <div class="rithead"><div><div class="t" id="ritTitle">Weekly review</div><div class="beatno" id="ritBeat"></div></div><div style="display:flex;align-items:center;gap:14px"><div class="dots" id="ritDots"></div><button class="ritclose" id="ritClose" title="Close — Esc">✕</button></div></div>
+      <div class="ritbody" id="ritBody"></div>
+      <div class="ritnav"><button class="btn ghost" id="ritBack">← Back</button><button class="btn primary" id="ritNext">Next →</button></div>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
 
 <script>
-const DEFAULT_DATA=[
-  {id:'transition',title:'Transition',meta:null,
-   now:['Contact HR re: mortgage benefit / reduced rate implications','Get new private phone number + transfer accounts from work number','Update abonnemang tied to old number','Follow up master\'s materials: thesis, presentation, archive','Save SRC materials'],
-   next:['Clarify financial runway and housing implications','Map realistic career directions','Decide near-term job search posture'],
-   later:['Longer-term repositioning','Start företag (park until transition clearer)']},
-  {id:'thesis',title:'Master thesis',meta:'Aug 19 submission · Aug 28 seminar',
-   now:['Half-day data recon — audit Riksbanken + SCB, assess Path B feasibility → go/no-go','Workshop thesis positioning — resolve framing tension between dated dataset and resubmission','Read thesis end-to-end, annotate against 2026 grading criteria → gap list','Map GMM instrument validity issues — what needs fixing vs better argumentation'],
-   next:['Re-run GMM with corrected instruments, address demand identification thinness','Rewrite limitations section — explicit and confident, not defensive','Near-banks result: reframe as honest inconclusive finding','Literature + narrative update — refresh framing without touching dataset','Full rewrite pass for argumentation tightness'],
-   later:['Polish pass — abstract, introduction, conclusion alignment','Seminar prep — anticipate examiner questions','Submit Aug 19 · Seminar Aug 28']},
-  {id:'move',title:'Move',meta:null,
-   now:['Start packing → fill 1 box'],
-   next:['Research storage options','Plan plant relocation (buy pots)','Outline move logistics','Finalize deductions / documentation'],
-   later:['Execute move plan']},
-  {id:'housing',title:'Buying / housing',meta:null,
-   now:['Open Excel → add 5 houses'],
-   next:['Apply for lånelöfte','Track listings weekly','Clarify mortgage conditions after employment change'],
-   later:['Explore land + build','Contact Värmdö kommun','Deeper house-buying analysis']},
-  {id:'life',title:'Life / social / energy',meta:null,
-   now:['Wash camper vans','Update phone number in WhatsApp groups + key services','Resolve Sam gift + food plan','Rensa Gmail'],
-   next:['Text Karin → quick check-in','Decide re: Kristian\'s disputation','Coffee with Kristian','Coffee with Karin'],
-   later:['Klippklätterkurs Lofoten? (park)']},
-  {id:'career',title:'Career / education',meta:null,
-   now:['Message 2 people → propose coffee / career conversation','Open LinkedIn → shortlist 5 relevant roles or organisations','Check Swedfund, Accenture, Systemiq roles'],
-   next:['Draw on network: Kristian, Karin, Josef, Shruti, PA','Explore study paths: economic history, anthropology, systems theory, AI','Revisit nature agenda compendium angle','Explore public, advisory and transition roles'],
-   later:['Positioning / direction','Skill development: non-defensiveness + negotiation']},
-  {id:'reading',title:'Reading / thinking',meta:null,
-   now:['Read 2–3 pages: Panarchy (optional)'],
-   next:['Skim Global Risks Report','Learn: FTP / treasury profit logic','Read Resilience Thinking'],
-   later:['Scaling rewilding projects','The Resilience Company','Substack: resilience as corporate strategic imperative']},
-  {id:'ai',title:'AI / tech projects',meta:null,
-   now:['Housing pipeline project (define scope)'],
-   next:['Learn from YouTube + network'],
-   later:['FF Tactics (park)','Broader AI exploration']},
+const C={task:'var(--task)',practice:'var(--practice)',decision:'var(--decision)'};
+let nextId=1;const uid=()=>'i'+(nextId++);
+const $=s=>document.querySelector(s);
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(t._x);t._x=setTimeout(()=>t.classList.remove('show'),2200);}
+
+/* ---------- seed (used only on first run, when the server has no state) ---------- */
+const SEED_DOMAINS=[
+  {id:'thesis',name:'Thesis',def:'task',cap:5,note:'dissolves in September',items:[
+    {t:'Section 4 — prose pass',type:'task',status:'active',age:3},
+    {t:'Section 5 — prose pass',type:'task',status:'active',age:3},
+    {t:'Own full read-through',type:'task',status:'active',age:6},
+    {t:'Phase 6 — defence red-team',type:'task',status:'parked',age:9},
+    {t:'Phase 7 — presentation material',type:'task',status:'parked',age:9}]},
+  {id:'career',name:'Career Reorientation',def:'decision',cap:3,note:'where do I land',items:[
+    {t:'Where do I land?',type:'decision',status:'active',age:40,n:'open · gathering reasoning'},
+    {t:'Build the landscape map',type:'task',status:'active',age:12},
+    {t:'5 coffee chats — first month',type:'task',status:'active',age:8},
+    {t:'PhD vs. industry vs. policy',type:'decision',status:'parked',age:22,n:'open · not yet moving'}]},
+  {id:'tree',name:'The Living Issue Tree',def:'task',cap:3,note:'editorial cadence',items:[
+    {t:'Draft Note 01 — “By Design”',type:'task',status:'active',age:5},
+    {t:'Set up Substack publication',type:'task',status:'parked',age:14},
+    {t:'Macro briefing tool',type:'task',status:'parked',age:31,n:'sandbox-blocked — aspiration'}]},
+  {id:'reading',name:'Reading & Thinking',def:'practice',cap:3,note:'feeds the Tree',items:[
+    {t:'Reading practice',type:'practice',status:'active',age:2,n:'intent: 30 min, most days'},
+    {t:'Capture quotes → K/S layers',type:'practice',status:'parked',age:18}]},
+  {id:'house',name:'House',def:'decision',cap:3,note:'search + the choice',items:[
+    {t:'Buy where, and when?',type:'decision',status:'active',age:25,n:'open · linked to career'},
+    {t:'Define criteria + framework',type:'task',status:'active',age:7},
+    {t:'Book viewings',type:'task',status:'parked',age:11}]},
+  {id:'life',name:'Life & Money',def:'practice',cap:3,note:'the substrate',items:[
+    {t:'Sleep rhythm',type:'practice',status:'active',age:1,n:'intent: lights out by 23:30'},
+    {t:'Social — see people weekly',type:'practice',status:'active',age:4},
+    {t:'Portfolio — tend, don’t fiddle',type:'practice',status:'active',age:7,n:'intent: review once, no daily checking'},
+    {t:'Find birthday gift',type:'task',status:'parked',age:6,n:'task riding in a practice domain'}]},
+  {id:'build',name:'Build / Projects',def:'task',cap:2,note:'the workshop',items:[
+    {t:'Dashboard v2',type:'task',status:'active',age:2},
+    {t:'Curriculum tracker → Vercel',type:'task',status:'parked',age:16}]},
+  {id:'hobbies',name:'Hobbies',def:'practice',cap:2,note:'pick what to tend',items:[
+    {t:'Rock climbing',type:'practice',status:'active',age:3,n:'intent: 2 sessions'},
+    {t:'Music',type:'practice',status:'active',age:5,n:'intent: 1 writing block'},
+    {t:'Skateboarding',type:'practice',status:'parked',age:8},
+    {t:'Graffiti / painting',type:'practice',status:'parked',age:24}]},
 ];
-
-const DOMAIN_META={thesis:'Aug 19 submission · Aug 28 seminar'};
-
-const OBS=[
-  {w:false,lbl:'Highest leverage',txt:'The HR / mortgage / phone number cluster is the immediate knot. Resolve before anything else moves.'},
-  {w:true,lbl:'Thesis deadline is real',txt:'Aug 19 is close. Data recon is the critical first gate — Path A vs B determines everything else.'},
-  {w:true,lbl:'Overload risk',txt:'Career exploration can explode fast. Keep NOW narrow: two outreaches, one role scan.'},
-  {w:false,lbl:'What can safely wait',txt:'Deep study exploration, Resilience Company, house-buying analysis, broad job-market mapping.'},
+const SEED_INBOX=[
+  {text:'maybe reach out to the GARP sustainable finance people',sug:'career'},
+  {text:'Note 02 angle — the K3 corporate governance thread',sug:'tree'},
+  {text:'check the Hammarby flat listing again',sug:'house'},
+  {text:'slept badly all week, screens too late',sug:'life'},
+  {text:'fix gauge math on dashboard',sug:'build'},
 ];
-const PARKING=['Long-form strategic thinking','Full job market mapping','Deep academic exploration','Dynamic life OS','Substack','Företag'];
-const DOMAIN_TITLES={transition:'Transition',thesis:'Master thesis',move:'Move',housing:'Buying / housing',life:'Life / social / energy',career:'Career / education',reading:'Reading / thinking',ai:'AI / tech projects'};
-
-let DATA=JSON.parse(JSON.stringify(DEFAULT_DATA));
-let state={done:{},promoted:{}};
-try{const s=localStorage.getItem('ds-ticks');if(s)state=JSON.parse(s);}catch(e){}
-
-function save(){try{localStorage.setItem('ds-ticks',JSON.stringify(state));}catch(e){}}
-function tid(d,t,i){return `${d}|${t}|${i}`;}
-function getNext(domain){const p=state.promoted[domain.id]||[];return domain.next.filter(t=>!p.includes(t));}
-function chkSvg(){return `<svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3 5.5L8 1" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;}
-
-function renderDomain(d){
-  const promoted=state.promoted[d.id]||[];
-  const nowActive=d.now.filter((_,i)=>!state.done[tid(d.id,'now',i)]).length+promoted.filter(t=>!state.done[`${d.id}|p|${t}`]).length;
-  let h=`<div class="domain" id="dom-${d.id}"><div class="dh"><div><div class="dh-title">${d.title}</div>${d.meta?`<div class="dh-meta">${d.meta}</div>`:''}</div><span class="dh-count">${nowActive} now</span></div>`;
-  h+=`<div class="tier now"><div class="tlbl now">Now</div>`;
-  let any=false;
-  d.now.forEach((txt,i)=>{
-    if(state.done[tid(d.id,'now',i)])return;
-    any=true;
-    h+=`<div class="task" id="t-${d.id}-${i}" onclick="tickNow('${d.id}',${i})"><div class="chk">${chkSvg()}</div><span class="tt">${txt}</span></div>`;
-  });
-  promoted.forEach((txt,pi)=>{
-    if(state.done[`${d.id}|p|${txt}`])return;
-    any=true;
-    h+=`<div class="task" id="tp-${d.id}-${pi}" onclick="tickP('${d.id}','${txt.replace(/'/g,"\\'")}')"><div class="chk">${chkSvg()}</div><span class="tt">${txt}</span></div>`;
-  });
-  if(!any)h+=`<div class="empty">All done ✓</div>`;
-  h+=`</div>`;
-  const ni=getNext(d);
-  h+=`<div class="tier next"><div class="tlbl next">Next</div>`;
-  if(!ni.length)h+=`<div class="empty">Nothing queued</div>`;
-  ni.forEach(t=>h+=`<div class="si"><div class="sb"></div><span class="st-next">${t}</span></div>`);
-  h+=`</div>`;
-  h+=`<div class="tier later"><div class="tlbl later">Later</div>`;
-  if(!d.later.length)h+=`<div class="empty">Nothing parked</div>`;
-  d.later.forEach(t=>h+=`<div class="si"><div class="sb"></div><span class="st-later">${t}</span></div>`);
-  h+=`</div></div>`;
-  return h;
+const SEED_FOCUS=['Section 4 — prose pass','Draft Note 01 — “By Design”','Build the landscape map'];
+function buildSeed(){
+  const ds=JSON.parse(JSON.stringify(SEED_DOMAINS));
+  ds.forEach(d=>d.items.forEach(i=>{i.id=uid();i.focus=SEED_FOCUS.includes(i.t);}));
+  const ib=SEED_INBOX.map(c=>({id:uid(),text:c.text,sug:c.sug}));
+  return {version:'v2.2',domains:ds,inbox:ib,lastFocus:[]};
 }
 
-function renderDone(){
-  const entries=[];
-  DATA.forEach(d=>{
-    d.now.forEach((txt,i)=>{if(state.done[tid(d.id,'now',i)])entries.push({dom:d.title,txt,id:tid(d.id,'now',i),type:'base',did:d.id});});
-    (state.promoted[d.id]||[]).forEach(txt=>{const pid=`${d.id}|p|${txt}`;if(state.done[pid])entries.push({dom:d.title,txt,id:pid,type:'p',did:d.id,ptxt:txt});});
-  });
-  let h=`<div class="done-sec"><div class="done-hd" onclick="toggleDone()"><span class="done-title">Done this week</span><span class="done-tog" id="dtog">${entries.length} item${entries.length!==1?'s':''} · show</span></div><div class="done-list" id="dlist">`;
-  if(!entries.length)h+=`<div class="done-empty">Nothing completed yet.</div>`;
-  entries.forEach(e=>h+=`<div class="done-row"><span class="done-dom">${e.dom}</span><span class="done-txt">${e.txt}</span><span class="undo" onclick="undoItem('${e.id}','${e.type}','${(e.ptxt||'').replace(/'/g,"\\'")}','${e.did}')">undo</span></div>`);
-  h+=`</div></div>`;
-  return h;
-}
+/* calendar is a readout (mock until Google OAuth lands in phase 2) */
+const cal={days:[
+  {dn:'MON 29',today:true,ev:[['09:00','Thesis · Section 4','thesis'],['15:00','Coffee · ex-Danske','career']]},
+  {dn:'TUE 30',ev:[['10:00','Compound research','tree']]},
+  {dn:'WED 01',ev:[['09:00','Feature day','build'],['17:30','Flat viewing','house']]},
+  {dn:'THU 02',ev:[['10:00','Writing block','tree'],['19:00','Climbing','hobbies']]},
+  {dn:'FRI 03',ev:[['11:00','Prompt critique','build']]},
+  {dn:'SAT 04',ev:[]},
+  {dn:'SUN 05',ev:[['—','Thesis read-through','thesis']]},
+]};
 
-function render(){
-  const grid=document.getElementById('grid');
-  let h=DATA.map(renderDomain).join('');
-  h+=`<div style="grid-column:1/-1">`;
-  h+=renderDone();
-  h+=`<div class="obs">`;
-  OBS.forEach(o=>h+=`<div><div class="obs-lbl ${o.w?'w':''}">${o.lbl}</div><div class="obs-txt">${o.txt}</div></div>`);
-  h+=`</div>`;
-  h+=`<div class="park"><span class="park-lbl">Parking lot</span>${PARKING.map(p=>`<span class="ptag">${p}</span>`).join('')}</div>`;
-  h+=`</div>`;
-  h+=`<div class="inbox"><div class="inbox-lbl">Brain dump — type messy thoughts and hit update</div><div class="inbox-row"><textarea class="dump" id="dump" placeholder="e.g. need to call HR, found a house on Hemnet, coffee with Karin next week..."></textarea><button class="go-btn" id="gobtn" onclick="runUpdate()">Update ↗</button></div><div class="inbox-status" id="istatus"></div></div>`;
-  grid.innerHTML=h;
-}
+/* ---------- live state (filled by loadState) ---------- */
+let domains=[],inbox=[],lastFocus=[];
+let loaded=false,saveTimer=null;
+const STALE=21,MAXFOCUS=5,PRACTICE_DRIFT=14;
+const allItems=()=>domains.flatMap(d=>d.items.map(i=>({d,i})));
+const activeCount=d=>d.items.filter(i=>i.status==='active').length;
+const focusCount=()=>allItems().filter(x=>x.i.focus).length;
+function daysToTarget(){const t=new Date();t.setHours(0,0,0,0);return Math.round((new Date(2026,7,19)-t)/864e5);}
 
-// Load state from Notion on startup
-async function loadFromNotion(){
-  try{
-    const res=await fetch('/api/update');
-    if(!res.ok)throw new Error('Load failed');
-    const data=await res.json();
-    if(data.state && Array.isArray(data.state)){
-      data.state.forEach(u=>{
-        const domain=DATA.find(d=>d.id===u.id);
-        if(!domain)return;
-        if(u.now)domain.now=u.now;
-        if(u.next)domain.next=u.next;
-        if(u.later)domain.later=u.later;
-      });
-      // Cache locally too
-      try{localStorage.setItem('ds-content',JSON.stringify(data.state));}catch(e){}
-    } else {
-      // Fall back to localStorage if Edge Config empty
-      try{
-        const saved=localStorage.getItem('ds-content');
-        if(saved){
-          const updates=JSON.parse(saved);
-          if(Array.isArray(updates)){
-            updates.forEach(u=>{
-              const domain=DATA.find(d=>d.id===u.id);
-              if(!domain)return;
-              if(u.now)domain.now=u.now;
-              if(u.next)domain.next=u.next;
-              if(u.later)domain.later=u.later;
-            });
-          }
-        }
-      }catch(e){}
-    }
-  }catch(e){
-    console.log('Could not load state, using defaults',e);
-  }
-  render();
-}
-
-let pendingPromote=null;
-function tickNow(did,idx){
-  const d=DATA.find(x=>x.id===did);
-  const el=document.getElementById(`t-${did}-${idx}`);
-  if(!el)return;
-  el.classList.add('ticking');
-  setTimeout(()=>{
-    el.classList.add('removing');
-    setTimeout(()=>{
-      state.done[tid(did,'now',idx)]=true;save();render();
-      const avail=getNext(d);
-      if(avail.length){pendingPromote={did,avail};showPromote(did,avail);}
-    },400);
-  },220);
-}
-function tickP(did,txt){
-  const d=DATA.find(x=>x.id===did);
-  const promoted=state.promoted[did]||[];
-  const pi=promoted.indexOf(txt);
-  const el=document.getElementById(`tp-${did}-${pi}`);
-  if(el){
-    el.classList.add('ticking');
-    setTimeout(()=>{
-      el.classList.add('removing');
-      setTimeout(()=>{
-        state.done[`${did}|p|${txt}`]=true;save();render();
-        const avail=getNext(d);
-        if(avail.length){pendingPromote={did,avail};showPromote(did,avail);}
-      },400);
-    },220);
+/* ---------- persistence ---------- */
+async function loadState(){
+  let s=null;
+  try{const r=await fetch('/api/update');if(r.ok){const j=await r.json();s=j.state;}}catch(e){}
+  if(s&&Array.isArray(s.domains)&&s.domains.length){
+    domains=s.domains;inbox=s.inbox||[];lastFocus=s.lastFocus||[];
+    // keep the uid counter ahead of any existing ids so new items never collide
+    let max=0;allItems().forEach(x=>{const m=/^i(\d+)$/.exec(x.i.id);if(m)max=Math.max(max,+m[1]);});
+    inbox.forEach(c=>{const m=/^i(\d+)$/.exec(c.id||'');if(m)max=Math.max(max,+m[1]);});
+    nextId=max+1;
+    loaded=true;renderClock();render();
+  }else{
+    const seed=buildSeed();domains=seed.domains;inbox=seed.inbox;lastFocus=seed.lastFocus;
+    loaded=true;renderClock();render();
+    scheduleSave(true); // persist the seed on first run
   }
 }
-function showPromote(did,avail){
-  const domEl=document.getElementById(`dom-${did}`);
-  if(!domEl)return;
-  const existing=domEl.querySelector('.promote-banner');
-  if(existing)existing.remove();
-  const banner=document.createElement('div');
-  banner.className='promote-banner';
-  let inner=`<div class="promote-banner-lbl">Pull into Now?</div>`;
-  avail.slice(0,3).forEach((txt,i)=>inner+=`<div class="promote-opt" onclick="doPromote(${i})">${txt}</div>`);
-  inner+=`<span class="promote-skip" onclick="closePromote('${did}')">Skip</span>`;
-  banner.innerHTML=inner;
-  domEl.appendChild(banner);
-}
-function doPromote(idx){
-  if(!pendingPromote)return;
-  const{did,avail}=pendingPromote;
-  const txt=avail[idx];
-  if(!state.promoted[did])state.promoted[did]=[];
-  state.promoted[did].push(txt);
-  save();pendingPromote=null;render();
-}
-function closePromote(did){
-  pendingPromote=null;
-  const domEl=document.getElementById(`dom-${did}`);
-  if(domEl){const b=domEl.querySelector('.promote-banner');if(b)b.remove();}
-}
-function undoItem(id,type,ptxt,did){
-  delete state.done[id];
-  if(type==='p'&&ptxt){const arr=state.promoted[did]||[];const i=arr.indexOf(ptxt);if(i>-1)arr.splice(i,1);state.promoted[did]=arr;}
-  save();render();
-}
-function toggleDone(){
-  const l=document.getElementById('dlist'),t=document.getElementById('dtog');
-  if(!l||!t)return;
-  const open=l.classList.toggle('open');
-  const c=l.querySelectorAll('.done-row').length;
-  t.textContent=`${c} item${c!==1?'s':''} · ${open?'hide':'show'}`;
-}
-function resetWeek(){
-  if(confirm('Reset all done items and start fresh?')){state={done:{},promoted:{}};save();render();}
+function currentState(){return {version:'v2.2',domains,inbox,lastFocus};}
+function scheduleSave(now){
+  if(!loaded)return;
+  clearTimeout(saveTimer);
+  const doSave=async()=>{try{const r=await fetch('/api/update',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'save',state:currentState()})});if(!r.ok)throw 0;}catch(e){toast('Save failed — changes are local for now');}};
+  if(now)doSave();else saveTimer=setTimeout(doSave,1200);
 }
 
-async function runUpdate(){
-  const dump=document.getElementById('dump').value.trim();
-  if(!dump){setStatus('Type something first.','err');return;}
-  const btn=document.getElementById('gobtn');
-  btn.disabled=true;setStatus('Updating...','');
-  const doneItems=[];
-  DATA.forEach(d=>{
-    d.now.forEach((txt,i)=>{if(state.done[tid(d.id,'now',i)])doneItems.push(txt);});
-    (state.promoted[d.id]||[]).forEach(txt=>{if(state.done[`${d.id}|p|${txt}`])doneItems.push(txt);});
-  });
-  try{
-    const res=await fetch('/api/update',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({dump,done:doneItems,currentDashboard:DATA.map(d=>({id:d.id,now:d.now,next:d.next,later:d.later}))})
-    });
-    if(!res.ok)throw new Error('Server error '+res.status);
-    const data=await res.json();
-    if(!data.success)throw new Error(data.error||'Unknown error');
-    data.updates.forEach(u=>{
-      const domain=DATA.find(d=>d.id===u.id);
-      if(!domain)return;
-      if(u.now)domain.now=u.now;
-      if(u.next)domain.next=u.next;
-      if(u.later)domain.later=u.later;
-    });
-    // Save dashboard content to localStorage for cross-refresh persistence
-    try{localStorage.setItem('ds-content',JSON.stringify(data.updates));}catch(e){}
-    state={done:{},promoted:{}};save();
-    document.getElementById('dump').value='';
-    render();setStatus('Updated ✓','ok');
-  }catch(e){
-    console.error(e);
-    setStatus('Error: '+e.message,'err');
-  }finally{btn.disabled=false;}
+function guessDomain(t){t=(t||'').toLowerCase();
+  if(/thesis|section|defen|seminar|chapter/.test(t))return 'thesis';
+  if(/job|career|coffee|role|phd|linkedin|appl|recruit|network/.test(t))return 'career';
+  if(/note|substack|tree|essay|publish|hypothesis/.test(t))return 'tree';
+  if(/read|book|quote|paper/.test(t))return 'reading';
+  if(/flat|house|apartment|viewing|mortgage|listing/.test(t))return 'house';
+  if(/dashboard|build|code|tool|fix|vercel|api|script/.test(t))return 'build';
+  if(/climb|skate|music|graffiti|paint|guitar/.test(t))return 'hobbies';
+  return 'life';}
+
+/* ---------- synthesis ---------- */
+function buildBriefing(){
+  const focus=allItems().filter(x=>x.i.focus),days=daysToTarget();
+  const thesisFocus=focus.filter(x=>x.d.id==='thesis');
+  let through;
+  if(!focus.length)through='<span class="accent">No focus set.</span> Run the review to give the week a shape.';
+  else if(thesisFocus.length){const others=focus.filter(x=>x.d.id!=='thesis').map(x=>x.i.t);
+    through=`This week bends around the <span class="accent">thesis</span> — it's the spine, with ${days} days to target. ${others.length?others.slice(0,2).join(' and ')+' ride alongside.':'Everything else flexes below it.'}`;}
+  else{const byDom={};focus.forEach(x=>byDom[x.d.name]=(byDom[x.d.name]||0)+1);
+    const lead=Object.entries(byDom).sort((a,b)=>b[1]-a[1])[0][0];
+    through=`Your week leans into <span class="accent">${lead}</span>. Note the thesis sits at ${days} days and isn't in focus.`;}
+  const watch=[];
+  if(days<=60)watch.push(`<b>${days} days</b> to the thesis target — let it anchor what you pick.`);
+  const busiest=[...cal.days].sort((a,b)=>b.ev.length-a.ev.length)[0];
+  if(busiest&&busiest.ev.length>=2)watch.push(`<b>${busiest.dn.split(' ')[0]}</b> holds ${busiest.ev.length} commitments — a tight day.`);
+  domains.filter(d=>activeCount(d)>=d.cap).forEach(d=>watch.push(`<b>${d.name}</b> is at capacity (${d.cap}/${d.cap}) — something ships or parks before more starts.`));
+  const nudges=[];
+  allItems().filter(x=>x.i.type==='practice'&&x.i.status==='parked'&&x.i.age>=PRACTICE_DRIFT).sort((a,b)=>b.i.age-a.i.age)
+    .forEach(x=>nudges.push(`<b>${x.i.t}</b> — untended ${x.i.age} days. Tend it this week, or let it rest on purpose?`));
+  allItems().filter(x=>x.i.type==='decision'&&x.i.age>=30).forEach(x=>nudges.push(`<b>${x.i.t}</b> has been open ${x.i.age} days. Moving, or quietly stuck?`));
+  if(!thesisFocus.length&&days<=60)nudges.push(`Focus carries no thesis item with ${days} days left — deliberate, or drift?`);
+  return {through,watch:watch.slice(0,3),nudges:nudges.slice(0,3)};
 }
-function setStatus(msg,type){
-  const el=document.getElementById('istatus');
-  if(!el)return;
-  el.textContent=msg;el.className='inbox-status'+(type?' '+type:'');
+function renderBriefing(){
+  const b=buildBriefing();
+  const chips=allItems().filter(x=>x.i.focus).map(({d,i})=>`<div class="chip"><span class="dot" style="background:${C[i.type]}"></span>${i.t}<span class="src">${d.name.split(' ')[0].toUpperCase()}</span></div>`).join('')||'<div class="chip empty">set 1–5 in the review</div>';
+  const watch=b.watch.length?b.watch.map(w=>`<div class="bitem">${w}</div>`).join(''):'<div class="bitem none">Clear — nothing pressing.</div>';
+  const nudge=b.nudges.length?b.nudges.map(n=>`<div class="bitem">${n}</div>`).join(''):'<div class="bitem none">No drift caught. Practices are tended.</div>';
+  $('#brief').innerHTML=`<div class="brief-head"><span class="eyebrow">This week — the read</span><span class="fc">${focusCount()}/5 focus</span></div><div class="through">${b.through}</div><div class="focuschips">${chips}</div><div class="brief-cols"><div class="watch"><div class="blabel">Watch — constraints</div>${watch}</div><div class="nudge"><div class="blabel">Nudges — where you’re drifting</div>${nudge}</div></div>`;
 }
 
-const now=new Date(),wkstart=new Date(now);
-wkstart.setDate(now.getDate()-now.getDay()+1);
-document.getElementById('wklbl').textContent='w/c '+wkstart.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+/* ---------- board ---------- */
+function toggleStatus(did,iid){const d=domains.find(x=>x.id===did),it=d.items.find(x=>x.id===iid);
+  if(it.status==='parked'){if(activeCount(d)>=d.cap){toast(`${d.name} is full (${d.cap}/${d.cap}) — park something first`);flashCap(did);return;}it.status='active';it.age=0;}
+  else{it.status='parked';it.focus=false;}render();}
+function flashCap(did){const c=document.querySelector('#cap-'+did);if(c){c.classList.add('flash');setTimeout(()=>c.classList.remove('flash'),900);}}
+function toggleFocus(e,did,iid){e.stopPropagation();const it=domains.find(x=>x.id===did).items.find(x=>x.id===iid);
+  if(it.status!=='active'){toast('Only active items can be focus');return;}
+  if(!it.focus&&focusCount()>=MAXFOCUS){toast(`Focus holds ${MAXFOCUS} — drop one first`);return;}it.focus=!it.focus;render();}
+function itemRow(d,i){const stale=i.status==='parked'&&i.age>=STALE;
+  const note=i.n?`<div class="inote">${i.n}</div>`:'';
+  const age=i.status==='parked'?`<span class="age ${stale?'stale':''}">${i.age}d</span>`:'';
+  const flag=stale?'<span class="stalebar"></span>':'';
+  return `<div class="item ${i.status}" onclick="toggleStatus('${d.id}','${i.id}')">${flag}<span class="marker ${i.type}"></span><div class="itxt"><div class="ititle">${i.t}</div>${note}</div>${age}<span class="star ${i.focus?'on':''}" onclick="toggleFocus(event,'${d.id}','${i.id}')">${i.focus?'★':'☆'}</span></div>`;}
+function card(d){const act=d.items.filter(i=>i.status==='active'),park=d.items.filter(i=>i.status==='parked');
+  const n=act.length,full=n>=d.cap,pips=Array.from({length:d.cap},(_,k)=>k<n?'●':'○').join('');
+  return `<div class="card" style="--spine:${C[d.def]}"><div class="chead"><div><h2>${d.name}</h2><span class="ptag">${d.def} · ${d.note}</span></div><div class="cap ${full?'full':''}" id="cap-${d.id}"><span class="pips">${pips}</span><br>${n}/${d.cap}</div></div>${act.map(i=>itemRow(d,i)).join('')||'<div class="empty">Nothing active — promote from the lot.</div>'}<div class="section-label">Parking lot</div><div class="divider"></div>${park.map(i=>itemRow(d,i)).join('')||'<div class="empty">Lot is clear.</div>'}</div>`;}
+function weekCells(){return cal.days.map(d=>`<div class="d ${d.today?'today':''}"><div class="dn">${d.dn}</div>${d.ev.map(e=>`<div class="ev" style="--spine:${C[domains.find(x=>x.id===e[2]).def]}"><span class="tm">${e[0]}</span> ${e[1]}</div>`).join('')}</div>`).join('');}
+function renderClock(){const t=new Date();t.setHours(0,0,0,0);const start=new Date(2026,4,1),target=new Date(2026,7,19);
+  $('#cd').textContent=daysToTarget();$('#gauge').style.width=Math.max(0,Math.min(100,100*(t-start)/(target-start)))+'%';}
+function render(){$('#board').innerHTML=domains.map(card).join('');renderBriefing();$('#inboxN').textContent=inbox.length;$('#weekstrip').innerHTML=weekCells();scheduleSave();}
 
-// Load from Notion on startup
-loadFromNotion();
+$('#capBtn').onclick=()=>{const v=$('#capInput').value.trim();if(!v)return;inbox.push({id:uid(),text:v,sug:guessDomain(v)});$('#capInput').value='';render();toast('Caught. It’ll wait in the inbox for Monday.');};
+$('#capInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('#capBtn').click();});
+
+/* ---------- ritual ---------- */
+const STEPS=[
+  {k:'inbox',t:'Sort the inbox',lede:'Everything you caught this week. Give each a type and a home — that’s the only decision. What to do with it comes later.'},
+  {k:'land',t:'Land',lede:'Before you move anything, see what’s real. The countdown, your actual week, and whether last week’s focus held.'},
+  {k:'done',t:'Clear what’s done',lede:'Sweep finished work off the board. Quick and satisfying.'},
+  {k:'stale',t:'The stale pull',lede:'Parked 21 days or more. Each gets a decision now — promote, kill, or keep parked on purpose. Nothing rots silently.'},
+  {k:'practice',t:'Practice roll-call',lede:'Every practice, noticed. A missed week is information, not a verdict — “chose to rest” is a real answer. Set one intention each.'},
+  {k:'decision',t:'Decision log',lede:'Open decisions. Add a line of reasoning while it’s fresh, or resolve one. Skip what isn’t moving.'},
+  {k:'setweek',t:'Set the week',lede:'Your week’s up top. Spotlight the 1–5 that matter against it, pulling from the lot if needed.'},
+];
+let step=0;
+function beatHas(k){switch(k){
+  case 'inbox':return inbox.length>0;
+  case 'done':return allItems().some(x=>x.i.status==='active'&&x.i.type==='task');
+  case 'stale':return allItems().some(x=>x.i.status==='parked'&&x.i.age>=STALE);
+  case 'decision':return allItems().some(x=>x.i.type==='decision');
+  default:return true;}}
+function snapshotFocus(){lastFocus=allItems().filter(x=>x.i.focus).map(({d,i})=>({t:i.t,type:i.type,dn:d.name,hit:null}));}
+function openRitual(at){step=at||0;snapshotFocus();$('#scrim').classList.add('show');renderRitual();}
+function closeRitual(){$('#scrim').classList.remove('show');render();}
+function renderRitual(){const s=STEPS[step];
+  $('#ritTitle').textContent=s.t;$('#ritBeat').textContent='Beat '+step+' of 6';
+  $('#ritDots').innerHTML=STEPS.map((st,k)=>{let cls=k<step?'done':k===step?'on':'';if(!cls&&!beatHas(st.k))cls='light';return `<i class="${cls}" title="${beatHas(st.k)?'':'nothing here this week'}"></i>`;}).join('');
+  $('#ritBack').style.visibility=step===0?'hidden':'visible';
+  $('#ritNext').textContent=step===6?'Finish ✓':'Next →';
+  $('#ritBody').innerHTML=`<div class="ritlede">${s.lede}</div>`+BEAT[s.k]();scheduleSave();}
+const domOpts=sel=>domains.map(d=>`<option value="${d.id}" ${d.id===sel?'selected':''}>${d.name}</option>`).join('');
+const BEAT={
+  inbox(){if(!inbox.length)return '<div class="empty">Inbox clear — nothing caught this week.</div>';
+    return inbox.map(c=>`<div class="row"><div class="body"><div class="ti">${c.text}</div><div class="pick" style="margin-top:8px"><button onclick="fileSet('${c.id}','type','task',this)" data-g="type">Task</button><button onclick="fileSet('${c.id}','type','practice',this)" data-g="type">Practice</button><button onclick="fileSet('${c.id}','type','decision',this)" data-g="type">Decision</button><select onchange="fileSet('${c.id}','dom',this.value)">${domOpts(c.sug)}</select><button onclick="fileIt('${c.id}')">File it →</button></div></div></div>`).join('');},
+  land(){return `<div class="eyebrow">Your week — Google calendar</div><div class="cal">${weekCells()}</div><div class="eyebrow">Last week’s focus — did it hold?</div>${lastFocus.length?lastFocus.map((f,k)=>`<div class="row"><span class="marker sm ${f.type}"></span><div class="body"><div class="ti">${f.t}</div><div class="me">${f.dn}</div></div><div class="pick"><button class="good ${f.hit===true?'sel':''}" onclick="markHit(${k},true,this)">hit it</button><button class="bad ${f.hit===false?'sel':''}" onclick="markHit(${k},false,this)">slipped</button></div></div>`).join(''):'<div class="empty">No focus was set last week.</div>'}`;},
+  done(){const t=allItems().filter(x=>x.i.status==='active'&&x.i.type==='task');if(!t.length)return '<div class="empty">No active tasks to clear.</div>';
+    return t.map(({d,i})=>`<div class="row"><span class="marker task"></span><div class="body"><div class="ti">${i.t}</div><div class="me">${d.name}</div></div><div class="pick"><button class="good" onclick="markDone('${i.id}',this)">Done ✓</button></div></div>`).join('');},
+  stale(){const st=allItems().filter(x=>x.i.status==='parked'&&x.i.age>=STALE);if(!st.length)return '<div class="empty">Nothing has rotted. The lot is honest.</div>';
+    return st.map(({d,i})=>`<div class="row"><span class="marker ${i.type}"></span><div class="body"><div class="ti">${i.t}</div><div class="me">${d.name} · parked ${i.age}d ${i.n?'· '+i.n:''}</div></div><div class="pick"><button class="good" onclick="staleAct('${i.id}','promote',this)">Promote</button><button class="bad" onclick="staleAct('${i.id}','kill',this)">Kill</button><button onclick="staleAct('${i.id}','keep',this)">Keep parked</button></div></div>`).join('');},
+  practice(){const pr=allItems().filter(x=>x.i.type==='practice');
+    return pr.map(({d,i})=>`<div class="row"><span class="marker practice"></span><div class="body"><div class="ti">${i.t}</div><div class="me">${i.n||'no intention set'}${i.status==='parked'?' · untended '+i.age+'d':''}</div><div class="pick" style="margin-top:8px"><button class="good ${i._s==='tended'?'sel':''}" onclick="prSet('${i.id}','tended',this)">tended</button><button class="${i._s==='partial'?'sel':''}" onclick="prSet('${i.id}','partial',this)">partial</button><button class="bad ${i._s==='missed'?'sel':''}" onclick="prSet('${i.id}','missed',this)">didn’t</button><button class="rest ${i._s==='rest'?'sel':''}" onclick="prSet('${i.id}','rest',this)">chose to rest</button></div><input type="text" style="margin-top:8px" placeholder="this week’s intention…" value="${(i.n||'').replace(/^intent:\s?/,'')}" onchange="prIntent('${i.id}',this.value)"></div></div>`).join('');},
+  decision(){const de=allItems().filter(x=>x.i.type==='decision');if(!de.length)return '<div class="empty">No open decisions.</div>';
+    return de.map(({d,i})=>`<div class="row"><span class="marker decision"></span><div class="body"><div class="ti">${i.t}</div><div class="me">${d.name} · open ${i.age}d ${i._log?'· logged ✓':''}</div><input type="text" style="margin-top:8px" placeholder="a line of reasoning this week…" onchange="decLog('${i.id}',this.value)"></div><div class="pick"><button class="good" onclick="decResolve('${i.id}',this)">Resolve</button></div></div>`).join('');},
+  setweek(){const active=allItems().filter(x=>x.i.status==='active'),parked=allItems().filter(x=>x.i.status==='parked');
+    const act=active.map(({d,i})=>`<div class="row"><span class="marker ${i.type}"></span><div class="body"><div class="ti">${i.t}</div><div class="me">${d.name}</div></div><div class="pick"><button onclick="swToggle('${d.id}','${i.id}')">park</button><button class="${i.focus?'sel':''}" style="${i.focus?'border-color:var(--focus);color:var(--focus)':''}" onclick="swFocus('${d.id}','${i.id}')">${i.focus?'★ focus':'☆ focus'}</button></div></div>`).join('')||'<div class="empty">Nothing active — pull from the lot.</div>';
+    const lot=parked.map(({d,i})=>`<div class="row" style="opacity:.85"><span class="marker ${i.type}"></span><div class="body"><div class="ti">${i.t}</div><div class="me">${d.name}</div></div><div class="pick"><button class="good" onclick="swToggle('${d.id}','${i.id}')">pull up →</button></div></div>`).join('')||'<div class="empty">Lot is clear.</div>';
+    return `<div class="eyebrow">Your week</div><div class="cal mini" style="margin-bottom:14px">${weekCells()}</div><div style="font-size:12px;color:var(--muted);margin-bottom:6px">Focus: <b class="mono">${focusCount()}</b>/5 — spotlight your 1–5</div>${act}<details class="lot"><summary>Pull from the parking lot (${parked.length})</summary>${lot}</details>`;},
+};
+function fileSet(cid,k,v,btn){const c=inbox.find(x=>x.id===cid);c[k]=v;if(btn){btn.parentNode.querySelectorAll('[data-g="type"]').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');}}
+function fileIt(cid){const c=inbox.find(x=>x.id===cid);if(!c.type){toast('Pick a type first');return;}const d=domains.find(x=>x.id===(c.dom||c.sug));d.items.push({id:uid(),t:c.text,type:c.type,status:'parked',age:0,focus:false});inbox=inbox.filter(x=>x.id!==cid);renderRitual();}
+function markHit(k,v,btn){lastFocus[k].hit=v;btn.parentNode.querySelectorAll('button').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');}
+function markDone(iid,btn){const x=allItems().find(o=>o.i.id===iid);x.d.items=x.d.items.filter(it=>it.id!==iid);btn.closest('.row').style.opacity=.4;btn.outerHTML='<span class="filed">swept ✓</span>';scheduleSave();}
+function staleAct(iid,act,btn){const x=allItems().find(o=>o.i.id===iid),r=btn.closest('.row');
+  if(act==='promote'){if(activeCount(x.d)>=x.d.cap){toast(`${x.d.name} is full — can’t promote`);return;}x.i.status='active';x.i.age=0;r.style.opacity=.4;r.querySelector('.pick').outerHTML='<span class="filed">promoted ✓</span>';}
+  if(act==='kill'){x.d.items=x.d.items.filter(it=>it.id!==iid);r.style.opacity=.4;r.querySelector('.pick').outerHTML='<span class="filed" style="color:var(--stale)">killed ✓</span>';}
+  if(act==='keep'){x.i.age=0;r.style.opacity=.4;r.querySelector('.pick').outerHTML='<span class="filed" style="color:var(--muted)">parked, on purpose ✓</span>';}
+  scheduleSave();}
+function prSet(iid,s,btn){const x=allItems().find(o=>o.i.id===iid);x.i._s=s;btn.parentNode.querySelectorAll('button').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');if(s==='rest'){x.i.status='parked';x.i.focus=false;}scheduleSave();}
+function prIntent(iid,v){const x=allItems().find(o=>o.i.id===iid);if(v)x.i.n='intent: '+v;scheduleSave();}
+function decLog(iid,v){const x=allItems().find(o=>o.i.id===iid);if(v){x.i._log=true;x.i.n='last note: '+v;}scheduleSave();}
+function decResolve(iid,btn){const x=allItems().find(o=>o.i.id===iid);x.d.items=x.d.items.filter(it=>it.id!==iid);btn.closest('.row').style.opacity=.4;btn.closest('.pick').outerHTML='<span class="filed">resolved ✓</span>';scheduleSave();}
+function swToggle(did,iid){const d=domains.find(x=>x.id===did),it=d.items.find(x=>x.id===iid);
+  if(it.status==='active'){it.status='parked';it.focus=false;}else{if(activeCount(d)>=d.cap){toast(`${d.name} is full (${d.cap}/${d.cap})`);return;}it.status='active';it.age=0;}renderRitual();}
+function swFocus(did,iid){const it=domains.find(x=>x.id===did).items.find(x=>x.id===iid);if(it.status!=='active'){toast('Pull it active first');return;}
+  if(!it.focus&&focusCount()>=MAXFOCUS){toast('Focus holds 5 — drop one first');return;}it.focus=!it.focus;renderRitual();}
+
+$('#ritNext').onclick=()=>{if(step===6){closeRitual();toast('Week set. The read updates on the board.');return;}step++;renderRitual();};
+$('#ritBack').onclick=()=>{if(step>0){step--;renderRitual();}};
+$('#ritualBtn').onclick=()=>openRitual(0);
+$('#inboxBtn').onclick=()=>openRitual(0);
+$('#ritClose').onclick=closeRitual;
+$('#scrim').addEventListener('click',e=>{if(e.target===$('#scrim'))closeRitual();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#scrim').classList.contains('show'))closeRitual();});
+
+loadState();
 </script>
 </body>
 </html>
