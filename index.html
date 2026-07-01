@@ -36,6 +36,8 @@
   .brief{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;margin-bottom:14px}
   .brief-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
   .brief-head .fc{font-family:"JetBrains Mono";font-size:11px;color:var(--faint)}
+  .briefrefresh{background:transparent;border:1px solid var(--line);color:var(--muted);border-radius:6px;font-size:12px;cursor:pointer;padding:2px 7px;line-height:1.4}
+  .briefrefresh:hover{color:var(--text);border-color:var(--muted)}
   .through{font-family:"Space Grotesk";font-size:16px;line-height:1.45;margin:8px 0 12px;color:var(--text);max-width:74ch}
   .through .accent{color:var(--task)}
   .focuschips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
@@ -270,7 +272,7 @@ const cal={days:[
 ]};
 
 /* ---------- live state (filled by loadState) ---------- */
-let domains=[],inbox=[],lastFocus=[],history=[];
+let domains=[],inbox=[],lastFocus=[],history=[],briefingText='';let briefLoading=false;
 let loaded=false,saveTimer=null;
 const STALE=21,MAXFOCUS=5,PRACTICE_DRIFT=14;
 const allItems=()=>domains.flatMap(d=>d.items.map(i=>({d,i})));
@@ -286,7 +288,7 @@ async function loadState(){
   let s=null;
   try{const r=await fetch('/api/update');if(r.ok){const j=await r.json();s=j.state;}}catch(e){}
   if(s&&Array.isArray(s.domains)&&s.domains.length){
-    domains=s.domains;inbox=s.inbox||[];lastFocus=s.lastFocus||[];history=s.history||[];
+    domains=s.domains;inbox=s.inbox||[];lastFocus=s.lastFocus||[];history=s.history||[];briefingText=s.briefing||'';
     // keep the uid counter ahead of any existing ids so new items never collide
     let max=0;allItems().forEach(x=>{const m=/^i(\d+)$/.exec(x.i.id);if(m)max=Math.max(max,+m[1]);});
     inbox.forEach(c=>{const m=/^i(\d+)$/.exec(c.id||'');if(m)max=Math.max(max,+m[1]);});
@@ -300,7 +302,7 @@ async function loadState(){
     scheduleSave(true); // persist the seed on first run
   }
 }
-function currentState(){return {version:'v2.2',domains,inbox,lastFocus,history};}
+function currentState(){return {version:'v2.2',domains,inbox,lastFocus,history,briefing:briefingText};}
 function scheduleSave(now){
   if(!loaded)return;
   clearTimeout(saveTimer);
@@ -341,12 +343,37 @@ function buildBriefing(){
   if(!thesisFocus.length&&days<=60)nudges.push(`Focus carries no thesis item with ${days} days left — deliberate, or drift?`);
   return {through,watch:watch.slice(0,3),nudges:nudges.slice(0,3)};
 }
+function briefingContext(){
+  const focus=allItems().filter(x=>x.i.focus).map(({d,i})=>`${i.t} (${d.name})`);
+  const caps=domains.filter(d=>d.def!=='practice'&&activeCount(d)>=d.cap).map(d=>d.name);
+  const drift=allItems().filter(x=>x.i.type==='practice'&&ageDays(x.i)>=PRACTICE_DRIFT).sort((a,b)=>ageDays(b.i)-ageDays(a.i)).map(x=>`${x.i.t} (${ageDays(x.i)}d)`);
+  const opendec=allItems().filter(x=>x.i.type==='decision'&&ageDays(x.i)>=30).map(x=>`${x.i.t} (${ageDays(x.i)}d open)`);
+  const tending=allItems().filter(x=>x.i.type==='practice'&&x.i.intent).map(x=>x.i.t);
+  const doneWk=thisWeekHistory().filter(h=>!h.emergent).length;
+  const dstr=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  const L=[`Today: ${dstr}, thesis target in ${daysToTarget()} days.`,`Focus this week: ${focus.length?focus.join('; '):'none set'}.`];
+  if(caps.length)L.push(`At capacity: ${caps.join(', ')}.`);
+  if(drift.length)L.push(`Untended practices: ${drift.join(', ')}.`);
+  if(opendec.length)L.push(`Long-open decisions: ${opendec.join(', ')}.`);
+  if(tending.length)L.push(`Tending this week: ${tending.join(', ')}.`);
+  L.push(`Completed on the board this week: ${doneWk}.`);
+  return L.join('\n');
+}
+async function requestBriefing(){
+  if(briefLoading)return;briefLoading=true;renderBriefing();
+  try{const r=await fetch('/api/update',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'briefing',context:briefingContext()})});
+    const j=await r.json();briefLoading=false;
+    if(j&&j.text){briefingText=j.text;render();}else{renderBriefing();toast('Voice unavailable — showing the rule read');}
+  }catch(e){briefLoading=false;renderBriefing();toast('Voice unavailable — showing the rule read');}
+}
 function renderBriefing(){
   const b=buildBriefing();
   const chips=allItems().filter(x=>x.i.focus).map(({d,i})=>`<div class="chip"><span class="dot" style="background:${C[i.type]}"></span>${i.t}<span class="src">${d.name.split(' ')[0].toUpperCase()}</span></div>`).join('')||'<div class="chip empty">set 1–5 in the review</div>';
   const watch=b.watch.length?b.watch.map(w=>`<div class="bitem">${w}</div>`).join(''):'<div class="bitem none">Clear — nothing pressing.</div>';
   const nudge=b.nudges.length?b.nudges.map(n=>`<div class="bitem">${n}</div>`).join(''):'<div class="bitem none">No drift caught. Practices are tended.</div>';
-  $('#brief').innerHTML=`<div class="brief-head"><span class="eyebrow">This week — the read</span><span class="fc">${focusCount()}/5 focus</span></div><div class="through">${b.through}</div><div class="focuschips">${chips}</div><div class="brief-cols"><div class="watch"><div class="blabel">Watch — constraints</div>${watch}</div><div class="nudge"><div class="blabel">Nudges — where you’re drifting</div>${nudge}</div></div>`;
+  const through=briefLoading?'<span style="color:var(--faint)">composing the read…</span>':(briefingText||b.through);
+  const voiced=briefingText&&!briefLoading?'<span class="fc" style="color:var(--practice)">voiced</span>':'';
+  $('#brief').innerHTML=`<div class="brief-head"><span class="eyebrow">This week — the read</span><span style="display:flex;gap:10px;align-items:center">${voiced}<span class="fc">${focusCount()}/5 focus</span><button class="briefrefresh" title="Compose with Claude" onclick="requestBriefing()">↻</button></span></div><div class="through">${through}</div><div class="focuschips">${chips}</div><div class="brief-cols"><div class="watch"><div class="blabel">Watch — constraints</div>${watch}</div><div class="nudge"><div class="blabel">Nudges — where you’re drifting</div>${nudge}</div></div>`;
 }
 
 /* ---------- board ---------- */
@@ -480,7 +507,7 @@ function swToggle(did,iid){const d=domains.find(x=>x.id===did),it=d.items.find(x
 function swFocus(did,iid){const it=domains.find(x=>x.id===did).items.find(x=>x.id===iid);if(it.type!=='practice'&&it.status!=='active'){toast('Pull it active first');return;}
   if(!it.focus&&focusCount()>=MAXFOCUS){toast('Focus holds 5 — drop one first');return;}it.focus=!it.focus;renderRitual();}
 
-$('#ritNext').onclick=()=>{if(step===STEPS.length-1){closeRitual();toast('Week set. The read updates on the board.');return;}step++;renderRitual();};
+$('#ritNext').onclick=()=>{if(step===STEPS.length-1){closeRitual();toast('Week set. Composing the read…');requestBriefing();return;}step++;renderRitual();};
 $('#ritBack').onclick=()=>{if(step>0){step--;renderRitual();}};
 $('#ritualBtn').onclick=()=>openRitual(0);
 $('#inboxBtn').onclick=()=>openRitual(0);
