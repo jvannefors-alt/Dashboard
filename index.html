@@ -109,6 +109,8 @@
   .intentbtn{flex:none;width:18px;text-align:center;color:var(--faint);font-size:12px;margin-top:1px;opacity:.3;transition:opacity .12s;cursor:pointer}
   .item:hover .intentbtn{opacity:.6}.intentbtn.on{opacity:1;color:var(--practice)}
   .item.tending{background:rgba(88,201,163,.06)}
+  .delbtn{flex:none;width:18px;text-align:center;color:var(--faint);font-size:11px;margin-top:1px;opacity:0;transition:opacity .12s;cursor:pointer}
+  .item:hover .delbtn{opacity:.4}.delbtn:hover{opacity:1;color:var(--stale)}
   .pick-tend{font-size:11.5px;font-family:"Hanken Grotesk";border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:7px;padding:6px 10px;cursor:pointer;white-space:nowrap}
   .pick-tend.on{border-color:var(--practice);color:var(--practice)}
   .empty{padding:9px 16px 4px;color:var(--faint);font-size:11.5px;font-style:italic}
@@ -302,13 +304,13 @@ async function loadState(){
     scheduleSave(true); // persist the seed on first run
   }
 }
-function currentState(){return {version:'v2.2',domains,inbox,lastFocus,history,briefing:briefingText};}
+function currentState(){return {version:'v2.2',domains,inbox,lastFocus,history:history.slice(-40),briefing:briefingText};}
 let savePending=false;
 function doSave(retry){
   const body=JSON.stringify({action:'save',state:currentState()});
   return fetch('/api/update',{method:'POST',headers:{'Content-Type':'application/json'},body})
-    .then(r=>{if(!r.ok)throw r.status;savePending=false;})
-    .catch(err=>{if(!retry){setTimeout(()=>doSave(true),3000);}else{console.error('Save failed:',err);toast('Save failed ('+(err||'network')+') — changes are local');}});
+    .then(async r=>{if(!r.ok){let d='';try{d=(await r.json()).error||'';}catch(e){}throw (r.status+(d?' — '+d:''));}savePending=false;})
+    .catch(err=>{if(!retry){setTimeout(()=>doSave(true),3000);}else{console.error('Save failed:',err);toast('Save failed: '+(err||'network')+' — changes are local');}});
 }
 function scheduleSave(now){
   if(!loaded)return;
@@ -402,14 +404,16 @@ function itemRow(d,i){const a=ageDays(i);const stale=i.status==='parked'&&a>=STA
   const age=i.status==='parked'?`<span class="age ${stale?'stale':''}">${a}d</span>`:'';
   const flag=stale?'<span class="stalebar"></span>':'';
   const done=`<span class="donebtn" title="${i.type==='decision'?'Resolve':'Done'}" onclick="completeItem(event,'${d.id}','${i.id}')">✓</span>`;
-  return `<div class="item ${i.status}" onclick="toggleStatus('${d.id}','${i.id}')">${flag}<span class="marker ${i.type}"></span><div class="itxt"><div class="ititle">${i.t}</div>${note}</div>${age}${done}<span class="star ${i.focus?'on':''}" onclick="toggleFocus(event,'${d.id}','${i.id}')">${i.focus?'★':'☆'}</span></div>`;}
+  const del=`<span class="delbtn" title="Delete" onclick="deleteItem(event,'${d.id}','${i.id}')">🗑</span>`;
+  return `<div class="item ${i.status}" onclick="toggleStatus('${d.id}','${i.id}')">${flag}<span class="marker ${i.type}"></span><div class="itxt"><div class="ititle">${i.t}</div>${note}</div>${age}${done}${del}<span class="star ${i.focus?'on':''}" onclick="toggleFocus(event,'${d.id}','${i.id}')">${i.focus?'★':'☆'}</span></div>`;}
 function pushHistory(it,domainName){history.push({id:it.id,t:it.t,type:it.type,domain:domainName,doneAt:new Date().toISOString(),note:it.n||''});}
 function completeItem(e,did,iid){e.stopPropagation();const x=allItems().find(o=>o.i.id===iid);if(!x)return;const word=x.i.type==='decision'?'Resolved':'Done';pushHistory(x.i,x.d.name);x.d.items=x.d.items.filter(it=>it.id!==iid);render();toast(word+' ✓');}
+function deleteItem(e,did,iid){e.stopPropagation();const d=domains.find(x=>x.id===did),it=d.items.find(x=>x.id===iid);if(!it)return;if(!confirm(`Delete "${it.t}"? This can't be undone.`))return;d.items=d.items.filter(x=>x.id!==iid);render();toast('Deleted');}
 function logSession(e,did,iid){e.stopPropagation();const x=allItems().find(o=>o.i.id===iid);if(!x)return;history.push({id:uid(),t:x.i.t,type:'practice',domain:x.d.name,doneAt:nowISO(),note:''});x.i.since=nowISO();render();toast('Session logged ✓');}
 const intentCap=d=>d.intentCap||2;
 function practiceRow(d,i){const a=ageDays(i);const drift=a>=PRACTICE_DRIFT;const rec=a===0?'today':a+'d';
   const note=i.n?`<div class="inote">${i.n}</div>`:'';
-  return `<div class="item practice-item ${i.intent?'tending':''}"><span class="marker practice"></span><div class="itxt"><div class="ititle">${i.t}</div>${note}</div><span class="age ${drift?'stale':''}" title="since last session">${rec}</span><span class="donebtn" title="Log a session" onclick="logSession(event,'${d.id}','${i.id}')">✓</span><span class="intentbtn ${i.intent?'on':''}" title="Tend this week" onclick="toggleIntent(event,'${d.id}','${i.id}')">⚑</span><span class="star ${i.focus?'on':''}" onclick="toggleFocus(event,'${d.id}','${i.id}')">${i.focus?'★':'☆'}</span></div>`;}
+  return `<div class="item practice-item ${i.intent?'tending':''}"><span class="marker practice"></span><div class="itxt"><div class="ititle">${i.t}</div>${note}</div><span class="age ${drift?'stale':''}" title="since last session">${rec}</span><span class="donebtn" title="Log a session" onclick="logSession(event,'${d.id}','${i.id}')">✓</span><span class="intentbtn ${i.intent?'on':''}" title="Tend this week" onclick="toggleIntent(event,'${d.id}','${i.id}')">⚑</span><span class="delbtn" title="Delete" onclick="deleteItem(event,'${d.id}','${i.id}')">🗑</span><span class="star ${i.focus?'on':''}" onclick="toggleFocus(event,'${d.id}','${i.id}')">${i.focus?'★':'☆'}</span></div>`;}
 function toggleIntent(e,did,iid){e.stopPropagation();const d=domains.find(x=>x.id===did),it=d.items.find(x=>x.id===iid);if(it.type!=='practice')return;
   if(!it.intent){const cap=intentCap(d),t=d.items.filter(i=>i.type==='practice'&&i.intent).length;if(t>=cap){toast(`${d.name}: tending is full (${cap}) — release one first`);flashCap(did);return;}}
   it.intent=!it.intent;render();}
