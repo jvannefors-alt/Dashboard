@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Curriculum — Claude Upskilling</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600&family=Hanken+Grotesk:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --ink: #E9E7E1;
+    --ink-secondary: #888D9B;
+    --ink-tertiary: #5A5F6C;
+    --paper: #15171F;
+    --paper-raised: #1C1F28;
+    --paper-sunken: #242833;
+    --rule: #30343F;
+    --rule-strong: #3d4250;
+    --accent: #58C9A3;
+    --accent-light: rgba(88,201,163,.12);
+    --accent-mid: #58C9A3;
+    --amber: #E0A455;
+    --amber-light: rgba(224,164,85,.12);
+    --red: #E5654B;
+    --red-light: rgba(229,101,75,.12);
+    --purple: #B584D9;
+    --purple-light: rgba(181,132,217,.12);
+    --radius: 6px;
+    --radius-lg: 10px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  .title,.page-title,.phase-title-text,.page-eyebrow,.phase-eyebrow,.nav-section-label,.week-num,h1{font-family:"Space Grotesk","Hanken Grotesk",sans-serif}
+
+  body {
+    font-family: 'Hanken Grotesk', -apple-system, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* Layout */
+  .shell { display: flex; min-height: 100vh; }
+  .sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    background: var(--paper-raised);
+    border-right: 1px solid var(--rule);
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 1.5rem 0;
+  }
+  .main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 2rem 2.5rem;
+    max-width: 820px;
+  }
+
+  /* Sidebar */
+  .sidebar-logo {
+    padding: 0 1.25rem 1.25rem;
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 1rem;
+  }
+  .sidebar-logo .title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--ink-secondary);
+  }
+  .sidebar-logo .sub {
+    font-size: 10px;
+    color: var(--ink-tertiary);
+    margin-top: 2px;
+  }
+  .nav-section {
+    padding: 0 .75rem;
+    margin-bottom: .25rem;
+  }
+  .nav-section-label {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink-tertiary);
+    padding: .5rem .5rem .25rem;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 8px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--ink-secondary);
+    transition: all .12s;
+    text-decoration: none;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+  }
+  .nav-item:hover { background: var(--paper-sunken); color: var(--ink); }
+  .nav-item.active { background: var(--accent-light); color: var(--accent); font-weight: 500; }
+  .nav-item .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--rule-strong);
+    flex-shrink: 0;
+  }
+  .nav-item.active .dot { background: var(--accent); }
+  .nav-item .week-num { font-size: 10px; font-family: 'JetBrains Mono', monospace; min-width: 28px; color: var(--ink-tertiary); }
+  .nav-item.active .week-num { color: var(--accent); }
+  .nav-progress {
+    font-size: 9px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--ink-tertiary);
+    margin-left: auto;
+  }
+
+  /* Header */
+  .page-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  .page-eyebrow {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink-tertiary);
+    margin-bottom: .5rem;
+  }
+  .page-title {
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--ink);
+    line-height: 1.3;
+  }
+  .page-meta {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: .75rem;
+    flex-wrap: wrap;
+  }
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--ink-secondary);
+  }
+  .meta-item .label { color: var(--ink-tertiary); }
+
+  /* Progress bar */
+  .progress-track {
+    height: 3px;
+    background: var(--rule);
+    border-radius: 2px;
+    margin: 1rem 0 .25rem;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width .3s ease;
+  }
+  .progress-label {
+    font-size: 11px;
+    color: var(--ink-tertiary);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Week view */
+  .week-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .week-title { font-size: 18px; font-weight: 500; }
+  .week-theme {
+    font-size: 12px;
+    color: var(--ink-secondary);
+    margin-top: 3px;
+    font-style: italic;
+  }
+  .feature-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 500;
+    background: var(--purple-light);
+    color: var(--purple);
+    padding: 4px 10px;
+    border-radius: var(--radius);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .feature-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--purple); }
+
+  /* Day cards */
+  .days-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 2rem; }
+  .day-card {
+    background: var(--paper-raised);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition: border-color .15s;
+  }
+  .day-card.completed { border-color: var(--accent); background: rgba(88,201,163,.06); }
+  .day-card.today { border-color: var(--accent-mid); box-shadow: 0 0 0 3px var(--accent-light); }
+
+  .day-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: .85rem 1.1rem;
+    cursor: pointer;
+    user-select: none;
+  }
+  .day-check {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    border: 1.5px solid var(--rule-strong);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: all .15s;
+    background: var(--paper);
+  }
+  .day-check:hover { border-color: var(--accent); }
+  .day-card.completed .day-check {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .day-check svg { display: none; }
+  .day-card.completed .day-check svg { display: block; }
+
+  .day-name { font-size: 13px; font-weight: 500; color: var(--ink); }
+  .day-role { font-size: 11px; color: var(--ink-tertiary); }
+  .day-project-tags { display: flex; gap: 5px; margin-left: auto; flex-wrap: wrap; justify-content: flex-end; }
+  .ptag {
+    font-size: 10px;
+    font-weight: 500;
+    padding: 2px 7px;
+    border-radius: 3px;
+  }
+  .ptag-job { background: rgba(88,201,163,.12); color: #58C9A3; }
+  .ptag-house { background: rgba(136,141,155,.15); color: #aab0be; }
+  .ptag-sub { background: var(--purple-light); color: var(--purple); }
+  .ptag-os { background: var(--amber-light); color: var(--amber); }
+  .ptag-thesis { background: rgba(229,101,75,.12); color: #E5654B; }
+  .ptag-feature { background: rgba(181,132,217,.12); color: #B584D9; }
+  .ptag-meta { background: var(--paper-sunken); color: var(--ink-secondary); }
+
+  .day-body {
+    padding: 0 1.1rem 1rem;
+    border-top: 1px solid var(--rule);
+  }
+  .session-block { margin-top: .85rem; }
+  .session-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    margin-bottom: .4rem;
+  }
+  .s20 { color: var(--accent); }
+  .s10 { color: var(--purple); }
+  .session-content { font-size: 13px; color: var(--ink-secondary); line-height: 1.55; }
+  .session-content strong { color: var(--ink); font-weight: 500; }
+
+  .log-area {
+    margin-top: .85rem;
+    padding-top: .85rem;
+    border-top: 1px solid var(--rule);
+  }
+  .log-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--ink-tertiary);
+    margin-bottom: .4rem;
+  }
+  .log-input {
+    width: 100%;
+    background: var(--paper-sunken);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    padding: .6rem .75rem;
+    font-family: 'Hanken Grotesk', -apple-system, sans-serif;
+    font-size: 12px;
+    color: var(--ink);
+    resize: vertical;
+    min-height: 64px;
+    outline: none;
+    transition: border-color .15s;
+  }
+  .log-input:focus { border-color: var(--rule-strong); }
+  .log-input::placeholder { color: var(--ink-tertiary); }
+  .log-save {
+    margin-top: 6px;
+    font-size: 11px;
+    color: var(--accent);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    font-family: 'Hanken Grotesk', -apple-system, sans-serif;
+    font-weight: 500;
+  }
+  .log-save:hover { text-decoration: underline; }
+  .log-saved { font-size: 11px; color: var(--ink-tertiary); margin-left: 8px; }
+
+  /* Phase header */
+  .phase-header {
+    background: var(--paper-raised);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-lg);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+  .phase-eyebrow {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--ink-tertiary);
+    margin-bottom: .25rem;
+  }
+  .phase-title-text { font-size: 15px; font-weight: 500; }
+  .phase-desc { font-size: 12px; color: var(--ink-secondary); margin-top: .25rem; line-height: 1.5; }
+
+  /* Overview view */
+  .overview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 10px;
+    margin-bottom: 2rem;
+  }
+  .stat-card {
+    background: var(--paper-raised);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-lg);
+    padding: 1rem 1.1rem;
+  }
+  .stat-label { font-size: 11px; color: var(--ink-tertiary); margin-bottom: 4px; }
+  .stat-value { font-size: 24px; font-weight: 500; color: var(--ink); line-height: 1; }
+  .stat-sub { font-size: 11px; color: var(--ink-secondary); margin-top: 3px; }
+
+  .rhythm-table { width: 100%; border-collapse: collapse; margin-bottom: 2rem; }
+  .rhythm-table th {
+    font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--ink-tertiary); text-align: left; padding: 6px 10px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .rhythm-table td {
+    font-size: 12px; color: var(--ink-secondary);
+    padding: 8px 10px; border-bottom: 1px solid var(--rule); vertical-align: top;
+    line-height: 1.45;
+  }
+  .rhythm-table td:first-child { font-weight: 500; color: var(--ink); width: 90px; }
+  .rhythm-table td:nth-child(2) { width: 100px; color: var(--ink-tertiary); font-size: 11px; }
+  .rhythm-table tr:last-child td { border-bottom: none; }
+
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 8px;
+    margin-bottom: 2rem;
+  }
+  .feature-card {
+    background: var(--paper-raised);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    padding: .75rem .9rem;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .feature-card.done { background: rgba(88,201,163,.06); border-color: var(--accent); }
+  .feature-wk {
+    font-size: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--ink-tertiary);
+    min-width: 32px;
+    padding-top: 1px;
+  }
+  .feature-card.done .feature-wk { color: var(--accent); }
+  .feature-name { font-size: 12px; font-weight: 500; color: var(--ink); margin-bottom: 2px; }
+  .feature-desc { font-size: 11px; color: var(--ink-secondary); line-height: 1.4; }
+
+  /* Utilities */
+  .hidden { display: none; }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  /* Responsive */
+  @media (max-width: 680px) {
+    .sidebar { display: none; }
+    .main { padding: 1.25rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="title">The Curriculum</div>
+      <div class="sub">Claude upskilling · 13 weeks</div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-label">Navigate</div>
+      <button class="nav-item active" onclick="showView('overview')" id="nav-overview">
+        <span class="dot"></span>
+        <span>Overview</span>
+      </button>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-label">Phase 1 — Foundations</div>
+      <button class="nav-item" onclick="showView('week1')" id="nav-week1">
+        <span class="week-num">W01</span>
+        <span>Prompt architecture</span>
+        <span class="nav-progress" id="prog-week1">0/5</span>
+      </button>
+      <button class="nav-item" onclick="showView('week2')" id="nav-week2">
+        <span class="week-num">W02</span>
+        <span>Output control</span>
+        <span class="nav-progress" id="prog-week2">0/5</span>
+      </button>
+      <button class="nav-item" onclick="showView('week3')" id="nav-week3">
+        <span class="week-num">W03</span>
+        <span>Iterative loops</span>
+        <span class="nav-progress" id="prog-week3">0/5</span>
+      </button>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-label">Phase 2 — Depth</div>
+      <button class="nav-item" onclick="showView('week4')" id="nav-week4">
+        <span class="week-num">W04</span>
+        <span>Deep research</span>
+        <span class="nav-progress" id="prog-week4">0/5</span>
+      </button>
+      <button class="nav-item" onclick="showView('week5')" id="nav-week5">
+        <span class="week-num">W05</span>
+        <span>Personas</span>
+        <span class="nav-progress" id="prog-week5">0/5</span>
+      </button>
+      <button class="nav-item" onclick="showView('week6')" id="nav-week6">
+        <span class="week-num">W06</span>
+        <span>Voice & style</span>
+        <span class="nav-progress" id="prog-week6">0/5</span>
+      </button>
+      <button class="nav-item" onclick="showView('week7')" id="nav-week7">
+        <span class="week-num">W07</span>
+        <span>Connectors</span>
+        <span class="nav-progress" id="prog-week7">0/5</span>
+      </button>
+      <button class="nav-item" onclick="showView('week8')" id="nav-week8">
+        <span class="week-num">W08</span>
+        <span>Decision frameworks</span>
+        <span class="nav-progress" id="prog-week8">0/5</span>
+      </button>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-label">Phase 3 — Mastery</div>
+      <button class="nav-item" onclick="showView('week9')" id="nav-week9">
+        <span class="week-num">W09</span>
+        <span>System design</span>
+        <span class="nav-progress" id="prog-week9">0/5</span>
+      </button>
+      <button class="nav-item" onclick="showView('week10')" id="nav-week10">
+        <span class="week-num">W10</span>
+        <span>Claude Code</span>
+        <span class="nav-progress" id="prog-week10">0/5</span>
+      </button>
+      <button class="nav-item" onclick="showView('week11')" id="nav-week11">
+        <span class="week-num">W11</span>
+        <span>Multi-turn design</span>
+        <span class="nav-progress" id="prog-week11">0/5</span>
+      </button>
+      <button class="nav-item" onclick="showView('week12')" id="nav-week12">
+        <span class="week-num">W12</span>
+        <span>Cross-model</span>
+        <span class="nav-progress" id="prog-week12">0/5</span>
+      </button>
+      <button class="nav-item" onclick="showView('week13')" id="nav-week13">
+        <span class="week-num">W13</span>
+        <span>Prompt library</span>
+        <span class="nav-progress" id="prog-week13">0/5</span>
+      </button>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- OVERVIEW -->
+    <div id="view-overview">
+      <div class="page-header">
+        <div class="page-eyebrow">Claude upskilling program</div>
+        <h1 class="page-title">The Curriculum</h1>
+        <div class="page-meta">
+          <span class="meta-item"><span class="label">Duration</span> 13 weeks</span>
+          <span class="meta-item"><span class="label">Daily commitment</span> 30 min</span>
+          <span class="meta-item"><span class="label">Model</span> Option A — full program</span>
+        </div>
+        <div class="progress-track" style="margin-top:1rem">
+          <div class="progress-fill" id="total-progress" style="width:0%"></div>
+        </div>
+        <div class="progress-label" id="total-progress-label">0 of 65 sessions completed</div>
+      </div>
+
+      <div class="overview-grid">
+        <div class="stat-card">
+          <div class="stat-label">Sessions completed</div>
+          <div class="stat-value mono" id="stat-done">0</div>
+          <div class="stat-sub">of 65 total</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Current week</div>
+          <div class="stat-value mono" id="stat-week">—</div>
+          <div class="stat-sub" id="stat-week-theme">Not started</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Features unlocked</div>
+          <div class="stat-value mono" id="stat-features">0</div>
+          <div class="stat-sub">of 13 Wednesday skills</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Phase</div>
+          <div class="stat-value" id="stat-phase" style="font-size:16px;padding-top:4px">—</div>
+          <div class="stat-sub" id="stat-phase-sub">Start Week 1 to begin</div>
+        </div>
+      </div>
+
+      <div class="page-eyebrow" style="margin-bottom:.75rem">Weekly rhythm — every day has a role</div>
+      <table class="rhythm-table">
+        <thead><tr><th>Day</th><th>Role</th><th>Focus</th><th>Project</th></tr></thead>
+        <tbody>
+          <tr><td>Monday</td><td>Orient + plan</td><td>Weekly review, set skill focus for the week. Claude as Socratic interviewer — not form-fill.</td><td><span class="ptag ptag-os">Life OS</span></td></tr>
+          <tr><td>Tuesday</td><td>Research depth</td><td>Nordic landscape mapping + Substack research. The compound research track — one body of knowledge, two outputs.</td><td><span class="ptag ptag-sub">Substack</span> <span class="ptag ptag-job">Job hunt</span></td></tr>
+          <tr><td>Wednesday</td><td>Feature day</td><td>The week's designated Claude capability, applied to a real task. Never in isolation.</td><td><span class="ptag ptag-feature">Feature track</span></td></tr>
+          <tr><td>Thursday</td><td>Writing + voice</td><td>Substack drafting/editing, job applications, or thesis prose. Claude as editor — your words, its critique.</td><td><span class="ptag ptag-sub">Substack</span> <span class="ptag ptag-thesis">Thesis</span></td></tr>
+          <tr><td>Friday</td><td>Meta + sharpen</td><td>Paste 3–5 prompts from the week. Ask Claude to critique your prompting. Rewrite the weakest one. Read one external resource.</td><td><span class="ptag ptag-meta">All projects</span></td></tr>
+        </tbody>
+      </table>
+
+      <div class="page-eyebrow" style="margin-bottom:.75rem">Wednesday feature track — 13 capabilities</div>
+      <div class="feature-grid" id="feature-grid"></div>
+    </div>
+
+    <!-- WEEK VIEWS (generated by JS) -->
+    <div id="view-week1" class="hidden"></div>
+    <div id="view-week2" class="hidden"></div>
+    <div id="view-week3" class="hidden"></div>
+    <div id="view-week4" class="hidden"></div>
+    <div id="view-week5" class="hidden"></div>
+    <div id="view-week6" class="hidden"></div>
+    <div id="view-week7" class="hidden"></div>
+    <div id="view-week8" class="hidden"></div>
+    <div id="view-week9" class="hidden"></div>
+    <div id="view-week10" class="hidden"></div>
+    <div id="view-week11" class="hidden"></div>
+    <div id="view-week12" class="hidden"></div>
+    <div id="view-week13" class="hidden"></div>
+
+  </main>
+</div>
+
+<script>
+// ─── CURRICULUM DATA ───────────────────────────────────────────────────────
+
+const PHASES = [
+  { weeks: [1,2,3], label: 'Phase 1', title: 'Foundations', desc: 'Building the daily rhythm and prompt architecture. Early wins are intentional — the goal here is establishing the habit container that holds the harder work ahead.' },
+  { weeks: [4,5,6,7,8], label: 'Phase 2', title: 'Depth', desc: 'The compound research track takes shape. Nordic landscape mapping and Substack research feed each other. Personas, voice, and decision frameworks unlock real leverage across all projects.' },
+  { weeks: [9,10,11,12,13], label: 'Phase 3', title: 'Mastery', desc: 'System design, Claude Code, and cross-model transfer. Week 10 migrates the curriculum to Vercel as a real Claude Code exercise — not a tutorial task, a real feature.' }
+];
+
+const FEATURES = [
+  { wk: 1, name: 'Projects + system prompts', desc: 'Audit all four Project system prompts using role + context + constraints structure', project: 'Life OS' },
+  { wk: 2, name: 'XML tags + structured output', desc: 'Build a research brief template using <context> <task> <format> <constraints> tags', project: 'Substack' },
+  { wk: 3, name: 'Web search + Deep Research', desc: 'Commission a structured Nordic landscape research brief. Verify 5 claims. Build calibration.', project: 'Job hunt' },
+  { wk: 4, name: 'Artifacts — interactive tools', desc: 'Build a property scoring Artifact for the house search. Specify functionally, not technically.', project: 'House search' },
+  { wk: 5, name: 'Personas + adversarial mode', desc: 'Build specific interviewer personas for target roles. Transfer hostile reader mode to Substack.', project: 'Job hunt' },
+  { wk: 6, name: 'Voice capture + style feature', desc: 'Paste writing samples, extract stylistic fingerprints, encode in Substack Project system prompt.', project: 'Substack' },
+  { wk: 7, name: 'Connectors + Google Drive MCP', desc: 'Pull your editorial calendar or research docs into a live conversation. Build one real workflow.', project: 'Substack · Life OS' },
+  { wk: 8, name: 'Document analysis + uploads', desc: 'Upload job descriptions and company reports. Build a JD analysis prompt template.', project: 'Job hunt' },
+  { wk: 9, name: 'Artifacts — data viz + dashboards', desc: 'Build a visual job pipeline or weekly review dashboard. No code knowledge needed.', project: 'Life OS' },
+  { wk: 10, name: 'Claude Code — intro + Vercel migration', desc: 'Install Claude Code CLI. Migrate this curriculum tracker to your Vercel dashboard as a real feature.', project: 'AI/Tech' },
+  { wk: 11, name: 'Multi-turn conversation design', desc: 'Design a sustained 10-turn dialogue with a purpose. Learn context window management.', project: 'Life OS' },
+  { wk: 12, name: 'Cross-model testing', desc: 'Run your 5 best prompts on GPT-4o and Gemini. Map the 80% universal vs 20% Claude-specific.', project: 'All projects' },
+  { wk: 13, name: 'Prompt library — capstone', desc: 'Compile every high-value prompt into a categorised, templated library with variable placeholders.', project: 'All projects' }
+];
+
+const WEEKS = [
+  {
+    num: 1, title: 'Prompt architecture', theme: 'The skill: giving Claude exactly enough context — no more, no less',
+    phase: 'Phase 1 — Foundations',
+    days: [
+      { name: 'Monday', role: 'Orient + plan', tags: ['os'],
+        s20: '<strong>Life OS weekly review.</strong> Open a new Claude conversation. Ask it to interview you about the week ahead — Socratic mode. What are the 3 most important things to move this week across all five projects? Set your skill focus for the week: <em>prompt architecture</em>.',
+        s10: 'Start your reflection log. Today\'s question: <em>What does "giving Claude enough context" mean to you right now, before practising it?</em> Write 2–3 sentences. This becomes the baseline you\'ll compare against in Week 3.' },
+      { name: 'Tuesday', role: 'Research depth', tags: ['sub','job'],
+        s20: '<strong>Nordic landscape first pass.</strong> Open your Job hunt Project. Write a structured research prompt — role, context, task, format, constraints — asking Claude to give you an initial map of the Nordic sustainable finance landscape: key institutions, major employers, emerging themes. Notice how much the structure shapes the output.',
+        s10: 'Log: What did the structure unlock that a vaguer prompt wouldn\'t have? One specific observation.' },
+      { name: 'Wednesday', role: 'Feature day', tags: ['feature','os'],
+        s20: '<strong>Feature: Projects + system prompts.</strong> Open each of your four Claude Projects. Read the current system prompt. Rewrite each one using this structure: Role (who Claude is in this context) → Context (what Jonas is doing and why) → Constraints (what Claude should never do here) → Format (how responses should typically look). Compare before/after on one test prompt.',
+        s10: 'Log: Which Project had the weakest system prompt before today? What changed?' },
+      { name: 'Thursday', role: 'Writing + voice', tags: ['thesis','sub'],
+        s20: '<strong>Thesis read-through begins.</strong> Start your end-to-end read of the thesis. As you read, annotate anything that feels off — not to fix now, but to build the list. Claude\'s role today: paste any passage that feels weak and ask "what\'s wrong with this sentence? What register is it trying to be in?"',
+        s10: 'Log: What\'s the single editorial feedback from Claude today that surprised you most?' },
+      { name: 'Friday', role: 'Meta + sharpen', tags: ['meta'],
+        s20: 'Paste the 3 prompts you wrote this week (Monday review, Tuesday research, Wednesday system prompt rewrites) into a fresh conversation. Ask Claude: <em>"What patterns do you see in how I\'m prompting? Where am I leaving capability on the table?"</em> Then rewrite the weakest prompt.',
+        s10: 'Log: What\'s one external resource you\'ll consume this weekend? (Suggestion: Anthropic\'s prompt engineering overview at docs.claude.ai). One sentence on what you want to take from it.' }
+    ]
+  },
+  {
+    num: 2, title: 'Output control', theme: 'The skill: specifying format, length, tone, and structure precisely',
+    phase: 'Phase 1 — Foundations',
+    days: [
+      { name: 'Monday', role: 'Orient + plan', tags: ['os'],
+        s20: '<strong>Weekly review.</strong> Life OS check-in. How did Week 1 feel? What\'s the thesis status — is the read-through on track? Set skill focus: <em>output control</em>. Ask Claude: "Given my five projects this week, what output types will I need most — prose, structured data, Artifacts, something else?"',
+        s10: 'Log: What\'s the one output format you\'ve been accepting without questioning whether it\'s actually the right one?' },
+      { name: 'Tuesday', role: 'Research depth', tags: ['sub','job'],
+        s20: '<strong>Nordic landscape — financial institutions deep dive.</strong> Build a research prompt that specifies the exact output format: a structured briefing with named sections, word limits per section, and explicit instructions on how to handle uncertainty. Target: Nordic banks and asset managers with active sustainable finance mandates.',
+        s10: 'Log: What did specifying the output format change about how useful the research was?' },
+      { name: 'Wednesday', role: 'Feature day', tags: ['feature','sub'],
+        s20: '<strong>Feature: XML tags + structured output.</strong> Build your Substack research brief template using XML tags: wrap your context in <code>&lt;context&gt;</code>, your task in <code>&lt;task&gt;</code>, the desired output in <code>&lt;format&gt;</code>, and what to exclude in <code>&lt;constraints&gt;</code>. Run it against Note 01\'s research needs. Compare to an untagged version of the same prompt.',
+        s10: 'Log: Does using XML tags change the output meaningfully, or is it marginal? Be honest.' },
+      { name: 'Thursday', role: 'Writing + voice', tags: ['sub','thesis'],
+        s20: '<strong>Note 01 — first draft attempt.</strong> You\'ve been thinking about the "By Design" framing long enough. Spend 20 minutes writing a rough opening — not the final intro, just the argument in its rawest form. Then paste it to Claude and ask: "What\'s the strongest version of this argument? Where does the reasoning have gaps?"',
+        s10: 'Log: What did Claude identify as the weakest point in the argument? Do you agree?' },
+      { name: 'Friday', role: 'Meta + sharpen', tags: ['meta'],
+        s20: 'This week\'s meta focus: output formats. Paste two outputs from this week\'s Claude conversations — one you were happy with, one that felt off. Ask Claude: "What made the first output work? What format decision in the second one weakened it?" Then fix the second one.',
+        s10: 'Log: What\'s the default output format you\'ve been accepting that you\'ll now specify explicitly going forward?' }
+    ]
+  },
+  {
+    num: 3, title: 'Iterative loops', theme: 'The skill: treating every output as a draft, not a final answer',
+    phase: 'Phase 1 — Foundations',
+    days: [
+      { name: 'Monday', role: 'Orient + plan', tags: ['os'],
+        s20: '<strong>Weekly review.</strong> Two weeks of daily practice in. How is the rhythm holding? What\'s slipping? Set skill focus: <em>iterative refinement</em>. Ask Claude to review your reflection log entries from Weeks 1–2 and identify patterns in what you\'ve been noticing.',
+        s10: 'Log: What\'s the single most surprising thing you\'ve noticed about your prompting in the first two weeks?' },
+      { name: 'Tuesday', role: 'Research depth', tags: ['sub','job'],
+        s20: '<strong>Nordic landscape — government and policy layer.</strong> Research the policy and regulatory environment: Finansinspektionen, Swedish central bank, EU taxonomy implementation in Sweden, key government sustainability initiatives. But today the skill is iteration: after the first response, push back on two specific things and ask for a deeper or corrected pass.',
+        s10: 'Log: What did the second pass surface that the first didn\'t? Was the push-back worth the extra turn?' },
+      { name: 'Wednesday', role: 'Feature day', tags: ['feature','job'],
+        s20: '<strong>Feature: Web search + Deep Research.</strong> Open a fresh conversation with web search enabled. Commission a structured Deep Research session on the Nordic sustainable finance landscape — not a quick search, a proper brief with sources, key players, recent developments, and explicit uncertainty flags. Then verify 3 specific claims independently. Build your calibration for where Claude over- and under-states.',
+        s10: 'Log: What did Claude get confidently wrong, or confidently right? What does that tell you about how to use Deep Research?' },
+      { name: 'Thursday', role: 'Writing + voice', tags: ['sub'],
+        s20: '<strong>Note 01 — iterative refinement.</strong> Take your rough opening from last Thursday through 4 rounds of targeted refinement. Each round: one named, specific change. Round 1: tighten the argument. Round 2: improve the opening sentence. Round 3: remove the weakest paragraph. Round 4: check the diagnostic framing — has anything drifted toward advocacy?',
+        s10: 'Log: Capture one piece of Claude\'s feedback that you pushed back on. Were you right to?' },
+      { name: 'Friday', role: 'Meta + sharpen', tags: ['meta'],
+        s20: '<strong>Phase 1 retrospective.</strong> Three weeks done. Paste 5 prompts from across Phase 1 into a fresh conversation. Ask Claude: "These are prompts I wrote over 3 weeks of deliberate practice. What has improved? What blind spots remain? What should I focus on in the next phase?" Take the answer seriously.',
+        s10: 'Log: Write your own Phase 1 retrospective — 3 sentences. What you learned, what you\'d do differently, what you\'re bringing into Phase 2.' }
+    ]
+  },
+  {
+    num: 4, title: 'Deep research', theme: 'Research as a commissioning skill — knowing what question to ask before you start',
+    phase: 'Phase 2 — Depth',
+    days: [
+      { name: 'Monday', role: 'Orient + plan', tags: ['os'],
+        s20: '<strong>Weekly review.</strong> Phase 2 begins. Skill focus: <em>deep research commissioning</em>. The Nordic landscape mapping intensifies this week — it\'s now the primary research vehicle. Ask Claude to help you design the research architecture: what are the 5 most important questions to answer about the Nordic sustainable finance landscape before you can make a career decision?',
+        s10: 'Log: What\'s the question you\'re most uncertain how to research? That\'s where you start.' },
+      { name: 'Tuesday', role: 'Research depth', tags: ['sub','job'],
+        s20: '<strong>Nordic landscape — academic and think tank layer.</strong> Research universities, research centres, and policy institutes active in sustainable finance in the Nordics. SSE, Stockholm University, SIIA, Mistra. The Substack angle: which of these institutions are doing the most intellectually interesting work that intersects with The Living Issue Tree\'s themes?',
+        s10: 'Log: One institution or research centre you hadn\'t heard of that seems worth tracking.' },
+      { name: 'Wednesday', role: 'Feature day', tags: ['feature','house'],
+        s20: '<strong>Feature: Artifacts — interactive tools.</strong> Commission Claude to build a property scoring Artifact for the house search. Specify it entirely functionally: "I want to be able to enter criteria, weight them, and score properties against them — show me a live score as I adjust." Do not specify any code. Iterate on the output until it\'s genuinely useful.',
+        s10: 'Log: What did you learn about how to specify an Artifact? What was the gap between your first description and what you actually needed?' },
+      { name: 'Thursday', role: 'Writing + voice', tags: ['sub'],
+        s20: '<strong>Note 01 — structural pass.</strong> By now you have a rough draft. Today\'s session: ask Claude to read it as your target reader — a financially literate sceptic who has seen too many sustainability takes. Ask: "Where do you lose interest? Where does the argument feel lazy? What question does this note leave unanswered that it should address?" Revise against those notes.',
+        s10: 'Log: What did the "target reader" framing surface that a generic "give feedback" prompt wouldn\'t have?' },
+      { name: 'Friday', role: 'Meta + sharpen', tags: ['meta'],
+        s20: 'Research calibration session. Take 3 specific claims from this week\'s Nordic landscape research and verify them independently — Finansinspektionen website, company annual reports, academic papers. Map what Claude got right, what it missed, and what it overstated. Build a mental model of Claude\'s research strengths and limits in your specific domain.',
+        s10: 'Log: What\'s your updated rule of thumb for when to trust Claude\'s research vs when to verify independently?' }
+    ]
+  },
+  {
+    num: 5, title: 'Personas + adversarial thinking', theme: 'Getting real pushback — not flattery',
+    phase: 'Phase 2 — Depth',
+    days: [
+      { name: 'Monday', role: 'Orient + plan', tags: ['os'],
+        s20: '<strong>Weekly review.</strong> Skill focus: <em>personas and adversarial mode</em>. Ask Claude to play your most sceptical professional peer — someone who knows the sustainable finance space in the Nordics well and will push back hard on any career thinking that\'s too comfortable. Start the week\'s review in that mode.',
+        s10: 'Log: What did the sceptical peer surface that the standard review wouldn\'t have?' },
+      { name: 'Tuesday', role: 'Research depth', tags: ['job'],
+        s20: '<strong>Nordic landscape — talent and hiring market.</strong> Research who is actually hiring in the space: job postings, LinkedIn signals, firm growth patterns. But today\'s skill is persona: ask Claude to play a Head of Sustainable Finance at a Nordic bank reviewing your background. What would they think? What gaps would concern them? What would make you stand out?',
+        s10: 'Log: What gap or concern did the persona surface that you\'d been avoiding thinking about?' },
+      { name: 'Wednesday', role: 'Feature day', tags: ['feature','job'],
+        s20: '<strong>Feature: Personas + adversarial mode.</strong> Build two specific interviewer personas for your most likely target role types (e.g. a sceptical CFO at a Nordic asset manager; a Head of ESG at a Scandinavian bank). Run a full 10-question mock interview with each. Then transfer the technique: use hostile reader mode on a Substack draft. Ask Claude to be the reader who\'s most likely to dismiss the argument.',
+        s10: 'Log: What\'s the difference between a generic "be critical" prompt and a fully specified persona? What does the specificity add?' },
+      { name: 'Thursday', role: 'Writing + voice', tags: ['sub'],
+        s20: '<strong>Note 01 — hostile reader pass.</strong> Take the current draft. Ask Claude to play three hostile readers in sequence: (1) an economist who thinks systems thinking is hand-wavy, (2) a sustainability professional who thinks the diagnostic framing is too detached, (3) a financier who thinks the whole premise is overwrought. Revise against the objections that land.',
+        s10: 'Log: Which hostile reader found the most legitimate flaw? How did you address it?' },
+      { name: 'Friday', role: 'Meta + sharpen', tags: ['meta'],
+        s20: 'Persona audit. Review how you\'ve used personas this week. Ask Claude: "Based on these examples, what makes a persona prompt genuinely useful vs one that just produces polite generic feedback? What are the markers of a well-specified persona?" Build 3 reusable persona templates for future use.',
+        s10: 'Log: The 3 persona templates you\'re saving. Name them and describe when to use each.' }
+    ]
+  },
+  {
+    num: 6, title: 'Voice + style', theme: 'Teaching Claude your voice — so it can strengthen your writing without replacing it',
+    phase: 'Phase 2 — Depth',
+    days: [
+      { name: 'Monday', role: 'Orient + plan', tags: ['os'],
+        s20: '<strong>Weekly review.</strong> Skill focus: <em>voice capture and style</em>. This week the Substack is the primary vehicle but the skill transfers everywhere — job applications, LinkedIn posts, professional correspondence. Ask Claude: "What do I know about my own writing voice? What would I want a writing assistant to preserve above all else?"',
+        s10: 'Log: Three words that describe your voice at its best. Three words that describe what it sounds like when it\'s off.' },
+      { name: 'Tuesday', role: 'Research depth', tags: ['sub','job'],
+        s20: '<strong>Nordic landscape — the white spaces.</strong> You\'ve mapped institutions, policy, academia, and hiring. Today: what\'s missing? Ask Claude to identify where the McKinsey + Danske Bank compound is rarest in the Nordic sustainable finance ecosystem — where analytical rigour and financial markets depth are genuinely scarce. This is your positioning intelligence.',
+        s10: 'Log: The single most interesting white space you found. Why is it interesting?' },
+      { name: 'Wednesday', role: 'Feature day', tags: ['feature','sub'],
+        s20: '<strong>Feature: Voice capture + style feature.</strong> The full voice session. Paste 5 pieces of your best writing — mix of Substack drafts, professional writing, anything you\'re proud of. Ask Claude to: (1) identify your stylistic fingerprints — sentence rhythm, vocabulary, how you use examples, how you handle uncertainty; (2) write the style rules as a paragraph you can paste into your Substack Project system prompt; (3) demonstrate by rewriting a weak sentence in your voice. Then set up the Claude style feature in Settings.',
+        s10: 'Log: What did Claude identify about your voice that you hadn\'t consciously noticed before?' },
+      { name: 'Thursday', role: 'Writing + voice', tags: ['sub'],
+        s20: '<strong>Note 01 — voice pass.</strong> Now that your voice is formally captured, run the current draft through a voice audit. Ask Claude: "Does this sound like the voice in the style rules we defined? Where does it drift? Where is it trying to be more formal or more casual than the voice actually is?" Do the voice-alignment edits.',
+        s10: 'Log: Where did the voice drift most? What caused it — subject matter, editing anxiety, something else?' },
+      { name: 'Friday', role: 'Meta + sharpen', tags: ['meta'],
+        s20: 'Voice transfer session. Take your style rules and apply them outside the Substack context — rewrite a professional email or LinkedIn post in your actual voice. Then ask Claude: "Given my voice profile, what kinds of writing tasks should I always do myself vs which ones can I delegate more heavily to Claude?" The answer should be specific to your actual voice, not generic.',
+        s10: 'Log: What writing should always be yours? What can Claude do more of?' }
+    ]
+  },
+  {
+    num: 7, title: 'Connectors + MCP', theme: 'Building real workflows — not demos',
+    phase: 'Phase 2 — Depth',
+    days: [
+      { name: 'Monday', role: 'Orient + plan', tags: ['os'],
+        s20: '<strong>Weekly review.</strong> Skill focus: <em>connectors and MCP integration</em>. You have Google Drive connected. The goal this week is to build one workflow that actually uses it — not a test, a real workflow you\'ll keep using. Ask Claude: "Given my five projects, what\'s the most valuable thing I could do with a live connection to my Google Drive files?"',
+        s10: 'Log: The one workflow you\'re committing to building this week. Be specific.' },
+      { name: 'Tuesday', role: 'Research depth', tags: ['sub','job'],
+        s20: '<strong>Nordic landscape — career scenarios.</strong> Time to start translating the landscape intelligence into career scenarios. Ask Claude to help you sketch 4–5 plausible next-chapter scenarios given your background, the landscape map, and your constraints. Include the non-obvious ones: academia, policy, an advisory role, building something. This is not committing — it\'s expanding the option space before narrowing.',
+        s10: 'Log: The scenario you find most interesting that you\'d have been unlikely to name on day one of the job hunt.' },
+      { name: 'Wednesday', role: 'Feature day', tags: ['feature','sub','os'],
+        s20: '<strong>Feature: Connectors + Google Drive MCP.</strong> Pull your Substack editorial calendar and/or research notes from Google Drive directly into a Claude conversation. Use them — ask Claude to find thematic connections across planned notes, identify research gaps in the calendar, or suggest sequencing changes based on how the landscape mapping has evolved. Build the habit of bringing your actual documents into the conversation rather than summarising them.',
+        s10: 'Log: What was the difference between describing your documents to Claude vs handing them over directly?' },
+      { name: 'Thursday', role: 'Writing + voice', tags: ['sub'],
+        s20: '<strong>Note 01 — near-final pass.</strong> By Week 7 Thursday, Note 01 should be close. Today: one final structural check — does the diagnostic framing hold all the way through? Does it end with an open question rather than a conclusion? Does it earn the "By Design" title? If yes: it\'s done. Resist the temptation to keep polishing.',
+        s10: 'Log: What\'s the hardest thing to let go of in this draft? Is it actually a flaw, or is it perfectionism?' },
+      { name: 'Friday', role: 'Meta + sharpen', tags: ['meta'],
+        s20: 'Connector audit. This week you built a real Google Drive workflow. Ask Claude: "What other connectors or integrations would meaningfully improve my workflow across my five projects? What am I doing manually that could be automated with the right connection?" Make a prioritised list for the Vercel migration in Week 10.',
+        s10: 'Log: The integration you most want to exist that doesn\'t yet.' }
+    ]
+  },
+  {
+    num: 8, title: 'Decision frameworks', theme: 'Structured thinking under uncertainty — for housing, career, and everything after',
+    phase: 'Phase 2 — Depth',
+    days: [
+      { name: 'Monday', role: 'Orient + plan', tags: ['os'],
+        s20: '<strong>Weekly review.</strong> Skill focus: <em>decision architecture</em>. You have two major decisions on the horizon — housing and career direction. This week\'s skill is directly applicable. Ask Claude: "What are the open decisions I\'m carrying right now? Which ones have a clock on them? Which ones are actually decisions vs things I\'m treating as decisions but are really just open questions?"',
+        s10: 'Log: The one decision you\'ve been avoiding clarifying. Name it.' },
+      { name: 'Tuesday', role: 'Research depth', tags: ['job'],
+        s20: '<strong>Nordic landscape — synthesis and gaps.</strong> By Week 8 Tuesday you have 7 weeks of landscape research. Today: ask Claude to help you synthesise it into a single intelligence document — key players, white spaces, your positioning, the 3 most interesting scenarios, what you still don\'t know. This becomes the foundation for your career decision framework.',
+        s10: 'Log: The most important thing you still don\'t know about the landscape. How would you find out?' },
+      { name: 'Wednesday', role: 'Feature day', tags: ['feature','house'],
+        s20: '<strong>Feature: Document analysis + uploads.</strong> Upload a real document relevant to your current work — a job description, a property listing, a company annual report, or a section of your thesis. Ask Claude a set of precise questions about it, request citations, ask what\'s absent that you\'d expect to see. Build a document analysis prompt template you\'ll reuse.',
+        s10: 'Log: What does a good document analysis prompt include that a weak one doesn\'t?' },
+      { name: 'Thursday', role: 'Writing + voice', tags: ['thesis','sub'],
+        s20: '<strong>Thesis defence prep begins — Phase 6.</strong> The thesis prose is done (or close). Today: ask Claude to play a seminar examiner. Give it your thesis summary and abstract. Ask for the 8 most likely hard questions. Answer them. Ask Claude to push back on your answers. This is the first defence red-team session.',
+        s10: 'Log: The question you\'re least comfortable answering. What\'s the gap it\'s pointing at?' },
+      { name: 'Friday', role: 'Meta + sharpen', tags: ['meta'],
+        s20: 'Build your decision framework template. Using the house search as the test case, ask Claude to help you build a reusable decision architecture: criteria weighting, pre-mortem, regret minimisation, a final recommendation structure. Then generalise it — the same framework applies to career scenarios and any future high-stakes choice. Save it in your Life OS Project.',
+        s10: 'Log: The decision framework as a 5-step process in your own words. This is now part of your personal operating system.' }
+    ]
+  },
+  {
+    num: 9, title: 'System design', theme: 'Using Claude to improve your system for using Claude',
+    phase: 'Phase 3 — Mastery',
+    days: [
+      { name: 'Monday', role: 'Orient + plan', tags: ['os'],
+        s20: '<strong>Weekly review + Phase 2 retrospective.</strong> Phase 3 begins. Five weeks of depth work done. Ask Claude to review your reflection log entries from Weeks 4–8. What patterns has it built? What\'s improved? What\'s the most persistent blind spot? Set skill focus: <em>system design</em>.',
+        s10: 'Log: Your Phase 2 retrospective in 3 sentences. What you built, what you learned, what follows.' },
+      { name: 'Tuesday', role: 'Research depth', tags: ['job','sub'],
+        s20: '<strong>Career decision — first cut.</strong> By Week 9 you have enough landscape intelligence to make a first-cut career hypothesis. Ask Claude to help you articulate it: given everything you\'ve mapped, what\'s your current best answer to "what should Jonas do next and why?" Push back on the answer. Refine it. This is not final — it\'s the hypothesis you\'ll test going forward.',
+        s10: 'Log: Your current career hypothesis in one sentence. How confident are you? What would change it?' },
+      { name: 'Wednesday', role: 'Feature day', tags: ['feature','os'],
+        s20: '<strong>Feature: Artifacts — data viz + dashboards.</strong> Build a visual dashboard Artifact for your job search pipeline — stages, companies, contacts, progress. Or a weekly review dashboard that visualises your five projects\' status. Specify it functionally. The goal is something you\'d genuinely open every Monday morning.',
+        s10: 'Log: Did the Artifact you built change how you see the information? Or was it just a prettier version of what you already knew?' },
+      { name: 'Thursday', role: 'Writing + voice', tags: ['thesis','sub'],
+        s20: '<strong>Thesis — presentation material.</strong> Phase 7 begins. Ask Claude to help you build the seminar presentation structure. Give it the thesis summary, the revised abstract, and the key findings. Ask: "What\'s the right narrative arc for a 20-minute defence presentation of this thesis?" Then draft the first 3 slides\' worth of talking points.',
+        s10: 'Log: What\'s the single most important thing the presentation needs to land for the examiner?' },
+      { name: 'Friday', role: 'Meta + sharpen', tags: ['meta'],
+        s20: '<strong>Life OS architecture review.</strong> Nine weeks in. Ask Claude to review your entire Life OS setup — the Vercel dashboard, the Claude Projects, the weekly review habit, the reflection log. Ask: "What\'s missing? What\'s redundant? What\'s working better than expected? What should be added before the Vercel migration next week?" Take the answer seriously.',
+        s10: 'Log: The one change to your Life OS that would have the highest impact right now.' }
+    ]
+  },
+  {
+    num: 10, title: 'Claude Code + Vercel migration', theme: 'Shipping real infrastructure — not a tutorial',
+    phase: 'Phase 3 — Mastery',
+    days: [
+      { name: 'Monday', role: 'Orient + plan', tags: ['os'],
+        s20: '<strong>Weekly review.</strong> This is the biggest technical week of the program. Skill focus: <em>Claude Code</em>. Before touching code: ask Claude to help you design what the Vercel dashboard curriculum feature should look like, based on 9 weeks of actually using this HTML tracker. What do you need that you don\'t have? What have you not used? Design before building.',
+        s10: 'Log: The 3 features you\'ve used most in this tracker. The 2 things you wish it had.' },
+      { name: 'Tuesday', role: 'Research depth', tags: ['job'],
+        s20: '<strong>Nordic landscape — outreach planning.</strong> Translate the landscape intelligence into a network map: who are the 10–15 people worth reaching out to across your target scenarios? Ask Claude to help you prioritise them and draft personalised outreach angles for the top 5. Not templated — each one specific to what you know about them and the landscape.',
+        s10: 'Log: The outreach you\'re most uncertain about. What\'s the uncertainty?' },
+      { name: 'Wednesday', role: 'Feature day', tags: ['feature','os'],
+        s20: '<strong>Feature: Claude Code — install + Vercel migration.</strong> Install Claude Code CLI (docs.claude.ai/claude-code). Use it to add the curriculum tracker as a feature to your existing Vercel dashboard (GitHub: jvannefors-alt/Dashboard). This is not a tutorial exercise — you\'re shipping a real feature to real infrastructure you use every day. Use Claude Code to understand the existing codebase before modifying it.',
+        s10: 'Log: What was the difference between using Claude Code and using Claude in chat for a coding task? Where did it add the most value?' },
+      { name: 'Thursday', role: 'Writing + voice', tags: ['thesis'],
+        s20: '<strong>Thesis — final defence prep.</strong> Second full red-team session. This time: ask Claude to play the full seminar panel — supervisor, examiner, and a sceptical faculty observer. Run through your key arguments. Ask for the follow-up questions after each answer. Identify the 2–3 questions you still can\'t answer cleanly and work on those.',
+        s10: 'Log: The one argument in the thesis you\'d strengthen if you could. Can you address it in the presentation even if you can\'t change the text?' },
+      { name: 'Friday', role: 'Meta + sharpen', tags: ['meta'],
+        s20: '<strong>Migration retrospective.</strong> The curriculum now lives in Vercel. Ask Claude: "What did building this teach me about Claude Code vs chat-based Claude? When should I reach for each going forward?" Then update your prompt library with anything you learned from the build process itself.',
+        s10: 'Log: Claude Code in 3 sentences — what it is, when to use it, what surprised you.' }
+    ]
+  },
+  {
+    num: 11, title: 'Multi-turn conversation design', theme: 'Sustained thinking — not one-shot prompts',
+    phase: 'Phase 3 — Mastery',
+    days: [
+      { name: 'Monday', role: 'Orient + plan', tags: ['os'],
+        s20: '<strong>Weekly review.</strong> Skill focus: <em>multi-turn conversation design</em>. Most people use Claude as a one-shot tool. Mastery means designing conversations — knowing when to push deeper, when to start fresh, and how to manage context across a long session. Ask Claude to help you identify the 3 conversations from your recent project work that should have been sustained dialogues but weren\'t.',
+        s10: 'Log: What do you lose by treating every Claude session as a one-off? What would sustained conversations unlock?' },
+      { name: 'Tuesday', role: 'Research depth', tags: ['job','sub'],
+        s20: '<strong>Nordic landscape — Living Issue Tree connection.</strong> Design a 10-turn conversation that explicitly explores how the landscape mapping feeds into Substack material. Don\'t just ask questions — build on each response, push back, follow threads. The goal is to discover a Note angle you wouldn\'t have reached in a single prompt.',
+        s10: 'Log: The angle you found that single-turn prompting wouldn\'t have surfaced.' },
+      { name: 'Wednesday', role: 'Feature day', tags: ['feature','os'],
+        s20: '<strong>Feature: Multi-turn conversation design.</strong> Design and run a full 10+ turn strategic dialogue about your career decision. Not "tell me what to do" — a structured Socratic conversation where Claude challenges your assumptions, surfaces hidden constraints, and helps you think through the decision architecture. Notice how you manage context, when you summarise and continue, when you start fresh.',
+        s10: 'Log: What\'s your rule of thumb now for when to start a new conversation vs continue?' },
+      { name: 'Thursday', role: 'Writing + voice', tags: ['sub'],
+        s20: '<strong>Note 02 — research and first draft.</strong> Note 01 is done. The next note begins. Apply everything from the program so far: structured research brief, voice profile in the system prompt, hostile reader mode, iterative refinement. Track which techniques you\'re now using without thinking about them.',
+        s10: 'Log: Which technique from the program are you now applying automatically, without consciously deciding to?' },
+      { name: 'Friday', role: 'Meta + sharpen', tags: ['meta'],
+        s20: 'Context window session. Review what happens when a conversation gets too long — test it deliberately with a long research thread. Ask Claude to summarise a long conversation, then continue from the summary. Learn what survives summarisation and what gets lost. Build your personal rule of thumb for context management.',
+        s10: 'Log: What gets lost in summarisation? How will you preserve what matters?' }
+    ]
+  },
+  {
+    num: 12, title: 'Cross-model testing', theme: 'What\'s universal, what\'s Claude-specific',
+    phase: 'Phase 3 — Mastery',
+    days: [
+      { name: 'Monday', role: 'Orient + plan', tags: ['os'],
+        s20: '<strong>Weekly review.</strong> Skill focus: <em>cross-model transfer</em>. You said from the start you want skills that transfer to other LLMs. This week delivers on that. Before testing: ask Claude to predict how GPT-4o and Gemini will respond differently to your prompting style. This prediction is part of the learning.',
+        s10: 'Log: Claude\'s prediction of where your prompts will work differently on other models. You\'ll test this.' },
+      { name: 'Tuesday', role: 'Research depth', tags: ['job','sub'],
+        s20: '<strong>Career decision — second cut.</strong> Three weeks since your first career hypothesis. Has it changed? Ask Claude to challenge your current hypothesis with everything that\'s happened since Week 9. Has any landscape research changed the picture? Has the thesis defence prep revealed anything about where you want to be intellectually? Refine the hypothesis.',
+        s10: 'Log: How has your career hypothesis changed since Week 9? What caused the shift?' },
+      { name: 'Wednesday', role: 'Feature day', tags: ['feature','meta'],
+        s20: '<strong>Feature: Cross-model testing.</strong> Take your 5 best prompts from the curriculum — your research brief template, your voice capture prompt, your hostile reader persona, your decision framework prompt, your weekly review prompt. Run each on GPT-4o and Gemini 1.5 Pro (or whatever current versions are available). Map: what works identically, what needs adjustment, what actually works better elsewhere. Be specific.',
+        s10: 'Log: The 80% that\'s universal. The 20% that\'s Claude-specific. What does that tell you about what you\'ve actually learned?' },
+      { name: 'Thursday', role: 'Writing + voice', tags: ['sub'],
+        s20: '<strong>Note 02 — completion.</strong> Apply the full workflow. Research brief → first draft → voice pass → hostile reader → iterative refinement → done. Track time: how long did Note 02 take compared to Note 01? What got faster? What still takes as long?',
+        s10: 'Log: The time delta between Note 01 and Note 02. What accounts for the difference?' },
+      { name: 'Friday', role: 'Meta + sharpen', tags: ['meta'],
+        s20: '<strong>Prompt library — first draft.</strong> Begin compiling your prompt library. Go through your reflection log entries from all 12 weeks. Identify every prompt you noted as working unexpectedly well. Collect them. Start categorising: research, decisions, writing, personas, system design. Don\'t template yet — just collect.',
+        s10: 'Log: How many genuinely strong prompts do you have? What categories are richest? What\'s thin?' }
+    ]
+  },
+  {
+    num: 13, title: 'Prompt library — capstone', theme: 'From 13 weeks of practice to a personal prompting philosophy',
+    phase: 'Phase 3 — Mastery',
+    days: [
+      { name: 'Monday', role: 'Orient + plan', tags: ['os'],
+        s20: '<strong>Final weekly review — and the beginning of the ongoing rhythm.</strong> Week 13 is the capstone but not the end. Ask Claude to help you design what the daily practice looks like after the structured curriculum ends. What habits do you keep? What does the 30-minute session look like when there\'s no syllabus? Build the post-curriculum system.',
+        s10: 'Log: What does your ongoing Claude practice look like after today? Be specific.' },
+      { name: 'Tuesday', role: 'Research depth', tags: ['job','sub'],
+        s20: '<strong>Landscape — final synthesis.</strong> Thirteen weeks of Nordic sustainable finance research. Today: the definitive synthesis. Ask Claude to help you produce a single structured intelligence document — the landscape map you\'ll actually use as a career decision reference. It should answer: who are the players, what are the white spaces, where is your compound rare, what are your 3 most credible next-chapter scenarios.',
+        s10: 'Log: The single most valuable piece of landscape intelligence you\'ve built. The thing you didn\'t know 13 weeks ago that now feels essential.' },
+      { name: 'Wednesday', role: 'Feature day', tags: ['feature','meta'],
+        s20: '<strong>Feature + Capstone: Prompt library.</strong> Complete the prompt library. Generalise each strong prompt into a reusable template with [variable] placeholders. Categorise them. Then ask Claude: "What common patterns do you see across my best prompts? What do they share structurally? What does that tell me about my prompting philosophy?" Write your prompting philosophy in your own words — 3–5 sentences. This goes in your Life OS knowledge base.',
+        s10: 'Log: Your prompting philosophy. The principles you\'ve built that you\'ll carry into every future LLM you use.' },
+      { name: 'Thursday', role: 'Writing + voice', tags: ['sub','job'],
+        s20: '<strong>The Living Issue Tree — momentum check.</strong> Where is the publication? How many notes are live or drafted? Ask Claude to review the editorial calendar against where you actually are and suggest any adjustments. Also: has the career work and landscape mapping revealed any new angles worth adding to the calendar?',
+        s10: 'Log: The note you\'re most excited to write next. The one you\'re most nervous about.' },
+      { name: 'Friday', role: 'Meta + sharpen', tags: ['meta'],
+        s20: '<strong>Full program retrospective.</strong> Thirteen weeks. Paste your first reflection log entry (from Week 1 Monday) and your most recent one into a fresh conversation. Ask Claude: "What has changed in how this person uses Claude? What would you say to them about the journey from here?" Then write your own answer to that question — not for Claude, for yourself.',
+        s10: 'Log: The final entry. Who were you as a Claude user 13 weeks ago, and who are you now? What\'s the most important thing you built — a skill, a system, or a habit?' }
+    ]
+  }
+];
+
+// ─── STORAGE ───────────────────────────────────────────────────────────────
+
+const PKEY='curriculum_v1';
+async function loadState() {
+  try {
+    const r = await fetch('/api/update',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'progGet',key:PKEY})});
+    const j = await r.json();
+    return (j && j.state) ? j.state : {};
+  } catch { return {}; }
+}
+
+let _cTimer=null,_cPending=false,_cLast=null;
+async function saveState(state) {
+  _cLast=state;_cPending=true;clearTimeout(_cTimer);
+  _cTimer=setTimeout(()=>{
+    fetch('/api/update',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'progSave',key:PKEY,state:_cLast})}).then(r=>{if(r.ok)_cPending=false;}).catch(()=>{});
+  },600);
+}
+function _cFlush(){if(!_cPending||_cLast===null)return;try{navigator.sendBeacon('/api/update',new Blob([JSON.stringify({action:'progSave',key:PKEY,state:_cLast})],{type:'application/json'}));_cPending=false;}catch(e){}}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')_cFlush();});
+window.addEventListener('pagehide',_cFlush);
+
+let STATE = {};
+
+// ─── RENDER ────────────────────────────────────────────────────────────────
+
+function getPhase(weekNum) {
+  return PHASES.find(p => p.weeks.includes(weekNum));
+}
+
+function renderFeatureGrid(state) {
+  const grid = document.getElementById('feature-grid');
+  grid.innerHTML = FEATURES.map(f => {
+    const done = state[`week${f.wk}`] && state[`week${f.wk}`][`day2`];
+    return `<div class="feature-card ${done ? 'done' : ''}">
+      <div class="feature-wk">W${String(f.wk).padStart(2,'0')}</div>
+      <div>
+        <div class="feature-name">${f.name}</div>
+        <div class="feature-desc">${f.desc}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderWeek(weekData, state) {
+  const phase = getPhase(weekData.num);
+  const weekKey = `week${weekData.num}`;
+  const weekState = state[weekKey] || {};
+  const completedCount = weekData.days.filter((_,i) => weekState[`day${i}`]).length;
+
+  let html = `
+    <div class="page-header">
+      <div class="page-eyebrow">${phase.label} — ${phase.title}</div>
+      <div class="week-header">
+        <div>
+          <h1 class="page-title">Week ${weekData.num} — ${weekData.title}</h1>
+          <div class="week-theme">${weekData.theme}</div>
+        </div>
+        <div class="feature-badge">
+          <span class="feature-dot"></span>
+          ${FEATURES[weekData.num-1].name}
+        </div>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" style="width:${completedCount/5*100}%"></div>
+      </div>
+      <div class="progress-label">${completedCount} of 5 sessions completed</div>
+    </div>
+    <div class="phase-header">
+      <div class="phase-eyebrow">${phase.label}</div>
+      <div class="phase-title-text">${phase.title}</div>
+      <div class="phase-desc">${phase.desc}</div>
+    </div>
+    <div class="days-list">`;
+
+  weekData.days.forEach((day, i) => {
+    const dayKey = `day${i}`;
+    const done = !!weekState[dayKey];
+    const logKey = `log_${weekKey}_${dayKey}`;
+    const logVal = weekState[logKey] || '';
+    const tags = day.tags.map(t => {
+      const map = {job:'ptag-job',house:'ptag-house',sub:'ptag-sub',os:'ptag-os',thesis:'ptag-thesis',feature:'ptag-feature',meta:'ptag-meta'};
+      const labels = {job:'Job hunt',house:'House',sub:'Substack',os:'Life OS',thesis:'Thesis',feature:'Feature day',meta:'Meta'};
+      return `<span class="ptag ${map[t]}">${labels[t]}</span>`;
+    }).join('');
+
+    html += `
+      <div class="day-card ${done ? 'completed' : ''}" id="daycard-${weekData.num}-${i}">
+        <div class="day-card-header">
+          <div class="day-check" onclick="toggleDay(${weekData.num}, ${i}, event)" title="Mark complete">
+            <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+              <path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div>
+            <div class="day-name">${day.name}</div>
+            <div class="day-role">${day.role}</div>
+          </div>
+          <div class="day-project-tags">${tags}</div>
+        </div>
+        <div class="day-body">
+          <div class="session-block">
+            <div class="session-label s20">20 min — practice</div>
+            <div class="session-content">${day.s20}</div>
+          </div>
+          <div class="session-block">
+            <div class="session-label s10">10 min — reflection log</div>
+            <div class="session-content">${day.s10}</div>
+          </div>
+          <div class="log-area">
+            <div class="log-label">Your log entry</div>
+            <textarea class="log-input" id="log-${weekData.num}-${i}" placeholder="Write your reflection here — 2–3 sentences is enough...">${logVal}</textarea>
+            <button class="log-save" onclick="saveLog(${weekData.num}, ${i})">Save entry</button>
+            <span class="log-saved" id="saved-${weekData.num}-${i}"></span>
+          </div>
+        </div>
+      </div>`;
+  });
+
+  html += '</div>';
+  return html;
+}
+
+function updateStats(state) {
+  let totalDone = 0;
+  let featuresDone = 0;
+  let currentWeek = null;
+
+  WEEKS.forEach((w, wi) => {
+    const wk = state[`week${w.num}`] || {};
+    const done = w.days.filter((_,i) => wk[`day${i}`]).length;
+    totalDone += done;
+    if (wk['day2']) featuresDone++;
+    document.getElementById(`prog-week${w.num}`).textContent = `${done}/5`;
+    const nav = document.getElementById(`nav-week${w.num}`);
+    if (done === 5) nav.style.opacity = '0.6';
+    else { nav.style.opacity = '1'; if (!currentWeek) currentWeek = w.num; }
+  });
+
+  if (!currentWeek) currentWeek = 13;
+  const pct = Math.round(totalDone / 65 * 100);
+  document.getElementById('total-progress').style.width = pct + '%';
+  document.getElementById('total-progress-label').textContent = `${totalDone} of 65 sessions completed`;
+  document.getElementById('stat-done').textContent = totalDone;
+  document.getElementById('stat-features').textContent = featuresDone;
+  document.getElementById('stat-week').textContent = `W${String(currentWeek).padStart(2,'0')}`;
+
+  const cw = WEEKS.find(w => w.num === currentWeek);
+  if (cw) {
+    document.getElementById('stat-week-theme').textContent = cw.title;
+    const phase = getPhase(currentWeek);
+    document.getElementById('stat-phase').textContent = phase.label;
+    document.getElementById('stat-phase-sub').textContent = phase.title;
+  }
+
+  renderFeatureGrid(state);
+}
+
+// ─── INTERACTIONS ──────────────────────────────────────────────────────────
+
+async function toggleDay(weekNum, dayIdx, event) {
+  event.stopPropagation();
+  const key = `week${weekNum}`;
+  if (!STATE[key]) STATE[key] = {};
+  const dayKey = `day${dayIdx}`;
+  STATE[key][dayKey] = !STATE[key][dayKey];
+  await saveState(STATE);
+  const card = document.getElementById(`daycard-${weekNum}-${dayIdx}`);
+  card.classList.toggle('completed', STATE[key][dayKey]);
+  updateStats(STATE);
+}
+
+async function saveLog(weekNum, dayIdx) {
+  const val = document.getElementById(`log-${weekNum}-${dayIdx}`).value;
+  const key = `week${weekNum}`;
+  if (!STATE[key]) STATE[key] = {};
+  STATE[key][`log_day${dayIdx}`] = val;
+  await saveState(STATE);
+  const saved = document.getElementById(`saved-${weekNum}-${dayIdx}`);
+  saved.textContent = 'Saved';
+  setTimeout(() => saved.textContent = '', 2000);
+}
+
+function showView(name) {
+  document.querySelectorAll('[id^="view-"]').forEach(el => el.classList.add('hidden'));
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.getElementById(`view-${name}`).classList.remove('hidden');
+  const navEl = document.getElementById(`nav-${name}`);
+  if (navEl) navEl.classList.add('active');
+}
+
+// ─── INIT ──────────────────────────────────────────────────────────────────
+
+async function init() {
+  STATE = await loadState();
+
+  // Render all week views
+  WEEKS.forEach(w => {
+    document.getElementById(`view-week${w.num}`).innerHTML = renderWeek(w, STATE);
+  });
+
+  updateStats(STATE);
+}
+
+init();
+</script>
+</body>
+</html>
