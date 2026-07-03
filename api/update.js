@@ -8,6 +8,7 @@
 import Redis from 'ioredis';
 
 const KEY = 'dashboard_v2';
+const PROG_KEYS = ['skate_v1', 'curriculum_v1'];
 const DOMAIN_IDS = ['thesis','career','tree','reading','house','life','build','hobbies'];
 
 let _redis;
@@ -119,6 +120,21 @@ export default async function handler(req, res) {
         } catch (e) {
           return res.status(200).json({ success: true, text: null });
         }
+      }
+
+      if (action === 'progGet') {
+        const key = req.body.key;
+        if (!PROG_KEYS.includes(key)) return res.status(400).json({ error: 'Unknown program key' });
+        const v = await redis().get(key);
+        return res.status(200).json({ success: true, state: v ? JSON.parse(v) : null });
+      }
+
+      if (action === 'progSave') {
+        const key = req.body.key;
+        if (!PROG_KEYS.includes(key)) return res.status(400).json({ error: 'Unknown program key' });
+        if (req.body.state === undefined) return res.status(400).json({ error: 'No state provided' });
+        await redis().set(key, JSON.stringify(req.body.state));
+        return res.status(200).json({ success: true });
       }
 
       return res.status(400).json({ error: 'Unknown action' });
