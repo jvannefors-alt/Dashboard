@@ -12,6 +12,25 @@
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{background:var(--ink);color:var(--text);font-family:"Hanken Grotesk",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
   body{padding:22px;max-width:1180px;margin:0 auto;min-height:100vh}
+  .shell{display:flex;gap:26px;align-items:flex-start}
+  .side{width:184px;flex:none;position:sticky;top:22px}
+  .main{flex:1;min-width:0}
+  .brand{font-family:"Space Grotesk";font-weight:600;font-size:15px;letter-spacing:.01em;color:var(--text);padding:2px 12px 16px}
+  .nav{display:flex;flex-direction:column;gap:2px}
+  .navitem{display:block;padding:9px 12px;border-radius:8px;color:var(--muted);font-family:"Space Grotesk";font-weight:500;font-size:13px;cursor:pointer;text-decoration:none;border:1px solid transparent}
+  .navitem:hover{background:var(--surface);color:var(--text)}
+  .navitem.active{background:var(--surface-2);color:var(--text);border-color:var(--line)}
+  .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+  .pcard{display:block;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;text-decoration:none;color:var(--text);transition:border-color .14s,transform .14s}
+  .pcard:hover{border-color:var(--muted);transform:translateY(-2px)}
+  .pcard-top{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+  .pdot{width:9px;height:9px;border-radius:99px;flex:none}
+  .ptag{font-family:"Space Grotesk";font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint)}
+  .pname{font-family:"Space Grotesk";font-weight:600;font-size:17px;margin-bottom:6px}
+  .pdesc{font-size:13px;line-height:1.5;color:var(--muted);margin-bottom:14px}
+  .pprog{font-family:"JetBrains Mono";font-size:11.5px;color:var(--muted);margin-bottom:14px}
+  .popen{font-family:"JetBrains Mono";font-size:12px;color:var(--task)}
+  @media(max-width:720px){.shell{flex-direction:column;gap:14px}.side{width:100%;position:static}.nav{flex-direction:row;flex-wrap:wrap}.brand{padding-bottom:10px}}
   .mono{font-family:"JetBrains Mono",monospace}
   .cmd{background:linear-gradient(180deg,var(--surface-2),var(--surface));border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;margin-bottom:14px}
   .cmd-top{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:center}
@@ -160,6 +179,16 @@
 </style>
 </head>
 <body>
+<div class="shell">
+<aside class="side">
+  <div class="brand">Life OS</div>
+  <nav class="nav">
+    <a class="navitem active" data-view="board">Board</a>
+    <a class="navitem" data-view="programs">Programs</a>
+  </nav>
+</aside>
+<main class="main">
+<div id="view-board">
   <div class="cmd">
     <div class="cmd-top">
       <div class="clock">
@@ -193,6 +222,11 @@
   </div>
   <div class="board" id="board"></div>
   <div class="foot">Capture all week — by Notes or the box above. The Monday review does the moving.</div>
+
+</div><!--/view-board-->
+<div id="view-programs" hidden></div>
+</main>
+</div><!--/shell-->
 
   <div class="scrim" id="scrim">
     <div class="rit">
@@ -532,6 +566,24 @@ $('#inboxBtn').onclick=()=>openRitual(0);
 $('#ritClose').onclick=closeRitual;
 $('#scrim').addEventListener('click',e=>{if(e.target===$('#scrim'))closeRitual();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#scrim').classList.contains('show'))closeRitual();});
+
+const PROGRAMS=[
+  {id:'skate',name:'Skate Coach',tag:'Skateboarding',desc:'Structured progression — tricks, drills, and logged sessions.',url:'skate_coach.html',accent:'--practice'},
+  {id:'curriculum',name:'AI Curriculum',tag:'Claude upskilling',desc:'Phased weeks of hands-on modules toward fluency.',url:'claude_curriculum.html',accent:'--decision'}
+];
+function renderPrograms(){
+  const el=document.getElementById('view-programs');
+  el.innerHTML=`<span class="eyebrow">Programs</span><div class="through" style="margin:6px 0 18px">Structured tracks you work through — open one to pick up where you left off.</div><div class="pgrid">`+
+    PROGRAMS.map(p=>`<a class="pcard" href="${p.url}"><div class="pcard-top"><span class="pdot" style="background:var(${p.accent})"></span><span class="ptag">${p.tag}</span></div><div class="pname">${p.name}</div><div class="pdesc">${p.desc}</div><div class="popen">Open →</div></a>`).join('')+
+    `</div>`;
+}
+function switchView(v){
+  document.querySelectorAll('.navitem').forEach(n=>n.classList.toggle('active',n.dataset.view===v));
+  document.getElementById('view-board').hidden=v!=='board';
+  document.getElementById('view-programs').hidden=v!=='programs';
+  if(v==='programs')renderPrograms();
+}
+document.querySelectorAll('.navitem').forEach(n=>n.addEventListener('click',()=>switchView(n.dataset.view)));
 
 loadState();
 </script>
