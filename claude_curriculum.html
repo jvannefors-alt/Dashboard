@@ -67,6 +67,9 @@
     border-bottom: 1px solid var(--rule);
     margin-bottom: 1rem;
   }
+  .backlink { display:inline-block; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--ink-secondary); text-decoration:none; border:1px solid var(--rule); border-radius:20px; padding:3px 10px; margin-bottom:12px; }
+  .backlink:hover { color:var(--ink); border-color:var(--rule-strong); }
+  .backlink-float { display:none; }
   .sidebar-logo .title {
     font-size: 11px;
     font-weight: 600;
@@ -413,14 +416,18 @@
   @media (max-width: 680px) {
     .sidebar { display: none; }
     .main { padding: 1.25rem; }
+    .backlink-float { display:inline-block; position:fixed; top:10px; right:10px; z-index:50; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--ink); text-decoration:none; background:var(--paper-raised); border:1px solid var(--rule-strong); border-radius:20px; padding:5px 12px; }
   }
 </style>
 </head>
 <body>
 
+<a class="backlink-float" href="index.html" title="Back to dashboard">← Board</a>
+
 <div class="shell">
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-logo">
+      <a class="backlink" href="index.html" title="Back to dashboard">← Board</a>
       <div class="title">The Curriculum</div>
       <div class="sub">Claude upskilling · 13 weeks</div>
     </div>
