@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Skate Coach">
+<title>Skate Coach</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+  .logo,.stitle,.blk-lbl,.log-lbl,.wk-ttl,.rest-t,.tab,.savebtn,.navbtn,.cur-badge{font-family:"Space Grotesk","Hanken Grotesk",sans-serif}
+  .wbadge,.blk-prog,.srow-done,.sdate,.wk-phase{font-family:"JetBrains Mono",monospace}
+  :root {
+    --bg: #15171F;
+    --bg2: #1C1F28;
+    --bg3: #242833;
+    --text: #E9E7E1;
+    --text2: #888D9B;
+    --text3: #5A5F6C;
+    --border: #30343F;
+    --border2: #3d4250;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --accent: #E0A455;
+    --teal: #58C9A3;
+    --violet: #B584D9;
+    --verm: #E5654B;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: "Hanken Grotesk", -apple-system, sans-serif; }
+  body { display: flex; flex-direction: column; max-width: 480px; margin: 0 auto; }
+
+  .hdr { padding: env(safe-area-inset-top, 12px) 16px 0; background: var(--bg); border-bottom: 0.5px solid var(--border); position: sticky; top: 0; z-index: 10; }
+  .hdr-top { display: flex; align-items: center; justify-content: space-between; padding-bottom: 10px; }
+  .logo { font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--text2); }
+  .wbadge { font-size: 11px; color: var(--text3); background: var(--bg2); border: 0.5px solid var(--border); border-radius: 20px; padding: 3px 10px; }
+  .tabs { display: flex; gap: 6px; padding-bottom: 10px; }
+  .tab { flex: 1; font-size: 13px; padding: 7px 4px; border: 0.5px solid var(--border); border-radius: var(--radius-sm); background: transparent; color: var(--text2); cursor: pointer; font-family: inherit; }
+  .tab.on { background: var(--accent); color: #1a1205; border-color: var(--accent); font-weight: 600; }
+
+  .content { flex: 1; overflow-y: auto; padding: 16px; -webkit-overflow-scrolling: touch; padding-bottom: calc(env(safe-area-inset-bottom, 16px) + 16px); }
+
+  .sdate { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 3px; }
+  .stitle { font-size: 22px; font-weight: 600; color: var(--text); margin-bottom: 6px; line-height: 1.2; }
+  .smeta { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+  .pill { font-size: 11px; padding: 3px 9px; border-radius: 20px; border: 0.5px solid var(--border); color: var(--text2); background: transparent; }
+  .pill-street { background: rgba(224,164,85,.12); color: #E0A455; border-color: rgba(224,164,85,.4); }
+  .pill-mini { background: rgba(88,201,163,.12); color: #58C9A3; border-color: rgba(88,201,163,.4); }
+  .pill-bowl { background: rgba(181,132,217,.12); color: #B584D9; border-color: rgba(181,132,217,.4); }
+  .pill-strength { background: rgba(229,101,75,.12); color: #E5654B; border-color: rgba(229,101,75,.4); }
+  .pill-rest { background: var(--bg2); color: var(--text3); }
+
+  .blk { margin-bottom: 12px; border: 0.5px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .blk-hdr { padding: 9px 14px; background: var(--bg2); display: flex; justify-content: space-between; align-items: center; }
+  .blk-lbl { font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: .07em; }
+  .blk-prog { font-size: 11px; color: var(--text3); }
+
+  .item { display: flex; align-items: flex-start; gap: 12px; padding: 10px 14px; cursor: pointer; active: background var(--bg2); }
+  .item:active { background: var(--bg2); }
+  .item.done .itext { text-decoration: line-through; color: var(--text3); }
+  .cb { width: 20px; height: 20px; min-width: 20px; border: 0.5px solid var(--border2); border-radius: 5px; display: flex; align-items: center; justify-content: center; margin-top: 1px; transition: background .12s; }
+  .item.done .cb { background: var(--teal); border-color: var(--teal); }
+  .ck { display: none; }
+  .item.done .ck { display: block; }
+  .itext { font-size: 15px; color: var(--text); line-height: 1.4; }
+  .inote { font-size: 12px; color: var(--text3); margin-top: 3px; line-height: 1.4; }
+
+  .log-area { margin-top: 16px; }
+  .log-lbl { font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 8px; }
+  .log-ta { width: 100%; border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; font-size: 15px; font-family: inherit; color: var(--text); background: var(--bg); resize: vertical; min-height: 90px; line-height: 1.5; }
+  .log-ta:focus { outline: none; border-color: var(--border2); }
+  .log-row { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+  .savebtn { font-size: 14px; padding: 8px 18px; border: 0.5px solid var(--border2); border-radius: var(--radius-sm); background: transparent; color: var(--text); cursor: pointer; font-family: inherit; }
+  .saved-msg { font-size: 12px; color: var(--text3); opacity: 0; transition: opacity .3s; }
+  .saved-msg.show { opacity: 1; }
+
+  .nav-row { display: flex; gap: 8px; margin-bottom: 14px; }
+  .navbtn { flex: 1; padding: 11px; border: 0.5px solid var(--border); border-radius: var(--radius-sm); background: transparent; color: var(--text2); cursor: pointer; font-size: 14px; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .navbtn:active { background: var(--bg2); }
+  .navbtn:disabled { opacity: .3; cursor: default; }
+
+  .rest-blk { text-align: center; padding: 3rem 1rem; border: 0.5px solid var(--border); border-radius: var(--radius); }
+  .rest-ico { font-size: 36px; margin-bottom: 10px; }
+  .rest-t { font-size: 17px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+  .rest-tx { font-size: 14px; color: var(--text2); line-height: 1.6; }
+
+  .wk-grid { display: flex; flex-direction: column; gap: 10px; }
+  .wk-card { border: 0.5px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .wk-hdr { padding: 9px 14px; background: var(--bg2); display: flex; justify-content: space-between; align-items: center; }
+  .wk-ttl { font-size: 14px; font-weight: 600; color: var(--text); }
+  .wk-phase { font-size: 11px; color: var(--text3); }
+  .srow { display: flex; align-items: center; gap: 10px; padding: 9px 14px; cursor: pointer; }
+  .srow:active { background: var(--bg2); }
+  .sdot { width: 8px; height: 8px; min-width: 8px; border-radius: 50%; }
+  .d-street { background: #E0A455; } .d-mini { background: #58C9A3; } .d-bowl { background: #B584D9; }
+  .d-strength { background: #E5654B; } .d-rest { background: var(--border2); } .d-done { background: #58C9A3; }
+  .srow-lbl { font-size: 14px; color: var(--text); flex: 1; }
+  .srow.cur .srow-lbl { font-weight: 600; }
+  .cur-badge { font-size: 10px; background: var(--accent); color: #1a1205; border-radius: 20px; padding: 2px 8px; white-space: nowrap; }
+  .srow-done { font-size: 11px; color: var(--text3); white-space: nowrap; }
+
+  svg.chk-svg { display: none; }
+  .item.done svg.chk-svg { display: block; }
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-top">
+    <span class="logo">Skate Coach</span>
+    <span class="wbadge" id="wbadge">Week 1</span>
+  </div>
+  <div class="tabs">
+    <button class="tab on" onclick="setTab('today',this)">Today</button>
+    <button class="tab" onclick="setTab('schedule',this)">Schedule</button>
+  </div>
+</div>
+<div class="content" id="content"></div>
+
+<script>
+const PHASES=["Foundation","Foundation","Foundation","Foundation","Development","Development","Development","Development","Peak","Peak","Consolidation","Consolidation"];
+
+const HIP=[
+  {text:"Hip flexor stretch — 60s each side",note:"Non-negotiable. Hamstring protection every session."},
+  {text:"Figure-4 glute stretch — 45s each side"},
+  {text:"Hip circles — 10 each direction"},
+  {text:"Pigeon pose — 45s each side"}
+];
+const PRIMER_MINI=[
+  {text:"10 min easy rolling, pumping and kick turns",note:"Set the rhythm. Feel the ramp before you ask anything of it."},
+  {text:"Kick turns regular — 10 each direction, full commit at top"},
+  {text:"Kick turns fakie — 10 each direction",note:"Fakie stance changes the weight feel completely"},
+  {text:"Kick turns switch — 5 each direction"},
+  {text:"BS slash grind warm-up — 8 relaxed reps",note:"Feel the coping under your trucks. No aggression yet."},
+  {text:"FS slash grind warm-up — 8 relaxed reps"},
+  {text:"Ollies on flat — 10 reps, wake up the pop"}
+];
+const PRIMER_STREET=[
+  {text:"10 min easy rolling and pushing"},
+  {text:"Manual holds — 5×15s regular and fakie stance",note:"Calibrate balance before tricks."},
+  {text:"Manual rolls — 5 attempts, feel the board underfoot"},
+  {text:"Revert practice — 10 reps from roll",note:"Sets up fakie exits all session."},
+  {text:"Fakie riding — 2 min continuous",note:"Get comfortable going backwards."}
+];
+const PRIMER_BOWL=[
+  {text:"20 min progressive carving — full warm-up is the carve",note:"Low and easy first 5 min, build to top third by end."},
+  {text:"Pump for speed — 5 min no pushing",note:"Compress into transitions, extend out of them."},
+  {text:"FS carve — 10 reps, shoulder lead, reach for the wall"},
+  {text:"BS carve — 10 reps, find the pocket"}
+];
+const WU_MINI=[...HIP,...PRIMER_MINI];
+const WU_STREET=[...HIP,...PRIMER_STREET];
+const WU_BOWL=[...HIP,...PRIMER_BOWL];
+const WU_STR=[...HIP,
+  {text:"Band clamshells — 15 each side"},
+  {text:"Glute bridges — 20 reps"}
+];
+
+function axle(extra){
+  return [{text:"FS axle stall — 8 reps",note:"Every mini session. Your reset trick."},
+    {text:"BS axle stall — 8 reps"},
+    {text:"Axle stall fakie — 6 reps"},
+    ...(extra||[])];
+}
+function blk(id,label,items){return{id,label,items};}
+function sk(title,disc,wu,focus,consol,free){
+  const blocks=[];
+  if(wu) blocks.push(blk("wu","Warm-up",wu));
+  if(focus) blocks.push(blk("focus","Skill focus",focus));
+  if(consol&&consol.length) blocks.push(blk("consol","Consolidation",consol));
+  if(free) blocks.push(blk("free","Free skate",free));
+  return{title,discipline:disc,type:"skate",blocks};
+}
+function rest(note){return{title:"Rest & recovery",discipline:"Rest",type:"rest",blocks:[],notes:note};}
+function str(extras){
+  return{title:"Strength & conditioning",discipline:"Strength & Conditioning",type:"strength",blocks:[
+    blk("wu","Warm-up",WU_STR),
+    blk("focus","Session",[
+      {text:"Single-leg Romanian deadlift — 3×8 each",note:"Slow eccentric. Hamstring health priority."},
+      {text:"Bulgarian split squat — 3×8 each"},
+      {text:"Box jumps / ollie jumps — 4×5",note:"Full commitment, stick the landing"},
+      ...(extras||[]),
+      {text:"Pike push-ups — 3×10",note:"Climbing antagonist push work"},
+      {text:"Dead bugs — 3×10 each side",note:"Anti-rotation core"},
+      {text:"Band pallof press — 3×12 each side"},
+      {text:"Reverse wrist curls — 3×15",note:"Finger extensor — climbing antagonist"}
+    ])
+  ]};
+}
+
+const sessions=[
+// WEEK 1 — Foundation
+sk("Mini ramp — rebuild fundamentals","Mini Ramp",WU_MINI,[
+  {text:"Rock to fakie — 15 reps, pause at top",note:"Find the balance point before rolling back"},
+  {text:"Tail stall to fakie — 10 reps",note:"Planted tail, controlled rollback"},
+  {text:"Coping ollies — 10 attempts each direction",note:"Pop at the lip, not before it. Low speed to start."}
+],axle(),[{text:"20 min open mini"}]),
+
+str([{text:"Lateral bounds — 3×8 each side"}]),
+
+sk("Street — manual + shuvit foundations","Street / Ledge",WU_STREET,[
+  {text:"Manual rolls — 10 attempts, max distance"},
+  {text:"Pop shuvit — 15 attempts",note:"Board spins 180 under you. Scoop, don't kick."},
+  {text:"Fakie shuvit — 10 attempts",note:"Scoop forward from fakie. Natural combo exit later."}
+],[
+  {text:"BS 180 — 5 clean reps, boned"},
+  {text:"FS 180 — 5 clean reps"},
+  {text:"No comply — 5 reps"}
+],[{text:"20 min open — flat and banks"}]),
+
+sk("Bowl — carving and pump focus","Bowl",WU_BOWL,[
+  {text:"Extend pump laps — 10 more min, full top third"},
+  {text:"FS kick turn at top — 10 reps"},
+  {text:"BS kick turn at top — 10 reps"}
+],[
+  {text:"FS carve high — 10 reps"},
+  {text:"BS carve high — 10 reps"}
+],[{text:"20 min open bowl"}]),
+
+sk("Mini ramp — stall focus","Mini Ramp",WU_MINI,[
+  {text:"Nose stall — 10 attempts",note:"Lean forward onto nose, don't stall early"},
+  {text:"Nose stall to fakie — 5 reps"},
+  {text:"FS pivot stall — 10 attempts",note:"Key unlock for FS 5-0 later."},
+  {text:"Coping ollies — 10 attempts each direction"}
+],axle(),[{text:"20 min open mini"}]),
+
+str([{text:"Pistol squat progressions — 3×5 each",note:"Wall assist if needed"}]),
+
+rest("Week 1 done. Your CNS and hamstrings need this. Don't skate."),
+
+// WEEK 2 — Foundation
+sk("Street — 180 variants begin","Street / Ledge",WU_STREET,[
+  {text:"Fakie ollie — 10 attempts",note:"Pop off your back foot. Relearn the motion."},
+  {text:"Fakie BS 180 — 10 attempts",note:"Let shoulders lead."},
+  {text:"Pop shuvit — 10 reps, roll away every one"},
+  {text:"FS shuvit — 10 attempts",note:"Different scoop direction."}
+],[
+  {text:"BS 180 — 5 solid ones"},
+  {text:"FS 180 — 5 solid ones"},
+  {text:"Front boardslide — 3 reps"},
+  {text:"Back boardslide — 3 reps"}
+],[{text:"25 min open — banks and curbs"}]),
+
+str([{text:"Lateral squat — 3×10 each"},{text:"Explosive step-ups — 3×8 each"}]),
+
+sk("Mini ramp — grind reactivation","Mini Ramp",WU_MINI,[
+  {text:"BS 50-50 — 10 attempts, lock both trucks",note:"Approach parallel to coping. Commit."},
+  {text:"BS 50-50 to fakie — 8 reps when locked"},
+  {text:"FS 50-50 — 10 attempts",note:"Front truck leads. Slightly angled approach."},
+  {text:"Coping ollies — 10 attempts each direction"}
+],axle([{text:"Rock to fakie — 8 clean reps"}]),[{text:"20 min open mini"}]),
+
+sk("Bowl — kick turns and height","Bowl",WU_BOWL,[
+  {text:"FS kick turn at top — 10 reps, going higher"},
+  {text:"BS kick turn at top — 10 reps"},
+  {text:"Pump laps — 10 min, no pushing"}
+],[
+  {text:"Deep FS carve — 10 reps top third"},
+  {text:"Deep BS carve — 10 reps"}
+],[{text:"20 min open bowl"}]),
+
+sk("Street — kickflip foundations","Street / Ledge",WU_STREET,[
+  {text:"Stationary kickflip — 15 attempts",note:"Ankle flick, not a kick. Board stays under you."},
+  {text:"Slow-roll kickflip — 10 attempts",note:"Catch focus, not pop."},
+  {text:"Shuvit to manual — 8 attempts"}
+],[
+  {text:"Pop shuvit — 8 reps"},
+  {text:"FS shuvit — 8 attempts"},
+  {text:"Fakie BS 180 — 5 attempts"},
+  {text:"No comply — 5 reps"}
+],[{text:"25 min open"}]),
+
+str([{text:"Single-leg box jumps — 3×5 each"},{text:"Nordic hamstring curl — 3×5",note:"Slow eccentric. Hamstring health."}]),
+
+rest("Week 2 done. The decay you fear comes from overtraining, not rest."),
+
+// WEEK 3 — Foundation
+sk("Mini ramp — BS 5-0 intro","Mini Ramp",WU_MINI,[
+  {text:"BS 5-0 — 15 attempts",note:"Back truck only on coping. Grind parallel to lip."},
+  {text:"BS 5-0 to fakie — 8 attempts when stable"},
+  {text:"BS 50-50 — 10 reps building speed"},
+  {text:"Coping ollies — 10 attempts each direction"}
+],axle([
+  {text:"Fakie shuvit on mini — 8 attempts",note:"Natural line exit. Scoop off the ramp."},
+  {text:"Nose stall — 6 reps"},
+  {text:"FS pivot stall — 5 attempts"}
+]),[{text:"20 min open mini"}]),
+
+str([{text:"Goblet squat — 3×10"},{text:"Lateral bounds — 3×10 each"},{text:"Band external rotation — 3×15 each"}]),
+
+sk("Street — ledge 50-50s + shuvit combos","Street / Ledge",WU_STREET,[
+  {text:"FS 50-50 on ledge — 10 attempts",note:"Wax the ledge. Both trucks even."},
+  {text:"BS 50-50 on ledge — 10 attempts"},
+  {text:"Fakie BS 180 — 10 attempts"},
+  {text:"Shuvit to manual — 8 attempts"}
+],[
+  {text:"Pop shuvit — 6 reps"},
+  {text:"FS shuvit — 6 reps"},
+  {text:"BS 180 — 5 reps"}
+],[{text:"25 min open"}]),
+
+sk("Bowl — slash intro","Bowl",WU_BOWL,[
+  {text:"High FS carve — 10 reps, top third every rep"},
+  {text:"BS carve to stall — 5 attempts",note:"Bleed speed into a lip stall."},
+  {text:"BS slasher intro — 8 attempts",note:"Fast approach, lean late, grind across lip"}
+],[
+  {text:"FS kick turn — 8 reps at top"},
+  {text:"BS carve high — 8 reps"}
+],[{text:"20 min open bowl"}]),
+
+sk("Mini ramp — FS 50-50 focus","Mini Ramp",WU_MINI,[
+  {text:"FS 50-50 — 15 attempts",note:"Front truck goes on first. Slightly angled approach."},
+  {text:"FS 50-50 to fakie — 8 attempts"},
+  {text:"FS pivot stall — 10 attempts",note:"Building toward FS 5-0."},
+  {text:"Coping ollies — 10 attempts each direction"}
+],axle([
+  {text:"Fakie shuvit on mini — 8 reps"},
+  {text:"BS 5-0 — 8 attempts"},
+  {text:"Rock to fakie — 6 reps"}
+]),[{text:"20 min open"}]),
+
+str([{text:"Pistol squat — 3×6 each (reduce assist)"},{text:"Jump lunge — 3×8 each"},{text:"Ring push-ups or dips — 3×10"}]),
+
+rest("End of week 3. Pigeon pose and hip circles today. Nothing else."),
+
+// WEEK 4 — Foundation consolidation
+sk("Street — kickflip + shuvit progress","Street / Ledge",WU_STREET,[
+  {text:"Rolling kickflip — 15 attempts",note:"Roll away priority. Both feet land."},
+  {text:"FS shuvit — 10 reps, consistent"},
+  {text:"Fakie BS 180 — 10 attempts"},
+  {text:"Switch ollie — 10 attempts"}
+],[
+  {text:"Pop shuvit — 6 reps"},
+  {text:"FS 50-50 ledge — 5 reps"},
+  {text:"BS 50-50 ledge — 5 reps"},
+  {text:"Manual PR attempt"}
+],[{text:"25 min open"}]),
+
+str([{text:"Single-leg deadlift — 3×8 each"},{text:"Box jumps — 5×5, height progression"},{text:"Hanging knee raises — 3×12"}]),
+
+sk("Mini ramp — back disaster rebuild","Mini Ramp",WU_MINI,[
+  {text:"BS disaster — 10 attempts",note:"Rock nose over coping, commit weight. Lean into it."},
+  {text:"BS disaster to fakie — 6 attempts"},
+  {text:"BS 5-0 — 10 attempts at speed"},
+  {text:"Coping ollies — 10 attempts, building height"}
+],axle([
+  {text:"Fakie shuvit on mini — 8 reps"},
+  {text:"FS 50-50 — 8 reps"},
+  {text:"FS pivot stall — 8 attempts"},
+  {text:"Nose stall — 6 reps"}
+]),[{text:"20 min open"}]),
+
+sk("Bowl — carve grind intro","Bowl",WU_BOWL,[
+  {text:"Carve to 50-50 — 8 attempts each direction",note:"Ride the carve and let trucks lock on."},
+  {text:"BS slasher — 10 attempts"},
+  {text:"FS slasher intro — 5 attempts",note:"Mirror the BS. Opposite shoulder lead."}
+],[
+  {text:"Pump laps — 10 min"},
+  {text:"FS carve high — 8 reps"},
+  {text:"BS kick turn — 6 reps at top"}
+],[{text:"25 min bowl"}]),
+
+sk("Street — nollie and switch intro","Street / Ledge",WU_STREET,[
+  {text:"Nollie — 10 attempts",note:"Pop off nose."},
+  {text:"Nollie shuvit — 10 attempts"},
+  {text:"Manual — 10 attempts, beat PR"}
+],[
+  {text:"Fakie BS 180 — 5 clean reps"},
+  {text:"FS shuvit — 6 reps"},
+  {text:"Kickflip — 5 attempts"},
+  {text:"BS 180 on bank — 5 reps"}
+],[{text:"25 min open"}]),
+
+str([{text:"Bulgarian split squat — 3×10 each"},{text:"Lateral bounds — 3×12 each"},{text:"Push-up variations — 3×12"}]),
+
+rest("Foundation phase complete. Review your session logs — what's sticking?"),
+
+// WEEK 5 — Development
+sk("Mini ramp — speed on grinds","Mini Ramp",WU_MINI,[
+  {text:"BS 50-50 at higher speed — 10 reps",note:"Primer slashers warmed up the coping feel. Now attack."},
+  {text:"FS 50-50 at higher speed — 10 reps"},
+  {text:"BS 5-0 — hold longer — 8 reps",note:"Grind 1-2 feet before exit"},
+  {text:"Coping ollies — 10 attempts each direction, pushing height"}
+],axle([
+  {text:"Fakie shuvit — 8 reps, clean exits"},
+  {text:"BS disaster — 8 attempts"},
+  {text:"FS pivot stall — 8 attempts"},
+  {text:"Rock to fakie — 6 reps"}
+]),[{text:"20 min open mini — push the speed"}]),
+
+str([{text:"Weighted pistol squat — 3×6 each"},{text:"Depth jumps — 4×4",note:"Step off box, absorb, immediately explode. Reactive power."},{text:"Ring dips — 3×8"}]),
+
+sk("Street — kickflip consolidation + combos","Street / Ledge",WU_STREET,[
+  {text:"Kickflip — 20 attempts, roll away every one",note:"Film if possible."},
+  {text:"Kickflip into bank — 10 attempts"},
+  {text:"Fakie BS 180 — 10 solid reps"},
+  {text:"Shuvit to manual — 10 attempts"}
+],[
+  {text:"FS shuvit — 6 reps"},
+  {text:"Nollie shuvit — 6 attempts"},
+  {text:"FS 50-50 ledge — 8 reps"},
+  {text:"BS 50-50 ledge — 8 reps"}
+],[{text:"25 min open"}]),
+
+sk("Bowl — 50-50s on coping","Bowl",WU_BOWL,[
+  {text:"BS 50-50 in bowl — 10 attempts",note:"Warm-up carves built the approach. Trust the trucks."},
+  {text:"FS 50-50 in bowl — 10 attempts"},
+  {text:"BS slasher — 10 attempts, extend grind length"},
+  {text:"FS slasher — 8 attempts"}
+],[
+  {text:"Carve to stall — 6 attempts"},
+  {text:"FS carve high — 8 reps"}
+],[{text:"25 min bowl"}]),
+
+sk("Mini ramp — ollie over coping prep","Mini Ramp",WU_MINI,[
+  {text:"Coping ollies — 15 attempts each direction, height focus",note:"Been doing this since week 1. Now push for real air."},
+  {text:"Axle stall to ollie out — 5 attempts",note:"Reinforces the lip motion"},
+  {text:"FS 50-50 at speed — 10 reps"}
+],axle([
+  {text:"BS 50-50 at speed — 8 reps"},
+  {text:"Fakie shuvit — 6 reps"},
+  {text:"FS pivot stall — 8 attempts"}
+]),[{text:"20 min open"}]),
+
+str([{text:"Single-leg box jump — 3×6 each"},{text:"Nordic hamstring curl — 3×6"},{text:"Weighted dips — 3×8"}]),
+
+rest("Week 5 rest. Motor programs consolidate during sleep."),
+
+// WEEK 6 — Development
+sk("Street — nollie + switch focus","Street / Ledge",WU_STREET,[
+  {text:"Nollie BS 180 — 15 attempts",note:"Fakie riding in primer primes the weight shift."},
+  {text:"Switch FS 180 — 10 attempts"},
+  {text:"Manual — 10 attempts, 15m goal"},
+  {text:"Nollie shuvit — 10 reps"}
+],[
+  {text:"FS shuvit — 6 reps"},
+  {text:"Kickflip — 8 attempts"},
+  {text:"FS 50-50 ledge — 6 reps"},
+  {text:"Fakie BS 180 — 5 clean reps"}
+],[{text:"25 min open"}]),
+
+str([{text:"Single-leg deadlift — 3×8"},{text:"Rotational med ball slam — 3×10 each",note:"Rotational power for 180s"},{text:"Push-ups with band resistance — 3×12"}]),
+
+sk("Mini ramp — FS 5-0 intro","Mini Ramp",WU_MINI,[
+  {text:"FS 5-0 — 15 attempts",note:"FS pivot stall unlocks this. Front truck over, back truck on coping."},
+  {text:"FS 5-0 to fakie — 8 attempts when 5-0 lands"},
+  {text:"FS pivot stall — 10 attempts"},
+  {text:"Coping ollies — 10 attempts, going higher"}
+],axle([
+  {text:"Fakie shuvit — 8 reps"},
+  {text:"BS 5-0 — 8 reps"},
+  {text:"FS 50-50 at speed — 8 reps"},
+  {text:"BS disaster — 6 attempts"}
+]),[{text:"20 min open"}]),
+
+sk("Bowl — slashers and 50-50s","Bowl",WU_BOWL,[
+  {text:"BS slasher — 12 attempts",note:"Warm-up BS carves built the approach line. Now grind it."},
+  {text:"FS slasher — 10 attempts",note:"Warm-up FS carves built this. Lean late."},
+  {text:"BS 50-50 in bowl — 10 reps"},
+  {text:"FS 50-50 in bowl — 8 reps"}
+],[
+  {text:"Carve to stall — 6 attempts"},
+  {text:"High carves both directions — 8 each"}
+],[{text:"25 min bowl"}]),
+
+sk("Street — kickflip off curb + shuvit variations","Street / Ledge",WU_STREET,[
+  {text:"Kickflip rolling — 15 attempts"},
+  {text:"Kickflip off curb — 10 attempts",note:"Drop helps commit to landing"},
+  {text:"Switch BS 180 — 10 attempts"},
+  {text:"FS shuvit to manual — 8 attempts"}
+],[
+  {text:"Nollie shuvit — 6 reps"},
+  {text:"BS 50-50 ledge — 8 reps"},
+  {text:"Manual — 8 attempts"}
+],[{text:"25 min open"}]),
+
+str([{text:"Jump squat — 4×6, full pop"},{text:"Band woodchop — 3×12 each"},{text:"Hanging leg raise — 3×10"}]),
+
+rest("Week 6. Sleep is the real training."),
+
+// WEEK 7 — Development
+sk("Mini ramp — ollie over coping first real attempts","Mini Ramp",WU_MINI,[
+  {text:"BS ollie over coping — 10 attempts",note:"You've been building this since week 1. Speed into lip, pop at top. Commit."},
+  {text:"FS ollie over coping — 5 attempts after BS feels close"},
+  {text:"BS 5-0 — 10 reps at speed"},
+  {text:"FS 5-0 — 8 attempts"}
+],axle([
+  {text:"Fakie shuvit — 8 reps"},
+  {text:"BS 50-50 at speed — 8 reps"},
+  {text:"FS 50-50 at speed — 8 reps"}
+]),[{text:"20 min open — push for air"}]),
+
+str([{text:"Box jump height PR — 5×3"},{text:"Single-leg RDL — 3×10 each"},{text:"Weighted push-up — 3×12"}]),
+
+sk("Street — manual combos + shuvit strings","Street / Ledge",WU_STREET,[
+  {text:"Ollie to manual — 10 attempts"},
+  {text:"Manual to kickflip out — 5 attempts"},
+  {text:"Shuvit to manual to shuvit out — 8 attempts",note:"Full combo. Board control end to end."},
+  {text:"Fakie manual — 8 attempts"}
+],[
+  {text:"Kickflip — 10 attempts"},
+  {text:"Nollie BS 180 — 6 attempts"},
+  {text:"FS shuvit — 6 reps"},
+  {text:"FS 50-50 ledge — 6 reps"}
+],[{text:"25 min open — link tricks into combos"}]),
+
+sk("Bowl — carve grind flow","Bowl",WU_BOWL,[
+  {text:"Carve to 50-50 — 10 attempts each direction",note:"The carve IS the approach. Don't separate them."},
+  {text:"FS slasher to fakie — 8 attempts"},
+  {text:"BS slasher — 10 reps, ride it out long"}
+],[
+  {text:"FS carve high — 8 reps each direction"},
+  {text:"BS 50-50 — 6 reps"}
+],[{text:"25 min bowl"}]),
+
+sk("Mini ramp — full stall and grind review","Mini Ramp",WU_MINI,[
+  {text:"Full trick inventory",note:"Rock fakie, tail stall, nose stall, axle stall, BS/FS 50-50, BS/FS 5-0, pivot stall, BS disaster — one clean rep each"},
+  {text:"Weakest trick — 15 min focused work"},
+  {text:"Coping ollies — 10 attempts each direction"}
+],axle([
+  {text:"Fakie shuvit — 6 reps"},
+  {text:"3-trick combo run — link 2-3 tricks in sequence"}
+]),[{text:"20 min open"}]),
+
+str([{text:"Pistol squat no assist — 3×8 each"},{text:"Lateral bounds 2x width — 3×10 each"},{text:"Dips + L-sit hold — 3×8 + 15s hold"}]),
+
+rest("Week 7 rest. The ollie over coping is in reach. Rest builds the neural pathways."),
+
+// WEEK 8 — Development consolidation
+sk("Street — switch trick focus","Street / Ledge",WU_STREET,[
+  {text:"Switch BS 180 — 15 attempts",note:"Fakie riding in primer sharpened switch awareness."},
+  {text:"Nollie FS 180 — 10 attempts"},
+  {text:"Nollie shuvit — 10 reps"},
+  {text:"Manual to fakie — 10 attempts",note:"Primer reverts make the exit natural."}
+],[
+  {text:"Kickflip — 10 attempts"},
+  {text:"FS shuvit — 6 reps"},
+  {text:"FS 50-50 ledge — 8 reps"},
+  {text:"BS 50-50 ledge — 8 reps"}
+],[{text:"25 min open"}]),
+
+str([{text:"Full strength circuit — 3 rounds all movements",note:"Split squat, RDL, box jump, push-up, dead bug, wrist curl"},{text:"Time each round"}]),
+
+sk("Mini ramp — FS 5-0 consolidation","Mini Ramp",WU_MINI,[
+  {text:"FS 5-0 — 15 attempts, full commitment",note:"You've done the work. Trust it."},
+  {text:"FS 5-0 at speed — 8 reps when landing"},
+  {text:"FS ollie over coping — 10 attempts"},
+  {text:"BS ollie over coping — 8 attempts"}
+],axle([
+  {text:"Fakie shuvit — 8 reps"},
+  {text:"BS 5-0 — 8 reps"},
+  {text:"BS disaster — 6 attempts"}
+]),[{text:"20 min open — go for it"}]),
+
+sk("Bowl — full session flow","Bowl",WU_BOWL,[
+  {text:"Carves, 50-50s, slashers combined — no drill format",note:"Warm-up built the foundation. Now skate the bowl."},
+  {text:"FS carve grind — 10 attempts",note:"Lock front truck on coping off a carve"},
+  {text:"Push height on carves — reach top of bowl"}
+],[
+  {text:"BS 50-50 — 6 reps"},
+  {text:"FS slasher — 6 reps"}
+],[{text:"30 min bowl — longest open session yet"}]),
+
+sk("Street — full trick review","Street / Ledge",WU_STREET,[
+  {text:"Full trick inventory",note:"Ollie, BS/FS 180, kickflip, no comply, fakie BS 180, switch BS 180, nollie, all shuvit variants, boardslides, manuals"},
+  {text:"Weakest trick — 20 min focused work"},
+  {text:"Manual PR — go for 20m"}
+],[],[{text:"25 min open — full expression"}]),
+
+str([{text:"Nordic hamstring curl — 3×8"},{text:"Single-leg jumps — 4×6 each"},{text:"Ring push-up — 3×10"},{text:"Pallof press — 3×15 each"}]),
+
+rest("Development phase complete. Compare where you are vs Week 4."),
+
+// WEEK 9 — Peak
+sk("Mini ramp — ollie over coping owned","Mini Ramp",WU_MINI,[
+  {text:"BS ollie over coping — 15 attempts, make it consistent",note:"You've had it. Now make it yours every time."},
+  {text:"FS ollie over coping — 10 attempts"},
+  {text:"BS 5-0 to revert — 8 attempts"},
+  {text:"FS 5-0 at full speed — 8 reps"}
+],axle([
+  {text:"Fakie shuvit — 8 reps"},
+  {text:"BS 50-50 at full speed — 8 reps"},
+  {text:"FS 50-50 at full speed — 8 reps"}
+]),[{text:"20 min open — push the limits"}]),
+
+str([{text:"Power endurance circuit — 4 rounds"},{text:"Box jump ×5 + split squat ×8 each + push-up ×10",note:"Minimal rest between exercises, 2 min between rounds"}]),
+
+sk("Street — kickflip on lock","Street / Ledge",WU_STREET,[
+  {text:"Kickflip — 20 attempts until 8 consecutive land",note:"Consistency benchmark. Film it."},
+  {text:"Kickflip into bank — 10 attempts"},
+  {text:"Kickflip out of manual — 5 attempts"},
+  {text:"Shuvit to kickflip — 5 attempts",note:"If kickflip is solid, start combining"}
+],[
+  {text:"Switch BS 180 — 8 reps"},
+  {text:"Nollie FS 180 — 6 reps"},
+  {text:"Nollie shuvit — 6 reps"},
+  {text:"Ledge 50-50s — 5 each direction"}
+],[{text:"25 min open"}]),
+
+sk("Bowl — peak session","Bowl",WU_BOWL,[
+  {text:"BS carve 50-50 — 10 attempts",note:"Warm-up carves built the exact approach."},
+  {text:"FS carve 50-50 — 10 attempts"},
+  {text:"BS slasher — 10 reps, max speed"},
+  {text:"FS slasher — 8 reps"}
+],[
+  {text:"FS carve grind — 8 attempts"},
+  {text:"High carving — 10 min top of bowl"}
+],[{text:"30 min bowl — full expression"}]),
+
+sk("Mini ramp — combo lines","Mini Ramp",WU_MINI,[
+  {text:"Create a 3-trick line — any combo",note:"e.g. FS 50-50 → fakie shuvit → BS disaster → fakie"},
+  {text:"Repeat your line 5 times clean"},
+  {text:"FS 5-0 at full speed — 10 reps"},
+  {text:"Coping ollies — 8 attempts each direction, biggest yet"}
+],axle([
+  {text:"Fakie shuvit — 6 reps, clean exits"},
+  {text:"BS ollie over coping — 8 attempts"}
+]),[{text:"20 min open — film something"}]),
+
+str([{text:"Max strength — heavy split squat, RDL, press"},{text:"3×5 at challenging load"},{text:"Wrist extensors + rotator cuff maintenance"}]),
+
+rest("Week 9 rest. You're peaking. Rest is part of the peak."),
+
+// WEEK 10 — Peak
+sk("Street — full power session","Street / Ledge",WU_STREET,[
+  {text:"Kickflip — 10 in a row as the goal"},
+  {text:"Manual — 25m goal"},
+  {text:"Switch BS 180 on bank — 10 attempts"},
+  {text:"FS shuvit to 50-50 — 8 attempts"}
+],[
+  {text:"FS 50-50 ledge — 8 reps fast"},
+  {text:"BS 50-50 ledge — 8 reps fast"},
+  {text:"Nollie shuvit — 6 reps"},
+  {text:"Nollie FS 180 — 6 reps"}
+],[{text:"30 min open — full terrain"}]),
+
+str([{text:"Plyometric complex — 4 rounds"},{text:"Drop jump ×4, lateral bound ×6 each, tuck jump ×4"}]),
+
+sk("Mini ramp — full grind inventory at speed","Mini Ramp",WU_MINI,[
+  {text:"All four grinds at full speed — BS/FS 50-50, BS/FS 5-0",note:"10 reps each."},
+  {text:"BS ollie over coping — 10 attempts, stomp it"},
+  {text:"FS ollie over coping — 10 attempts"},
+  {text:"Fakie shuvit as line exit — 10 reps"}
+],axle([
+  {text:"BS disaster — 8 attempts"},
+  {text:"Nose stall — 6 reps"},
+  {text:"Pivot fakie — 6 attempts"}
+]),[{text:"20 min open"}]),
+
+sk("Bowl — slasher and grind mastery","Bowl",WU_BOWL,[
+  {text:"BS slasher — 15 reps",note:"Should feel automatic now."},
+  {text:"FS slasher — 12 reps"},
+  {text:"FS carve 50-50 — 10 attempts"},
+  {text:"BS carve 50-50 — 8 reps"}
+],[
+  {text:"High carving — 10 min top of bowl"}
+],[{text:"30 min bowl"}]),
+
+sk("Street — combo day","Street / Ledge",WU_STREET,[
+  {text:"Ollie to manual to kickflip out — 10 attempts"},
+  {text:"FS 180 to 50-50 — 8 attempts"},
+  {text:"Shuvit to manual to fakie — 8 attempts"},
+  {text:"Kickflip into bank — 10 reps"}
+],[
+  {text:"Switch tricks — 5 each of switch BS 180, fakie BS 180, nollie shuvit"},
+  {text:"Manual PR attempt"}
+],[{text:"25 min open"}]),
+
+str([{text:"Full body maintenance — all movements, moderate load"},{text:"Nordic hamstring curls — 3×8"},{text:"Mobility focus: 15 min hip and ankle"}]),
+
+rest("Week 10 done. Two weeks left. You are a different skater than 10 weeks ago."),
+
+// WEEK 11 — Consolidation
+sk("Mini ramp — everything session","Mini Ramp",WU_MINI,[
+  {text:"Full trick run — every trick in your bag once, clean",note:"Rock fakie, tail stall, nose stall, axle stalls, BS/FS 50-50, BS/FS 5-0, pivot stall, BS disaster, BS/FS ollie over coping, fakie shuvit"},
+  {text:"Weakest trick — 15 min extra"},
+  {text:"3-trick combo line — film it"}
+],axle([
+  {text:"BS ollie over coping — 8 attempts"},
+  {text:"FS 5-0 at speed — 8 reps"},
+  {text:"Fakie shuvit — 6 reps"}
+]),[{text:"20 min open — pure fun"}]),
+
+str([{text:"Strength maintenance — moderate load"},{text:"Single-leg squat jumps — 3×5 each"},{text:"15 min mobility end session"}]),
+
+sk("Street — full expression","Street / Ledge",WU_STREET,[
+  {text:"Skate for fun — no drills. Apply everything.",note:"Primer primed you. Now just skate."},
+  {text:"Film a clip — document Week 11"},
+  {text:"Manual PR attempt"}
+],[],[{text:"Full 2+ hr open session"}]),
+
+sk("Bowl — ownership session","Bowl",WU_BOWL,[
+  {text:"Own the bowl — carve, slashers, 50-50s, carve grinds all in flow"},
+  {text:"Film some lines"}
+],[],[{text:"Full 2+ hr open bowl"}]),
+
+sk("Mini ramp — peak air session","Mini Ramp",WU_MINI,[
+  {text:"Ollies over coping — 20 attempts each direction",note:"Biggest, highest, most committed."},
+  {text:"Grinds at full speed — link them"},
+  {text:"Fakie shuvit in lines — 10 reps as natural exits"}
+],axle([{text:"Full trick inventory run — once each, clean"}]),[{text:"20 min open — celebrate what you've built"}]),
+
+str([{text:"Active recovery strength — half volume"},{text:"Hip mobility extended — 20 min"},{text:"Light plyometrics only — 2×5 box jump"}]),
+
+rest("Week 11 done. Final week next. This rest is premium."),
+
+// WEEK 12 — Final Consolidation
+sk("Street — goal achievement session","Street / Ledge",WU_STREET,[
+  {text:"Kickflip — 10 consecutive clean ones",note:"Warm up thoroughly. Then go. You have this."},
+  {text:"Manual — beat your PR, 25m+"},
+  {text:"Fakie + switch 180 review — 5 each, clean"},
+  {text:"Best shuvit combo — shuvit to manual, FS shuvit, nollie shuvit"},
+  {text:"Ledge 50-50s — 8 each direction, smooth"}
+],[],[{text:"30 min open street. Film your best tricks."}]),
+
+str([{text:"Celebration strength — what you enjoy"},{text:"No PR chasing. Maintenance + fun."},{text:"Extended mobility: 20 min hip + ankle"}]),
+
+sk("Mini ramp — 12-week showcase","Mini Ramp",WU_MINI,[
+  {text:"Full trick run filmed — every trick in your bag",note:"Rock fakie, tail stall, nose stall, axle stalls, BS/FS 50-50, BS/FS 5-0, pivot stall, BS disaster, BS/FS ollie over coping, fakie shuvit lines"},
+  {text:"FS 5-0 at full speed — 10 reps",note:"This was a goal. Land it."},
+  {text:"BS ollie over coping — 10 attempts, biggest you can"},
+  {text:"FS ollie over coping — 10 attempts"}
+],axle([{text:"Fakie shuvit — 8 reps, clean exits"}]),[{text:"25 min open — celebration"}]),
+
+sk("Bowl — 12-week showcase","Bowl",WU_BOWL,[
+  {text:"Full bowl session — everything",note:"High carves, slashers, FS/BS 50-50s, carve grinds. This is 12 weeks of work."},
+  {text:"Film your best lines"},
+  {text:"Attempt something new — what's possible now that wasn't before?"}
+],[],[{text:"Full 2+ hr bowl. Invite friends."}]),
+
+sk("All disciplines — final session","Street / Ledge",WU_STREET,[
+  {text:"Warm up in bowl — 20 min carving"},
+  {text:"Mini ramp — 30 min best tricks + coping ollies"},
+  {text:"Street — 30 min, manual + kickflip + shuvits + ledge"},
+  {text:"Document everything — what you can do now vs Day 1"}
+],[],[{text:"Your session. No structure — just skate."}]),
+
+str([{text:"Final strength session — all movements, moderate"},{text:"Reflect: biggest physical gains"},{text:"Plan: maintain 2×/week strength going forward"}]),
+
+rest("Week 12. You did it. Review every session log. Plan the next block.")
+];
+
+// State
+const PKEY='skate_v1',SK=PKEY,SL=PKEY,SI=PKEY;
+let ticks={},logs={},sidx=0,tab='today';
+let _sTimer=null,_sPending=false;
+
+function doPersist(){
+  const state={ticks,logs,sidx};
+  return fetch('/api/update',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'progSave',key:PKEY,state})})
+    .then(r=>{if(r.ok)_sPending=false;}).catch(()=>{});
+}
+function save(){_sPending=true;clearTimeout(_sTimer);_sTimer=setTimeout(doPersist,800);}
+async function load(){
+  try{
+    const r=await fetch('/api/update',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'progGet',key:PKEY})});
+    const j=await r.json();
+    if(j&&j.state){ticks=j.state.ticks||{};logs=j.state.logs||{};sidx=j.state.sidx||0;}
+  }catch(e){}
+}
+function flushP(){if(!_sPending)return;try{navigator.sendBeacon('/api/update',new Blob([JSON.stringify({action:'progSave',key:PKEY,state:{ticks,logs,sidx}})],{type:'application/json'}));_sPending=false;}catch(e){}}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flushP();});
+window.addEventListener('pagehide',flushP);
+
+function discKey(d){
+  const l=(d||'').toLowerCase();
+  if(l.includes('mini'))return 'mini';
+  if(l.includes('bowl'))return 'bowl';
+  if(l.includes('strength')||l.includes('cond'))return 'strength';
+  if(l.includes('rest'))return 'rest';
+  return 'street';
+}
+
+function chkSvg(){
+  return `<svg class="chk-svg" width="11" height="9" viewBox="0 0 11 9" fill="none"><path d="M1 4.5L4 7.5L10 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
+
+function renderToday(){
+  const s=sessions[sidx];if(!s)return '';
+  const dk=discKey(s.discipline);
+  const total=s.blocks.reduce((a,b)=>a+(b.items||[]).length,0);
+  const done=s.blocks.reduce((a,b)=>a+(b.items||[]).filter((_,i)=>ticks[sidx+'-'+b.id+'-'+i]).length,0);
+  const savedLog=logs['s'+sidx]||'';
+
+  let html=`<div class="nav-row">
+    <button class="navbtn" onclick="go(${sidx-1})" ${sidx<=0?'disabled':''}>← Prev</button>
+    <button class="navbtn" onclick="go(${sidx+1})" ${sidx>=sessions.length-1?'disabled':''}>Next →</button>
+  </div>
+  <div class="sdate">Day ${sidx+1} · Week ${Math.floor(sidx/7)+1} · ${PHASES[Math.floor(sidx/7)]}</div>
+  <div class="stitle">${s.title}</div>
+  <div class="smeta"><span class="pill pill-${dk}">${s.discipline}</span><span class="pill">${done}/${total} done</span></div>`;
+
+  if(s.type==='rest'){
+    html+=`<div class="rest-blk"><div class="rest-ico">🌙</div><div class="rest-t">Scheduled rest day</div><div class="rest-tx">${s.notes}</div></div>`;
+  } else {
+    s.blocks.forEach(b=>{
+      const items=b.items||[];
+      const bdone=items.filter((_,i)=>ticks[sidx+'-'+b.id+'-'+i]).length;
+      html+=`<div class="blk"><div class="blk-hdr"><span class="blk-lbl">${b.label}</span><span class="blk-prog">${bdone}/${items.length}</span></div>`;
+      items.forEach((item,i)=>{
+        const k=`${sidx}-${b.id}-${i}`;
+        const isDone=!!ticks[k];
+        html+=`<div class="item${isDone?' done':''}" onclick="tick('${k}')">
+          <div class="cb">${chkSvg()}</div>
+          <div><div class="itext">${item.text}</div>${item.note?`<div class="inote">${item.note}</div>`:''}</div>
+        </div>`;
+      });
+      html+=`</div>`;
+    });
+  }
+
+  html+=`<div class="log-area"><div class="log-lbl">Session log</div>
+    <textarea class="log-ta" id="lta" placeholder="What landed? Energy level? Notes for next time...">${savedLog}</textarea>
+    <div class="log-row"><button class="savebtn" onclick="saveLog()">Save note</button><span class="saved-msg" id="smsg">Saved ✓</span></div>
+  </div>`;
+  return html;
+}
+
+function renderSchedule(){
+  let html='<div class="wk-grid">';
+  for(let w=0;w<12;w++){
+    html+=`<div class="wk-card"><div class="wk-hdr"><span class="wk-ttl">Week ${w+1}</span><span class="wk-phase">${PHASES[w]}</span></div>`;
+    for(let d=0;d<7;d++){
+      const gi=w*7+d;
+      const s=sessions[gi];if(!s)continue;
+      const dk=discKey(s.discipline);
+      const total=s.blocks.reduce((a,b)=>a+(b.items||[]).length,0);
+      const done=s.blocks.reduce((a,b)=>a+(b.items||[]).filter((_,i)=>ticks[gi+'-'+b.id+'-'+i]).length,0);
+      const isComplete=total>0&&done===total;
+      const isCur=gi===sidx;
+      const dotCls=isComplete?'d-done':'d-'+dk;
+      let st='';
+      if(isCur) st='<span class="cur-badge">Today</span>';
+      else if(isComplete) st='<span class="srow-done">Done</span>';
+      else if(gi<sidx&&total>0) st=`<span class="srow-done">${done}/${total}</span>`;
+      html+=`<div class="srow${isCur?' cur':''}" onclick="goFromSched(${gi})"><div class="sdot ${dotCls}"></div><span class="srow-lbl">${s.title}</span>${st}</div>`;
+    }
+    html+=`</div>`;
+  }
+  return html+'</div>';
+}
+
+function render(){
+  document.getElementById('wbadge').textContent='Week '+(Math.floor(sidx/7)+1);
+  document.getElementById('content').innerHTML=tab==='today'?renderToday():renderSchedule();
+}
+
+function setTab(t,el){
+  tab=t;
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+  el.classList.add('on');render();
+}
+function go(i){
+  if(i<0||i>=sessions.length)return;
+  sidx=i;save(SI,sidx);tab='today';
+  document.querySelectorAll('.tab').forEach((x,j)=>x.classList.toggle('on',j===0));
+  render();
+}
+function goFromSched(i){go(i);}
+function tick(k){ticks[k]=!ticks[k];save(SK,ticks);render();}
+function saveLog(){
+  const ta=document.getElementById('lta');if(!ta)return;
+  logs['s'+sidx]=ta.value;save(SL,logs);
+  const m=document.getElementById('smsg');
+  if(m){m.classList.add('show');setTimeout(()=>m.classList.remove('show'),2000);}
+}
+
+load().then(render);
+</script>
+</body>
+</html>
