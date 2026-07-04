@@ -82,6 +82,27 @@
   .navbtn { flex: 1; padding: 11px; border: 0.5px solid var(--border); border-radius: var(--radius-sm); background: transparent; color: var(--text2); cursor: pointer; font-size: 14px; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 6px; }
   .navbtn:active { background: var(--bg2); }
   .navbtn:disabled { opacity: .3; cursor: default; }
+  .ov-hero{display:flex;gap:14px;margin-bottom:16px;flex-wrap:wrap}
+  .ov-where,.ov-cur{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);padding:16px 18px;flex:1;min-width:200px}
+  .ov-wk{font-family:"Space Grotesk";font-size:26px;font-weight:600;color:var(--text);line-height:1}
+  .ov-of{font-size:15px;color:var(--text3);font-weight:400}
+  .ov-ph{font-size:12px;color:var(--accent);margin-top:6px;font-family:"JetBrains Mono"}
+  .ov-cur-lbl{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);font-family:"Space Grotesk"}
+  .ov-cur-t{font-size:15px;color:var(--text);margin:6px 0 12px;font-weight:500}
+  .ov-go{background:var(--accent);color:#1a1205;border:none;border-radius:var(--radius-sm);padding:8px 14px;font-family:"Space Grotesk";font-weight:600;font-size:13px;cursor:pointer}
+  .ov-block{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);padding:14px 18px;margin-bottom:12px}
+  .ov-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+  .ov-k{font-family:"Space Grotesk";font-weight:500;font-size:14px}
+  .ov-v{font-family:"JetBrains Mono";font-size:12px;color:var(--text2)}
+  .ov-bar{height:7px;background:var(--bg3);border-radius:20px;overflow:hidden}
+  .ov-bar.sm{flex:1;height:5px}
+  .ov-fill{height:100%;background:var(--accent);border-radius:20px;transition:width .3s}
+  .ov-sub{font-size:11px;color:var(--text3);margin-top:7px;font-family:"JetBrains Mono"}
+  .ov-h{font-family:"Space Grotesk";font-weight:600;font-size:11px;letter-spacing:.1em;color:var(--text3);margin-bottom:12px;text-transform:uppercase}
+  .ov-line{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .ov-line-k{font-size:13px;color:var(--text);min-width:150px}
+  .ov-line-v{font-family:"JetBrains Mono";font-size:11px;color:var(--text2);min-width:44px;text-align:right}
+  .ov-dot{width:8px;height:8px;border-radius:50%;flex:none}
 
   .rest-blk { text-align: center; padding: 3rem 1rem; border: 0.5px solid var(--border); border-radius: var(--radius); }
   .rest-ico { font-size: 36px; margin-bottom: 10px; }
@@ -115,7 +136,8 @@
     <span class="wbadge" id="wbadge">Week 1</span>
   </div>
   <div class="tabs">
-    <button class="tab on" onclick="setTab('today',this)">Today</button>
+    <button class="tab on" onclick="setTab('overview',this)">Overview</button>
+    <button class="tab" onclick="setTab('today',this)">Today</button>
     <button class="tab" onclick="setTab('schedule',this)">Schedule</button>
   </div>
 </div>
@@ -746,7 +768,7 @@ rest("Week 12. You did it. Review every session log. Plan the next block.")
 
 // State
 const PKEY='skate_v1',SK=PKEY,SL=PKEY,SI=PKEY;
-let ticks={},logs={},sidx=0,tab='today';
+let ticks={},logs={},sidx=0,tab='overview';
 let _sTimer=null,_sPending=false;
 
 function doPersist(){
@@ -814,7 +836,7 @@ function renderToday(){
   }
 
   html+=`<div class="log-area"><div class="log-lbl">Session log</div>
-    <textarea class="log-ta" id="lta" placeholder="What landed? Energy level? Notes for next time...">${savedLog}</textarea>
+    <textarea class="log-ta" id="lta" oninput="logs['s'+sidx]=this.value;save();" placeholder="What landed? Energy level? Notes for next time...">${savedLog}</textarea>
     <div class="log-row"><button class="savebtn" onclick="saveLog()">Save note</button><span class="saved-msg" id="smsg">Saved ✓</span></div>
   </div>`;
   return html;
@@ -846,22 +868,58 @@ function renderSchedule(){
 
 function render(){
   document.getElementById('wbadge').textContent='Week '+(Math.floor(sidx/7)+1);
-  document.getElementById('content').innerHTML=tab==='today'?renderToday():renderSchedule();
+  document.getElementById('content').innerHTML=tab==='overview'?renderOverview():tab==='today'?renderToday():renderSchedule();
+}
+function progStats(){
+  let totalItems=0,doneItems=0,totalSess=0,doneSess=0;
+  const phaseAgg={},discAgg={};
+  sessions.forEach((s,gi)=>{
+    const items=(s.blocks||[]).reduce((a,b)=>a+(b.items||[]).length,0);
+    if(items===0)return;
+    let sdone=0;
+    (s.blocks||[]).forEach(b=>(b.items||[]).forEach((_,i)=>{if(ticks[gi+'-'+b.id+'-'+i])sdone++;}));
+    totalItems+=items;doneItems+=sdone;totalSess++;if(sdone===items)doneSess++;
+    const ph=PHASES[Math.floor(gi/7)]||'—';
+    (phaseAgg[ph]=phaseAgg[ph]||{t:0,d:0});phaseAgg[ph].t+=items;phaseAgg[ph].d+=sdone;
+    (discAgg[s.discipline]=discAgg[s.discipline]||{t:0,d:0});discAgg[s.discipline].t+=items;discAgg[s.discipline].d+=sdone;
+  });
+  return {totalItems,doneItems,totalSess,doneSess,phaseAgg,discAgg};
+}
+function renderOverview(){
+  const st=progStats();
+  const pct=st.totalItems?Math.round(st.doneItems/st.totalItems*100):0;
+  const wk=Math.floor(sidx/7)+1,ph=PHASES[wk-1]||'—',cur=sessions[sidx];
+  const phaseOrder=[];PHASES.forEach(p=>{if(!phaseOrder.includes(p))phaseOrder.push(p);});
+  let html=`<div class="ov-hero">
+    <div class="ov-where"><div class="ov-wk">Week ${wk} <span class="ov-of">of 12</span></div><div class="ov-ph">${ph} phase</div></div>
+    <div class="ov-cur"><div class="ov-cur-lbl">Current session</div><div class="ov-cur-t">${cur?cur.title:'—'}</div><button class="ov-go" onclick="go(${sidx})">Go to session →</button></div>
+  </div>`;
+  html+=`<div class="ov-block"><div class="ov-row"><span class="ov-k">Overall progress</span><span class="ov-v">${st.doneItems}/${st.totalItems} · ${pct}%</span></div><div class="ov-bar"><div class="ov-fill" style="width:${pct}%"></div></div><div class="ov-sub">${st.doneSess} of ${st.totalSess} sessions complete</div></div>`;
+  html+=`<div class="ov-block"><div class="ov-h">By phase</div>`;
+  phaseOrder.forEach(p=>{const a=st.phaseAgg[p]||{t:0,d:0},pp=a.t?Math.round(a.d/a.t*100):0;html+=`<div class="ov-line"><span class="ov-line-k">${p}</span><div class="ov-bar sm"><div class="ov-fill" style="width:${pp}%"></div></div><span class="ov-line-v">${a.d}/${a.t}</span></div>`;});
+  html+=`</div>`;
+  html+=`<div class="ov-block"><div class="ov-h">By discipline</div>`;
+  Object.keys(st.discAgg).forEach(d=>{const a=st.discAgg[d],pp=a.t?Math.round(a.d/a.t*100):0,dk=discKey(d);html+=`<div class="ov-line"><span class="ov-dot d-${dk}"></span><span class="ov-line-k">${d}</span><div class="ov-bar sm"><div class="ov-fill" style="width:${pp}%"></div></div><span class="ov-line-v">${a.d}/${a.t}</span></div>`;});
+  html+=`</div>`;
+  return html;
 }
 
 function setTab(t,el){
+  captureLog();
   tab=t;
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
   el.classList.add('on');render();
 }
 function go(i){
   if(i<0||i>=sessions.length)return;
+  captureLog();
   sidx=i;save(SI,sidx);tab='today';
-  document.querySelectorAll('.tab').forEach((x,j)=>x.classList.toggle('on',j===0));
+  document.querySelectorAll('.tab').forEach((x,j)=>x.classList.toggle('on',j===1));
   render();
 }
 function goFromSched(i){go(i);}
 function tick(k){ticks[k]=!ticks[k];save(SK,ticks);render();}
+function captureLog(){const ta=document.getElementById('lta');if(ta)logs['s'+sidx]=ta.value;}
 function saveLog(){
   const ta=document.getElementById('lta');if(!ta)return;
   logs['s'+sidx]=ta.value;save(SL,logs);
