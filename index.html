@@ -403,7 +403,6 @@ function buildBriefing(){
   if(days<=60)watch.push(`<b>${days} days</b> to the thesis target — let it anchor what you pick.`);
   const busiest=[...cal.days].sort((a,b)=>b.ev.length-a.ev.length)[0];
   if(busiest&&busiest.ev.length>=2)watch.push(`<b>${busiest.dn.split(' ')[0]}</b> holds ${busiest.ev.length} commitments — a tight day.`);
-  domains.filter(d=>d.def!=='practice'&&activeCount(d)>=d.cap).forEach(d=>watch.push(`<b>${d.name}</b> is at capacity (${d.cap}/${d.cap}) — something ships or parks before more starts.`));
   const nudges=[];
   allItems().filter(x=>x.i.type==='practice'&&ageDays(x.i)>=PRACTICE_DRIFT).sort((a,b)=>ageDays(b.i)-ageDays(a.i))
     .forEach(x=>nudges.push(`<b>${x.i.t}</b> — untended ${ageDays(x.i)} days. Tend it this week, or let it rest on purpose?`));
@@ -413,14 +412,12 @@ function buildBriefing(){
 }
 function briefingContext(){
   const focus=allItems().filter(x=>x.i.focus).map(({d,i})=>`${i.t} (${d.name})`);
-  const caps=domains.filter(d=>d.def!=='practice'&&activeCount(d)>=d.cap).map(d=>d.name);
   const drift=allItems().filter(x=>x.i.type==='practice'&&ageDays(x.i)>=PRACTICE_DRIFT).sort((a,b)=>ageDays(b.i)-ageDays(a.i)).map(x=>`${x.i.t} (${ageDays(x.i)}d)`);
   const opendec=allItems().filter(x=>x.i.type==='decision'&&ageDays(x.i)>=30).map(x=>`${x.i.t} (${ageDays(x.i)}d open)`);
   const tending=allItems().filter(x=>x.i.type==='practice'&&x.i.intent).map(x=>x.i.t);
   const doneWk=thisWeekHistory().filter(h=>!h.emergent).length;
   const dstr=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
   const L=[`Today: ${dstr}, thesis target in ${daysToTarget()} days.`,`Focus this week: ${focus.length?focus.join('; '):'none set'}.`];
-  if(caps.length)L.push(`At capacity: ${caps.join(', ')}.`);
   if(drift.length)L.push(`Untended practices: ${drift.join(', ')}.`);
   if(opendec.length)L.push(`Long-open decisions: ${opendec.join(', ')}.`);
   if(tending.length)L.push(`Tending this week: ${tending.join(', ')}.`);
@@ -446,7 +443,7 @@ function renderBriefing(){
 
 /* ---------- board ---------- */
 function toggleStatus(did,iid){const d=domains.find(x=>x.id===did),it=d.items.find(x=>x.id===iid);
-  if(it.status==='parked'){if(activeCount(d)>=d.cap){toast(`${d.name} is full (${d.cap}/${d.cap}) — park something first`);flashCap(did);return;}it.status='active';it.since=nowISO();}
+  if(it.status==='parked'){it.status='active';it.since=nowISO();}
   else{it.status='parked';it.focus=false;it.since=nowISO();}render();}
 function flashCap(did){const c=document.querySelector('#cap-'+did);if(c){c.classList.add('flash');setTimeout(()=>c.classList.remove('flash'),900);}}
 function toggleFocus(e,did,iid){e.stopPropagation();const it=domains.find(x=>x.id===did).items.find(x=>x.id===iid);
@@ -475,8 +472,7 @@ function card(d){const isP=d.def==='practice';
   let capHtml;
   if(isP){const cap=intentCap(d),t=practices.filter(i=>i.intent).length,full=t>=cap,pips=Array.from({length:cap},(_,k)=>k<t?'●':'○').join('');
     capHtml=`<div class="cap ${full?'full':''}" id="cap-${d.id}"><span class="pips">${pips}</span><br>${t}/${cap} tending</div>`;
-  }else{const n=others.filter(i=>i.status==='active').length,full=n>=d.cap,pips=Array.from({length:d.cap},(_,k)=>k<n?'●':'○').join('');
-    capHtml=`<div class="cap ${full?'full':''}" id="cap-${d.id}"><span class="pips">${pips}</span><br>${n}/${d.cap}</div>`;}
+  }else{capHtml='';}
   let body;
   if(isP){body=practices.map(i=>practiceRow(d,i)).join('')||'<div class="empty">No practices here.</div>';
     if(others.length){const oa=others.filter(i=>i.status==='active'),op=others.filter(i=>i.status==='parked');
@@ -573,7 +569,7 @@ function thisWeekHistory(){const cut=Date.now()-7*864e5;return history.filter(h=
 function logEmergent(){const el=$('#emgText');const t=(el&&el.value||'').trim();if(!t)return;const d=domains.find(x=>x.id===$('#emgDom').value);history.push({id:uid(),t,type:d.def,domain:d.name,doneAt:new Date().toISOString(),emergent:true,note:''});renderRitual();scheduleSave();toast('Logged to the ledger.');}
 function markDone(iid,btn){const x=allItems().find(o=>o.i.id===iid);pushHistory(x.i,x.d.name);x.d.items=x.d.items.filter(it=>it.id!==iid);btn.closest('.row').style.opacity=.4;btn.outerHTML='<span class="filed">swept ✓</span>';scheduleSave();}
 function staleAct(iid,act,btn){const x=allItems().find(o=>o.i.id===iid),r=btn.closest('.row');
-  if(act==='promote'){if(activeCount(x.d)>=x.d.cap){toast(`${x.d.name} is full — can’t promote`);return;}x.i.status='active';x.i.since=nowISO();r.style.opacity=.4;r.querySelector('.pick').outerHTML='<span class="filed">promoted ✓</span>';}
+  if(act==='promote'){x.i.status='active';x.i.since=nowISO();r.style.opacity=.4;r.querySelector('.pick').outerHTML='<span class="filed">promoted ✓</span>';}
   if(act==='kill'){x.d.items=x.d.items.filter(it=>it.id!==iid);r.style.opacity=.4;r.querySelector('.pick').outerHTML='<span class="filed" style="color:var(--stale)">killed ✓</span>';}
   if(act==='keep'){x.i.since=nowISO();r.style.opacity=.4;r.querySelector('.pick').outerHTML='<span class="filed" style="color:var(--muted)">parked, on purpose ✓</span>';}
   scheduleSave();}
@@ -585,7 +581,7 @@ function prIntent(iid,v){const x=allItems().find(o=>o.i.id===iid);if(v)x.i.n='in
 function decLog(iid,v){const x=allItems().find(o=>o.i.id===iid);if(v){x.i._log=true;x.i.n='last note: '+v;}scheduleSave();}
 function decResolve(iid,btn){const x=allItems().find(o=>o.i.id===iid);pushHistory(x.i,x.d.name);x.d.items=x.d.items.filter(it=>it.id!==iid);btn.closest('.row').style.opacity=.4;btn.closest('.pick').outerHTML='<span class="filed">resolved ✓</span>';scheduleSave();}
 function swToggle(did,iid){const d=domains.find(x=>x.id===did),it=d.items.find(x=>x.id===iid);
-  if(it.status==='active'){it.status='parked';it.focus=false;it.since=nowISO();}else{if(activeCount(d)>=d.cap){toast(`${d.name} is full (${d.cap}/${d.cap})`);return;}it.status='active';it.since=nowISO();}renderRitual();}
+  if(it.status==='active'){it.status='parked';it.focus=false;it.since=nowISO();}else{it.status='active';it.since=nowISO();}renderRitual();}
 function swFocus(did,iid){const it=domains.find(x=>x.id===did).items.find(x=>x.id===iid);if(it.type!=='practice'&&it.status!=='active'){toast('Pull it active first');return;}
   if(!it.focus&&focusCount()>=MAXFOCUS){toast('Focus holds 5 — drop one first');return;}it.focus=!it.focus;renderRitual();}
 
