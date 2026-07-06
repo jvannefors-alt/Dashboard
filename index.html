@@ -30,6 +30,24 @@
   .pdesc{font-size:13px;line-height:1.5;color:var(--muted);margin-bottom:14px}
   .pprog{font-family:"JetBrains Mono";font-size:11.5px;color:var(--muted);margin-bottom:14px}
   .popen{font-family:"JetBrains Mono";font-size:12px;color:var(--task)}
+  #buys{margin-top:14px}
+  .buycard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
+  .buyhdr{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+  .buylbl{font-family:"Space Grotesk";font-weight:600;font-size:13px;color:var(--text)}
+  .buyn{font-family:"JetBrains Mono";font-size:11px;color:var(--faint);background:var(--surface-2);border-radius:20px;padding:1px 8px}
+  .buyadd{display:flex;gap:8px;margin-bottom:6px}
+  .buyadd input{flex:1;background:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:var(--text);font-family:inherit;font-size:13px}
+  .buyadd input:focus{outline:none;border-color:var(--muted)}
+  .buyadd button{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;color:var(--text);padding:8px 14px;font-family:"Space Grotesk";font-weight:500;font-size:13px;cursor:pointer}
+  .buyadd button:hover{border-color:var(--muted)}
+  .buyrow{display:flex;align-items:center;gap:10px;padding:7px 4px;border-top:1px solid var(--line)}
+  .buycb{width:18px;height:18px;border:1.5px solid var(--muted);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#15171F;cursor:pointer;flex:none}
+  .buyrow.bought .buycb{background:var(--practice);border-color:var(--practice)}
+  .buyt{flex:1;font-size:13.5px;color:var(--text)}
+  .buyrow.bought .buyt{text-decoration:line-through;color:var(--faint)}
+  .buydel{color:var(--faint);font-size:11px;cursor:pointer;opacity:0;transition:opacity .12s}
+  .buyrow:hover .buydel{opacity:.5}.buydel:hover{opacity:1;color:var(--stale)}
+  .buyempty{font-size:12px;color:var(--faint);padding:8px 4px 2px}
   @media(max-width:720px){.shell{flex-direction:column;gap:14px}.side{width:100%;position:static}.nav{flex-direction:row;flex-wrap:wrap}.brand{padding-bottom:10px}}
   .mono{font-family:"JetBrains Mono",monospace}
   .cmd{background:linear-gradient(180deg,var(--surface-2),var(--surface));border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;margin-bottom:14px}
@@ -221,6 +239,7 @@
     </details>
   </div>
   <div class="board" id="board"></div>
+  <div id="buys"></div>
   <div class="foot">Capture all week — by Notes or the box above. The Monday review does the moving.</div>
 
 </div><!--/view-board-->
@@ -308,7 +327,7 @@ const cal={days:[
 ]};
 
 /* ---------- live state (filled by loadState) ---------- */
-let domains=[],inbox=[],lastFocus=[],history=[],briefingText='';let briefLoading=false;
+let domains=[],inbox=[],lastFocus=[],history=[],briefingText='',buys=[];let briefLoading=false,soloSort=false;
 let loaded=false,saveTimer=null;
 const STALE=21,MAXFOCUS=5,PRACTICE_DRIFT=14;
 const allItems=()=>domains.flatMap(d=>d.items.map(i=>({d,i})));
@@ -324,7 +343,7 @@ async function loadState(){
   let s=null;
   try{const r=await fetch('/api/update');if(r.ok){const j=await r.json();s=j.state;}}catch(e){}
   if(s&&Array.isArray(s.domains)&&s.domains.length){
-    domains=s.domains;inbox=s.inbox||[];lastFocus=s.lastFocus||[];history=s.history||[];briefingText=s.briefing||'';
+    domains=s.domains;inbox=s.inbox||[];lastFocus=s.lastFocus||[];history=s.history||[];briefingText=s.briefing||'';buys=s.buys||[];
     // keep the uid counter ahead of any existing ids so new items never collide
     let max=0;allItems().forEach(x=>{const m=/^i(\d+)$/.exec(x.i.id);if(m)max=Math.max(max,+m[1]);});
     inbox.forEach(c=>{const m=/^i(\d+)$/.exec(c.id||'');if(m)max=Math.max(max,+m[1]);});
@@ -338,7 +357,7 @@ async function loadState(){
     scheduleSave(true); // persist the seed on first run
   }
 }
-function currentState(){return {version:'v2.2',domains,inbox,lastFocus,history:history.slice(-40),briefing:briefingText};}
+function currentState(){return {version:'v2.2',domains,inbox,lastFocus,history:history.slice(-40),briefing:briefingText,buys};}
 let savePending=false;
 function doSave(retry){
   const body=JSON.stringify({action:'save',state:currentState()});
@@ -468,10 +487,19 @@ function card(d){const isP=d.def==='practice';
 function weekCells(){return cal.days.map(d=>`<div class="d ${d.today?'today':''}"><div class="dn">${d.dn}</div>${d.ev.map(e=>`<div class="ev" style="--spine:${C[domains.find(x=>x.id===e[2]).def]}"><span class="tm">${e[0]}</span> ${e[1]}</div>`).join('')}</div>`).join('');}
 function renderClock(){const t=new Date();t.setHours(0,0,0,0);const start=new Date(2026,4,1),target=new Date(2026,7,19);
   $('#cd').textContent=daysToTarget();$('#gauge').style.width=Math.max(0,Math.min(100,100*(t-start)/(target-start)))+'%';}
-function render(){$('#board').innerHTML=domains.map(card).join('');renderBriefing();renderLedger();$('#inboxN').textContent=inbox.length;$('#weekstrip').innerHTML=weekCells();scheduleSave();}
+function render(){$('#board').innerHTML=domains.map(card).join('');renderBriefing();renderLedger();renderBuys();$('#inboxN').textContent=inbox.length;$('#weekstrip').innerHTML=weekCells();scheduleSave();}
 function renderLedger(){const el=$('#ledger');if(!el)return;
   if(!history.length){el.innerHTML='<div class="ledempty">Nothing completed yet. Finish a task or resolve a decision and it lands here.</div>';return;}
   el.innerHTML=[...history].reverse().slice(0,40).map(h=>{const dt=new Date(h.doneAt).toLocaleDateString('sv-SE',{day:'numeric',month:'short'});const note=h.note?' — '+h.note.replace(/^last note:\s?/,''):'';return `<div class="ledrow"><span class="marker ${h.type}"></span><span class="lt">${h.t}${note}</span><span class="lsrc">${(h.domain||'').split(' ')[0].toUpperCase()}</span><span class="ld">${dt}</span></div>`;}).join('');}
+
+function renderBuys(){
+  const el=$('#buys');if(!el)return;
+  const rows=buys.map(b=>`<div class="buyrow ${b.done?'bought':''}"><span class="buycb" onclick="toggleBuy('${b.id}')">${b.done?'✓':''}</span><span class="buyt">${b.t}</span><span class="buydel" onclick="delBuy('${b.id}')">🗑</span></div>`).join('');
+  el.innerHTML=`<div class="buycard"><div class="buyhdr"><span class="buylbl">🛒 To buy</span><span class="buyn">${buys.filter(b=>!b.done).length}</span></div><div class="buyadd"><input type="text" id="buyInput" placeholder="add something to get…" onkeydown="if(event.key==='Enter')addBuy()"><button onclick="addBuy()">Add</button></div>${rows||'<div class="buyempty">Nothing on the list.</div>'}</div>`;
+}
+function addBuy(){const inp=$('#buyInput');if(!inp)return;const v=(inp.value||'').trim();if(!v)return;buys.push({id:uid(),t:v,done:false});render();const ni=$('#buyInput');if(ni)ni.focus();}
+function toggleBuy(id){const b=buys.find(x=>x.id===id);if(!b)return;b.done=!b.done;render();}
+function delBuy(id){buys=buys.filter(x=>x.id!==id);render();}
 
 $('#capBtn').onclick=()=>{const v=$('#capInput').value.trim();if(!v)return;inbox.push({id:uid(),text:v,sug:guessDomain(v)});$('#capInput').value='';render();toast('Caught. It’ll wait in the inbox for Monday.');};
 $('#capInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('#capBtn').click();});
@@ -495,9 +523,11 @@ function beatHas(k){switch(k){
   case 'decision':return allItems().some(x=>x.i.type==='decision');
   default:return true;}}
 function snapshotFocus(){lastFocus=allItems().filter(x=>x.i.focus).map(({d,i})=>({t:i.t,type:i.type,dn:d.name,hit:null}));}
-function openRitual(at){step=at||0;snapshotFocus();$('#scrim').classList.add('show');renderRitual();}
-function closeRitual(){$('#scrim').classList.remove('show');render();}
+function openRitual(at){soloSort=false;step=at||0;snapshotFocus();$('#scrim').classList.add('show');renderRitual();}
+function openSort(){soloSort=true;step=0;$('#scrim').classList.add('show');renderRitual();}
+function closeRitual(){soloSort=false;$('#scrim').classList.remove('show');render();}
 function renderRitual(){const s=STEPS[step];
+  if(soloSort){$('#ritTitle').textContent='Sort the inbox';$('#ritBeat').textContent=inbox.length?inbox.length+' to sort':'inbox clear';$('#ritDots').innerHTML='';$('#ritBack').style.visibility='hidden';$('#ritNext').textContent='Done ✓';$('#ritBody').innerHTML=`<div class="ritlede">${STEPS[0].lede}</div>`+BEAT.inbox();scheduleSave();return;}
   $('#ritTitle').textContent=s.t;$('#ritBeat').textContent='Beat '+step+' of '+(STEPS.length-1);
   $('#ritDots').innerHTML=STEPS.map((st,k)=>{let cls=k<step?'done':k===step?'on':'';if(!cls&&!beatHas(st.k))cls='light';return `<i class="${cls}" title="${beatHas(st.k)?'':'nothing here this week'}"></i>`;}).join('');
   $('#ritBack').style.visibility=step===0?'hidden':'visible';
@@ -559,10 +589,10 @@ function swToggle(did,iid){const d=domains.find(x=>x.id===did),it=d.items.find(x
 function swFocus(did,iid){const it=domains.find(x=>x.id===did).items.find(x=>x.id===iid);if(it.type!=='practice'&&it.status!=='active'){toast('Pull it active first');return;}
   if(!it.focus&&focusCount()>=MAXFOCUS){toast('Focus holds 5 — drop one first');return;}it.focus=!it.focus;renderRitual();}
 
-$('#ritNext').onclick=()=>{if(step===STEPS.length-1){closeRitual();toast('Week set. Composing the read…');requestBriefing();return;}step++;renderRitual();};
+$('#ritNext').onclick=()=>{if(soloSort){closeRitual();toast('Sorted.');return;}if(step===STEPS.length-1){closeRitual();toast('Week set. Composing the read…');requestBriefing();return;}step++;renderRitual();};
 $('#ritBack').onclick=()=>{if(step>0){step--;renderRitual();}};
 $('#ritualBtn').onclick=()=>openRitual(0);
-$('#inboxBtn').onclick=()=>openRitual(0);
+$('#inboxBtn').onclick=()=>openSort();
 $('#ritClose').onclick=closeRitual;
 $('#scrim').addEventListener('click',e=>{if(e.target===$('#scrim'))closeRitual();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#scrim').classList.contains('show'))closeRitual();});
