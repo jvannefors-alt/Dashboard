@@ -1043,7 +1043,10 @@ function renderDrill(){
 
   document.getElementById('app').innerHTML = `
     <div class="drill-top">
-      <span class="progress-pill">Item ${state.queueIndex+1} / ${state.queue.length}</span>
+      <div style="display:flex; align-items:center; gap:12px;">
+        <a class="backlink" style="margin-bottom:0;" href="index.html">← Board</a>
+        <span class="progress-pill">Item ${state.queueIndex+1} / ${state.queue.length}</span>
+      </div>
       <button class="end-link" onclick="endSession()">End session</button>
     </div>
     <div class="card qcard">
