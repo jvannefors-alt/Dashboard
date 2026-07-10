@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thesis Drill Book — Life OS</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap');
+
+  :root{
+    --ink:#E9E7E1; --ink-secondary:#888D9B; --ink-tertiary:#5A5F6C;
+    --paper:#15171F; --paper-raised:#1C1F28; --paper-sunken:#242833;
+    --rule:#30343F; --rule-strong:#3d4250;
+    --accent:#58C9A3; --accent-light:rgba(88,201,163,.12);
+    --amber:#E0A455; --amber-light:rgba(224,164,85,.12);
+    --red:#E5654B; --red-light:rgba(229,101,75,.12);
+    --purple:#B584D9; --purple-light:rgba(181,132,217,.12);
+    --radius:6px; --radius-lg:10px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--paper);color:var(--ink)}
+  body{font-family:"Hanken Grotesk",-apple-system,sans-serif;font-size:14px;line-height:1.6;min-height:100vh;padding:26px 16px 60px}
+  h1,.title,.eyebrow,.mb-title,.item-section,.tally-lbl,.stat-lbl{font-family:"Space Grotesk","Hanken Grotesk",sans-serif}
+  .mono,.spread-number,.item-id,.progress-pill,.tally-num,.stat-num,.selfcheck{font-family:"JetBrains Mono",monospace}
+
+  #app{max-width:820px;margin:0 auto}
+
+  .backlink{display:inline-block;font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--ink-secondary);text-decoration:none;border:1px solid var(--rule);border-radius:20px;padding:3px 10px;margin-bottom:16px}
+  .backlink:hover{color:var(--ink);border-color:var(--rule-strong)}
+  .backlink-float{display:none}
+  @media(max-width:680px){
+    .backlink-float{display:inline-block;position:fixed;top:10px;right:10px;z-index:50;font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--ink);text-decoration:none;background:var(--paper-raised);border:1px solid var(--rule-strong);border-radius:20px;padding:5px 12px}
+  }
+
+  .eyebrow{font-family:"Space Grotesk";font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-secondary)}
+  h1.title{font-weight:700;font-size:28px;line-height:1.15;margin:6px 0 4px;letter-spacing:-0.01em}
+  .subtitle{font-size:13px;color:var(--ink-secondary);margin:0 0 24px;max-width:60ch}
+
+  .card{background:var(--paper-raised);border:1px solid var(--rule);border-radius:var(--radius-lg);padding:20px 22px;margin-bottom:14px}
+
+  .spread-hero{padding:22px 22px 18px}
+  .spread-row{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  .spread-number{font-size:40px;font-weight:600;color:var(--ink);letter-spacing:-0.02em}
+  .spread-unit{font-size:18px;color:var(--ink-secondary);font-weight:400;margin-left:2px}
+  .spread-label{font-size:12px;color:var(--ink-secondary);max-width:24ch;text-align:right}
+  .spread-track{position:relative;height:8px;border-radius:6px;margin-top:14px;background:linear-gradient(90deg,var(--accent) 0%,var(--amber) 50%,var(--red) 100%);opacity:.9}
+  .spread-marker{position:absolute;top:-4px;width:2px;height:16px;background:var(--ink);border-radius:1px;transform:translateX(-1px)}
+  .spread-ticks{display:flex;justify-content:space-between;margin-top:6px;font-size:10px;color:var(--ink-tertiary)}
+
+  .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px}
+  .stat-cell{background:var(--paper-sunken);border:1px solid var(--rule);border-radius:var(--radius);padding:10px 8px;text-align:center}
+  .stat-num{font-size:19px;font-weight:600}
+  .stat-lbl{font-size:10px;color:var(--ink-secondary);text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+  .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:middle}
+
+  h2.section-h{font-family:"Space Grotesk";font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-secondary);margin:24px 0 10px;display:flex;align-items:center;gap:10px}
+  h2.section-h::after{content:'';flex:1;height:1px;background:var(--rule)}
+
+  .mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .mode-btn{background:var(--paper-sunken);border:1px solid var(--rule);border-radius:var(--radius);padding:14px;text-align:left;color:var(--ink);cursor:pointer;font-family:"Hanken Grotesk"}
+  .mode-btn:hover{border-color:var(--amber)}
+  .mode-btn .mb-title{font-weight:600;font-size:14px;margin-bottom:3px}
+  .mode-btn .mb-sub{font-size:11.5px;color:var(--ink-secondary)}
+
+  select.section-select{width:100%;background:var(--paper-sunken);color:var(--ink);border:1px solid var(--rule);border-radius:var(--radius);padding:11px 12px;font-family:"Hanken Grotesk";font-size:14px;margin-bottom:10px}
+  .full-btn{width:100%;background:var(--paper-sunken);border:1px solid var(--rule);border-radius:var(--radius);padding:12px 14px;color:var(--ink);font-family:"Space Grotesk";font-size:13.5px;font-weight:600;cursor:pointer;text-align:center}
+  .full-btn:hover{border-color:var(--amber)}
+
+  details.patterns summary{cursor:pointer;font-family:"JetBrains Mono";font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--amber);list-style:none}
+  details.patterns summary::-webkit-details-marker{display:none}
+  details.patterns[open] summary{margin-bottom:10px}
+  .pattern-item{font-size:12.5px;color:var(--ink-secondary);margin:8px 0;padding-left:14px;border-left:2px solid var(--rule)}
+  .pattern-item b{color:var(--ink)}
+
+  .sync-note{text-align:center;font-size:10.5px;color:var(--ink-tertiary);margin-top:4px}
+  .reset-link{display:block;text-align:center;margin-top:22px;font-size:11px;color:var(--ink-tertiary);background:none;border:none;cursor:pointer;font-family:"Hanken Grotesk";text-decoration:underline;text-underline-offset:3px}
+
+  .drill-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+  .progress-pill{font-size:11px;color:var(--ink-secondary)}
+  .end-link{font-size:11px;color:var(--ink-secondary);background:none;border:none;cursor:pointer;text-decoration:underline;text-underline-offset:3px;font-family:"Hanken Grotesk"}
+
+  .qcard{padding:24px 24px 22px}
+  .qcard .item-id{font-size:10.5px;color:var(--amber);letter-spacing:.04em}
+  .qcard .item-section{font-size:10.5px;color:var(--ink-secondary);letter-spacing:.04em;text-transform:uppercase;margin-left:10px}
+  .qtext{font-family:"Space Grotesk";font-weight:500;font-size:18px;line-height:1.4;margin:12px 0 14px}
+  .risk-box{background:var(--paper-sunken);border-left:3px solid var(--amber);border-radius:var(--radius);padding:10px 14px;font-size:12.5px;color:var(--ink-secondary);margin-bottom:16px}
+  .risk-box b{color:var(--amber);font-weight:600}
+
+  .answer-label{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-secondary);margin-bottom:6px}
+  textarea.answer-input{width:100%;min-height:120px;background:var(--paper-sunken);border:1px solid var(--rule);border-radius:var(--radius);padding:11px 13px;color:var(--ink);font-family:"Hanken Grotesk";font-size:13.5px;line-height:1.55;resize:vertical}
+  textarea.answer-input:focus{outline:none;border-color:var(--amber)}
+  .answer-actions{display:flex;gap:10px;margin-top:12px;align-items:center}
+  .skip-link{background:none;border:none;cursor:pointer;font-family:"Hanken Grotesk";font-size:12px;color:var(--ink-secondary);text-decoration:underline;text-underline-offset:3px;white-space:nowrap}
+
+  .grading-indicator{display:flex;align-items:center;gap:10px;padding:14px;color:var(--ink-secondary);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase}
+  .grading-dot{width:8px;height:8px;border-radius:50%;background:var(--amber);animation:pulse 1.1s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:.25}50%{opacity:1}}
+
+  .verdict-box{border-radius:var(--radius);padding:13px 15px;margin-bottom:14px;border-left:3px solid var(--amber);background:var(--paper-sunken)}
+  .verdict-box.tier-nailed{border-left-color:var(--accent)}
+  .verdict-box.tier-shaky{border-left-color:var(--amber)}
+  .verdict-box.tier-blanked{border-left-color:var(--red)}
+  .verdict-headline{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;font-weight:700}
+  .verdict-box.tier-nailed .verdict-headline{color:var(--accent)}
+  .verdict-box.tier-shaky .verdict-headline{color:var(--amber)}
+  .verdict-box.tier-blanked .verdict-headline{color:var(--red)}
+  .verdict-feedback{font-size:13px;line-height:1.6;color:var(--ink)}
+  .your-answer-box{font-size:12px;color:var(--ink-secondary);font-style:italic;padding:10px 14px;background:var(--paper-sunken);border-radius:var(--radius);margin-bottom:14px;border:1px solid var(--rule)}
+  .your-answer-box .ya-label{font-family:"JetBrains Mono";font-style:normal;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-secondary);display:block;margin-bottom:4px}
+
+  .answer-block p{font-size:13.5px;line-height:1.65;margin:0 0 12px}
+  .answer-block ul{margin:0 0 12px;padding-left:20px}
+  .answer-block li{font-size:13.5px;line-height:1.6;margin-bottom:8px}
+  .answer-block em{color:var(--amber);font-style:italic}
+  .answer-block strong{color:var(--ink)}
+
+  .note-box{background:var(--paper-sunken);border:1px dashed var(--rule);border-radius:var(--radius);padding:10px 14px;font-size:12px;color:var(--ink-secondary);margin:10px 0}
+  .note-box::before{content:'MARGIN NOTE';display:block;font-family:"JetBrains Mono";font-size:9px;letter-spacing:.08em;color:var(--amber);margin-bottom:5px}
+
+  .selfcheck{margin:16px 0;padding:11px 13px;background:var(--paper-sunken);border-radius:var(--radius);font-size:11px;color:var(--ink-secondary);line-height:1.7}
+  .selfcheck b{color:var(--amber)}
+
+  .stamp-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:16px}
+  .stamp{border-radius:var(--radius);padding:13px 6px;text-align:center;font-family:"JetBrains Mono";font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;font-weight:700;cursor:pointer;border:1.5px solid;background:transparent}
+  .stamp.blanked{color:var(--red);border-color:var(--red)}
+  .stamp.blanked:hover{background:var(--red-light)}
+  .stamp.shaky{color:var(--amber);border-color:var(--amber)}
+  .stamp.shaky:hover{background:var(--amber-light)}
+  .stamp.nailed{color:var(--accent);border-color:var(--accent)}
+  .stamp.nailed:hover{background:var(--accent-light)}
+  .stamp.ai-suggested{box-shadow:0 0 0 2px currentColor}
+
+  .summary-tally{display:flex;gap:10px;margin:16px 0}
+  .tally-cell{flex:1;text-align:center;padding:15px 8px;border-radius:var(--radius);background:var(--paper-sunken);border:1px solid var(--rule)}
+  .tally-num{font-size:24px;font-weight:700}
+  .tally-lbl{font-size:10px;color:var(--ink-secondary);text-transform:uppercase;letter-spacing:.05em;margin-top:4px}
+
+  button:focus-visible,select:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+  button{font:inherit}
+
+  @media(max-width:480px){
+    .mode-grid{grid-template-columns:1fr}
+    .stat-grid{grid-template-columns:repeat(2,1fr)}
+    .qtext{font-size:16.5px}
+  }
+</style>
+</head>
+<body>
+<a class="backlink-float" href="index.html" title="Back to dashboard">← Board</a>
+<div id="app"></div>
+<script>
+window.ITEMS = [
+  {
+    "id": "Q33",
+    "section": "Research Questions",
+    "q": "Your two research questions — the EF premium's role in bank lending, and whether that extends to near-banks — are addressed in one thesis rather than as two separate papers. What's the actual argument for why they belong together, and are they equally falsifiable?",
+    "risk": "\"we had the data so we looked at it too\" is a weak justification for pairing two research questions in one thesis — an examiner could reasonably ask why RQ2 isn't just a suggestion for future research instead of a full second research question.",
+    "notes": [],
+    "answer": "They belong together because RQ2 is a direct theoretical implication of RQ1, not an independent add-on. If the operative mechanism is the cost of external funding rather than deposit quantity, then any institution facing a market-priced cost of external funds — chartered bank or not — is subject to that mechanism. Testing whether this actually extends to non-bank, wholesale-funded intermediaries is the natural and necessary next step once RQ1's reconceptualization is established, not a convenient use of an available dataset.\n\nThey are not equally falsifiable, though, and it's worth being explicit about that distinction rather than treating both results as the same kind of finding. RQ1 got a genuinely decisive test: EF could have come out insignificant or wrong-signed in the bank panel, and it didn't — total and NFC lending both confirm it cleanly under the preferred estimator. RQ2's test, as implemented, isn't decisive either way — the result is \"inconclusive due to data frequency,\" a different kind of outcome from a clean rejection. That's not a flaw in the underlying research question — near-bank transmission is just as real and interesting a question as bank transmission in principle — it's a statement about this specific test's power, given annual data on a heterogeneous set of ~30 institutions. Say plainly if pushed: RQ1's test was decisive in the sense that it could have failed and didn't; RQ2's test, as implemented here, doesn't have the power to be decisive in either direction."
+  },
+  {
+    "id": "Q1",
+    "section": "Literature & Contribution",
+    "q": "You claim to be the first to model the EF premium via CDS spreads in a Swedish panel, and the first to examine BLC transmission in Swedish near-banks. How confident are you that nobody else has done this?",
+    "risk": "priority claims are the cheapest thing in the room to attack — it only takes the examiner naming one paper.",
+    "notes": [
+      "Action item: do one more literature pass before 19 August specifically checking for anything 2024–2026 that might pre-empt either claim."
+    ],
+    "answer": "The claim is scoped narrowly and defensibly — *directly via CDS spreads*, *in a Swedish panel*, and *near-bank intermediaries in this institutional setting* specifically. Related work exists (Gambacorta & Shin 2018 on capitalisation and funding costs; Buchak et al. 2024 on non-bank substitution; Li & Myers 2025 on the Swedish non-bank sector) but none combine a direct CDS-based cost proxy with the Swedish bank panel, or extend BLC identification to Swedish near-banks specifically. State the scope precisely rather than the claim broadly, and the \"first\" holds."
+  },
+  {
+    "id": "Q2",
+    "section": "Literature & Contribution",
+    "q": "Buchak et al. (2024) show non-bank substitution significantly shapes how capital regulation affects lending — you cite them to justify studying near-banks. But your own near-bank results are inconclusive on transmission. Doesn't that undercut your own motivation?",
+    "risk": "this is a real tension, not a dodge-able one. You're using a paper with a strong positive finding to motivate an exercise that itself comes back null on the headline variable.",
+    "notes": [],
+    "answer": "Buchak et al. motivate *why non-banks matter for transmission in general* — they don't claim every institutional setting or every channel will show a clean result, and the paper doesn't need to replicate their finding to justify the exercise. The contribution here is narrower and still stands: this is the first attempt to bring Swedish near-banks into the BLC identification at all. The null on policy rate is a data-frequency limitation (annual, not quarterly), explicitly flagged as inconclusive rather than as evidence against the Buchak et al. logic. What *does* corroborate the broader \"non-banks matter\" case is that risk and liquidity are significant determinants of near-bank lending response — the institutions respond to shocks, just not measurably to the policy rate itself at this frequency."
+  },
+  {
+    "id": "Q3",
+    "section": "Literature & Contribution",
+    "q": "Your motivation section says studying Sweden \"provides further country experience.\" Isn't that a fairly weak justification — why should anyone care about one more country?",
+    "risk": "\"more country data\" is a weak standalone motivation and examiners know it.",
+    "notes": [],
+    "answer": "Agree, and don't lead with that framing live. The stronger, sharper version of the motivation — and the one to lead with in the room — is the institutional argument: Sweden abolished reserve requirements in 1994 and has a low deposit-to-liabilities ratio (~35%), which makes it a particularly *clean* test case for ruling out the deposit-based channel and isolating a cost-based mechanism. That's not \"another data point,\" it's a setting chosen because its institutional features sharpen identification. Use that framing; \"further country experience\" is scene-setting text, not the actual argument."
+  },
+  {
+    "id": "Q4",
+    "section": "Economic Theory",
+    "q": "The classical bank lending channel operates through deposits. The balance sheet channel operates through borrower net worth. Can these really be operating at the same time, and if so, how do you know which one you're identifying?",
+    "risk": null,
+    "notes": [],
+    "answer": "Yes, they're not mutually exclusive — they sit at different loci (lender balance sheet vs. borrower balance sheet) and can reinforce each other. The identification strategy addresses this by using bank-specific characteristics under the standard assumption that loan *demand* is largely macro-driven and independent of bank characteristics, which isolates the supply-side (bank lending channel) response from demand-side (balance sheet channel) effects."
+  },
+  {
+    "id": "Q5",
+    "section": "Economic Theory",
+    "q": "Under Disyatat's reconceptualisation, size and liquidity are reinterpreted as proxies for EF-premium sensitivity rather than deposit-substitution capacity. Isn't that just a relabeling exercise — how would results actually look different under the old vs. new interpretation?",
+    "risk": null,
+    "notes": [],
+    "answer": "The distinguishing evidence is that size and liquidity remain significant *even after the direct EF premium (CDS spread) is controlled for*. Under the old (deposit-substitution) interpretation, once you control for the actual cost of external funds, these characteristics should lose explanatory power — they were only proxying access to alternative funding. They don't lose power; they retain independent significance. That's the evidence that they're capturing something about *sensitivity to* the EF premium (heterogeneous pass-through) rather than *capacity to avoid* it."
+  },
+  {
+    "id": "Q22",
+    "section": "Economic Theory",
+    "q": "Bank characteristics (size, liquidity, capitalisation, risk) are described as proxies for a bank's conditional probability of default, while the CDS-based EF variable measures that same default probability's realised market cost directly. If CDS already prices what the bank characteristics proxy, why include both — isn't that double-counting the same underlying thing?",
+    "risk": "this looks like a genuine specification problem at first glance — two sets of variables apparently representing the same underlying construct, included together in the same regression. An examiner could use this to probe whether the model is properly specified or just kitchen-sinking controls.",
+    "notes": [
+      "This is the same point Q5 already makes — size and liquidity capture \"sensitivity to the EF premium (heterogeneous pass-through) rather than capacity to avoid it.\" The word \"sensitivity\" is doing real technical work here: it's pointing specifically at the interaction terms in the regression table, not just softening the claim."
+    ],
+    "answer": "They aren't double-counting, because of how each variable actually enters the regression, not just what it conceptually represents. The EF/CDS term enters as a level — it measures the funding cost a bank faces right now, full stop. Size, liquidity, and capitalisation enter twice: as level terms, but also as interaction terms with the policy rate change (Δi × size, Δi × LIQ, etc.). That interaction structure measures something CDS structurally cannot: how much a bank's lending response to a policy shock varies with its size or liquidity — sensitivity, not level. A bank can have an unremarkable current CDS spread and still show a large interaction coefficient, because the interaction term captures responsiveness to a shock, not the current price of funding. These are two different statistical objects answering two different questions — \"what does this bank pay right now\" versus \"how sharply does this bank's behaviour move when the rate moves\" — which is exactly why size and liquidity remain significant even after CDS is controlled for directly (Section 5.1), rather than losing significance the way funding composition does."
+  },
+  {
+    "id": "Q23",
+    "section": "Economic Theory",
+    "q": "Disyatat (2010a) identifies two amplification mechanisms — one through the link between monetary policy and risk perceptions, one through the direct effect of policy on intermediary balance sheets — both propagating through the EF premium. What's the actual difference between these two, and give me a concrete example of each?",
+    "risk": "it's easy to restate the two definitions in slightly different words without actually instantiating them — an examiner asking for \"concrete examples\" wants the theory applied to an actual scenario, not paraphrased back.",
+    "notes": [
+      "Caveat: this is reconstructed from the standard financial-accelerator/risk-taking-channel literature the thesis already cites (Borio & Zhu; Adrian & Shin), not a direct quote of Disyatat's (2010a) own wording. Worth a five-minute check against the actual paper before the defence, since it's the most-cited source in the thesis — there should be zero daylight between what's said in the room and what the paper actually argues."
+    ],
+    "answer": "The two mechanisms run on different clocks. The risk-perception mechanism is forward-looking and expectational — it moves before any real damage exists. A policy rate hike leads wholesale investors to immediately reassess a bank's default probability, because the bank's borrowers now face higher debt-servicing costs (concretely for Sweden, most household mortgages are variable-rate and STIBOR-indexed) — so expected future defaults rise and CDS spreads widen the same day the hike is priced in, before any loan has actually gone bad. The balance-sheet mechanism is mechanical and realized — actual damage, not a reassessment. The same hike reduces the mark-to-market value of the bank's existing fixed-rate bond holdings, and as loans genuinely default over subsequent quarters, loan-loss provisions eat directly into capital — leverage mechanically rises (same debt, less equity), raising the bank's true probability of default because the loss-absorbing buffer is now physically smaller.\n\nThe crisp version: one is the market repricing risk before it happens; the other is the balance sheet actually absorbing the damage once it does. Both raise the EF premium, but on a different timeline — one instant, one lagged."
+  },
+  {
+    "id": "Q24",
+    "section": "Economic Theory",
+    "q": "Romer & Romer (1990) conclude that greater access to external funding weakens the bank lending channel. The paper argues Disyatat's framework reverses this — external funding access can strengthen the channel instead. Same institutional fact, opposite conclusions — what is Romer & Romer missing?",
+    "risk": "it's easy to gesture at \"the deposit view vs. the cost view\" in general terms without landing the specific mechanical reason why external funding reliance flips from an escape hatch into the very thing that transmits the shock.",
+    "notes": [
+      "Framing note: Romer & Romer made a genuine contribution establishing that structural developments were eroding the deposit-based channel — they simply hadn't yet reconceived what the channel actually ran on. Later work (Bernanke 2007; Disyatat 2010a) built on that observation rather than correcting a mistake. Worth defaulting to this more charitable framing generally when discussing literature that predates a later reconceptualization — it reads as rigorous rather than dismissive, and is also just the more accurate description of how the literature actually progressed."
+    ],
+    "answer": "Romer & Romer's inference was logically sound given the model standard at the time — the flaw is in the deposit-quantity assumption, not a failure to understand banking. Under that assumption, external funding access lets banks dodge the channel: if deposits drain, a bank can just tap wholesale markets, so more external-funding access means the deposit-drain mechanism bites less. That's a coherent conclusion under a deposit-based model.\n\nThe reversal follows once the operative mechanism is cost rather than quantity. External funding reliance is literally the share of a bank's liabilities exposed to repricing when the EF premium moves — a bank funded 80% via wholesale has 80% of its funding cost jump when the premium rises; a bank funded 20% via wholesale has only 20% exposed. Under the deposit view, external access was an escape hatch that let a bank dodge the channel entirely; under the cost view, external access *is* the substrate the channel runs through — more of it means more of the balance sheet exposed to the very thing that transmits policy. Same institutional fact (heavier reliance on external funding), opposite implication, because the underlying model of what the channel actually operates through changed."
+  },
+  {
+    "id": "Q14",
+    "section": "Economic Theory",
+    "q": "You open by invoking the monetarist/Keynesian debate about how money supply affects the economy, then argue Sweden's abolition of reserve requirements makes it a clean testing environment. But modern central banks don't set policy by varying the money supply at all — they target a rate directly, and most money is created endogenously by commercial banks issuing loans. Doesn't your own opening framing describe a mechanism that doesn't actually operate anymore?",
+    "risk": "an examiner fluent in monetary operations could read the opening paragraph as implying central banks still work via money-supply targeting, and use that to suggest the framing is dated or the institutional argument is shakier than it looks.",
+    "notes": [
+      "Have the price-setter/quantity-taker distinction ready verbatim — it's a fast, confident answer to what could otherwise sound like a gotcha."
+    ],
+    "answer": "No — and this is worth stating plainly and confidently rather than hedging. Modern central banks, including the Riksbank, set a target for a short-term policy rate and supply or absorb whatever quantity of reserves keeps the interbank rate there; they are price-setters and quantity-takers in the reserves market, not the reverse. This isn't a problem for the paper — it's already built into the theoretical framework. Section 3 explicitly argues (via Disyatat 2010a and Borio & Disyatat 2009) that the money-multiplier/reserve-quantity story has limited relevance under modern operating frameworks, and that loan creation drives deposit formation rather than the reverse (Palley 2008; Moore 2006; Wray 2007) — money is created endogenously by commercial banks extending credit, not by the central bank varying a controllable stock. The opening monetarist/Keynesian discussion in Section 1 is deliberate historical scene-setting: it describes the origin of a disagreement — how widely money substitutes for other assets, and how much of transmission runs through the interest rate versus broader relative-price effects — that eventually splintered into the interest rate channel and credit channel literatures, one branch of which (the bank lending channel) the paper tests. It is not a claim about how central banks operate today. If anything, the abandonment of reserve requirements and the shift to rate-targeting is exactly what makes Sweden clean: there's no possible confound from a deposit/reserve-based mechanism, so any lending response identified has to run through the cost-of-funding channel the paper actually tests."
+  },
+  {
+    "id": "Q15",
+    "section": "Economic Theory",
+    "q": "Where does the external financing premium mechanism sit relative to the original monetarist/Keynesian debate — and if this result had existed at the time, how would it have changed that debate?",
+    "risk": "this rewards a student who can place their result in intellectual history rather than just describe it, and punishes anyone who tries to force it into \"more monetarist\" or \"more Keynesian\" as if it has to be one or the other.",
+    "notes": [],
+    "answer": "It's neither — and that's the answer to give, not a hedge. Both the Keynesian interest-rate model and the monetarist broad-substitution model implicitly treated credit as frictionless: once you knew the risk-free rate (Keynesians) or the money stock (monetarists), nothing about *who* supplied a loan or on what terms mattered independently. The bank lending channel exists because informational frictions between lenders and wholesale investors make a bank's own funding cost an independent driver of lending, over and above either of those variables. The EF premium is a market-priced measure of exactly that friction — a third kind of variable neither original camp had room for, not a refinement of either one.\n\n- If this result had existed at the time, it would have partly vindicated the monetarist complaint that interest-rate-only models miss something real — investment and lending were never fully explained by the rate alone — but for a different reason than monetarists gave. The missing piece wasn't broad asset substitution across the whole economy; it was a narrow, institution-specific credit-market friction.\n\n- The more honest counterfactual: the debate probably couldn't have been resolved this way at the time regardless. CDS markets, Sweden's 1994 reserve-requirement abolition, and the panel-GMM methods used here all postdate the 1960s debate by decades. The theoretical possibility of credit-market frictions was available earlier (Akerlof, Stiglitz, developing through the 1970s), but the empirical demonstration had to wait for the data and estimators to catch up. The debate stalled less for lack of theory than for lack of measurement."
+  },
+  {
+    "id": "Q38",
+    "section": "Economic Theory",
+    "q": "How many distinct versions of the bank lending channel theory are there, and where does this paper's own contribution sit within that arc?",
+    "risk": "it's tempting to narrate this as three independently-named theories arriving in sequence, when the more accurate structure is two theories bridged by one pivotal empirical finding that got *reinterpreted* rather than replaced. Mislabeling the structure sounds like a rehearsed list rather than genuine command of how the literature actually moved.",
+    "notes": [
+      "This is the fullest version of the theory's history for this thesis — the master narrative if asked to trace the arc from 1988 to now. Q15 and Q17 are the two adjacent pieces: where the EF premium sits relative to the original monetarist/Keynesian debate, and where the monetarist tradition itself went in the modern taxonomy."
+    ],
+    "answer": "Two theories, not three, connected by one empirical finding whose meaning changed over time.\n\n**Theory 1 — deposit-constrained** (Bernanke & Blinder, 1988): reserve requirements bind, deposits are the loanable-funds constraint, a rate rise drains deposits and mechanically contracts credit.\n\n**The bridging finding, not a third theory:** Kashyap & Stein (1995, 2000) showed banks respond heterogeneously to the same policy shock — large, liquid, well-capitalised banks tap wholesale markets to offset deposit outflows, so the effect concentrates in small, illiquid banks. At the time, this was read *within* Theory 1: size, liquidity, and capitalisation were proxies for a bank's *capacity to substitute away from* a shrinking deposit base. Still fundamentally a deposit-quantity story — just showing the constraint doesn't bind uniformly.\n\n**Theory 2 — cost-constrained** (Bernanke, 2007; Disyatat, 2010a): the *same* bank-characteristic evidence gets reinterpreted, not re-derived from new data. Two separate developments made the reinterpretation both necessary and plausible: institutional change (reserve requirements abolished in many countries, including Sweden in 1994; central banks stopped operating via scarce-reserves OMO and became price-setters/quantity-takers instead) explains why the constraint *stopped binding*; and, as a distinct point about causality rather than institutional change, loan creation was always the process that generates deposits, not the reverse — so deposits were never really the independent driver of lending even before anything changed institutionally. Under Theory 2, size/liquidity/capitalisation stop proxying *capacity to access* wholesale funding and start proxying *sensitivity to the cost* of that funding. Deposits have very little to do with the mechanism at this stage, mechanically.\n\n**This paper's contribution sits at the point where Theory 2 finally becomes directly measurable rather than only inferable.** Prior cost-view literature (Damar et al., 2015; Brinkmeyer, 2014) still only had indirect proxies for the cost mechanism — funding composition (the wholesale share of a bank's liabilities) stood in for cost, since no one had modelled the cost itself. This paper constructs an *observable*, market-priced measure of the EF premium directly, via CDS spreads plus STIBOR. Once that direct measure sits in the regression alongside the bank-characteristic control vector, two things happen together: bank characteristics remain significant, confirming they capture *sensitivity* to the EF premium via their interaction terms rather than *capacity to offset* deposit shortfalls (Q22); and funding composition loses significance.\n\nThe precise way to state what that second result means: composition wasn't unimportant before this paper — Damar et al. and Brinkmeyer were picking up something real. Composition's earlier significance reflected its role as an imperfect *proxy* for the EF premium, not an independent channel of its own. Once the direct measure is available, composition has nothing left to explain — not because it was never meaningful, but because what it was capturing is now observed directly. This is *consistent with* that interpretation, not a formally tested mediation result (no first-stage regression of composition on CDS is presented) — say \"is consistent with,\" not \"this clears it up,\" for the same reason \"directly tests\" needs to stay \"consistent with\" elsewhere in this document."
+  },
+  {
+    "id": "Q17",
+    "section": "Economic Theory",
+    "q": "If the interest rate channel is Keynesian, where did the monetarist tradition actually go in the modern taxonomy — doesn't the paper's two-way split (interest rate channel vs. credit channel) leave it out entirely?",
+    "risk": "an examiner well-versed in the transmission literature could push on why the paper's framing omits an entire branch of the standard taxonomy, and use it to probe whether the student knows the wider literature or just the two channels relevant to the paper.",
+    "notes": [
+      "Good to have ready as the natural follow-up to Q15 — it shows you know where the excluded material actually sits, rather than just that it's excluded."
+    ],
+    "answer": "It didn't disappear — it shows up under a third branch the standard taxonomy calls \"other asset price channels\" (equity prices via Tobin's q, wealth effects, and the exchange rate channel), which sits alongside, not inside, the interest rate channel. This is the actual modern descendant of the monetarist claim that money substitutes for the whole asset menu, not just bonds — it's just been relabeled and narrowed to specific, measurable asset classes rather than Friedman's sweeping \"every asset\" claim. Standard treatments of this literature present traditional interest-rate channels, other asset price channels, and the credit view as three separate branches, with the monetarist evidence discussed as its own section alongside them, not folded into the interest-rate discussion.\n\nThe paper's own framing simplifies the field to a two-way split because the asset price channel isn't tested here and isn't relevant to the identification strategy — a legitimate scope decision, not an oversight. If pushed on it, say so directly: the asset price channel is a real third branch of the literature, it's just outside what this paper examines, since the focus here is specifically on lender-side credit-market frictions rather than portfolio effects on household wealth or firm valuation."
+  },
+  {
+    "id": "Q18",
+    "section": "Economic Theory",
+    "q": "Where do standard textbook models like IS-LM or the Mundell-Fleming/AA-DD model sit relative to this discussion — could the credit channel just be added as another curve to one of them?",
+    "risk": "examiners sometimes use textbook models as a quick sanity check — if a student can't place their own mechanism relative to the models everyone learns first, it can look like their theoretical grounding is thinner than their citations suggest.",
+    "notes": [
+      "Good context to have if an examiner tries to sanity-check your framing against the textbook models everyone starts with — shows the credit channel isn't a gap in your knowledge of IS-LM, it's a genuinely different kind of model. Note: BGG (1999) and Gertler & Kiyotaki (2010) are background context for the oral defence only, not in the thesis's own reference list — no need to cite them in writing."
+    ],
+    "answer": "IS-LM is the formal version of the Keynesian interest rate channel itself, not just compatible with it — the LM curve pins down the interest rate given money supply and money demand, and the IS curve translates that single rate into investment and output. It only contains two assets, money and bonds, which is exactly the narrow substitution set that made monetarists object to it in the first place — Friedman's critique of the \"neoclassical synthesis\" was precisely that IS-LM leaves out every other asset the monetarist view treats as relevant. AA-DD (the Mundell-Fleming model, in Krugman & Obstfeld's textbook naming) is the open-economy extension, adding the exchange rate as a second relative price — this is where the exchange rate channel formally lives, and it's the one slice of the \"other asset price channels\" bucket that made it into a standard textbook diagram, unlike the equity/Tobin's-q/wealth-effect slice, which never got its own curve.\n\nNeither model has room for the credit channel, and that's structural rather than an oversight: both assume a single interest rate every borrower faces, with no place for who is borrowing or from whom to matter — the same frictionless-credit assumption both original camps shared. Credit-market frictions aren't a relative price you can add as a third curve — they're a market failure requiring balance sheets and information asymmetries built into the model itself, which is why the credit channel had to wait for microfounded frameworks (e.g. Bernanke, Gertler & Gilchrist's 1999 financial accelerator, and later explicit banking-sector models such as Gertler & Kiyotaki 2010) rather than showing up as an extension of IS-LM the way the exchange rate did."
+  },
+  {
+    "id": "Q19",
+    "section": "Economic Theory",
+    "q": "What's the actual mechanism by which the credit channel \"amplifies\" monetary policy — is it a separate channel running in parallel to the interest rate channel, or something else?",
+    "risk": "examiners can press on this to see whether the student treats the credit channel as just another channel to check off, or actually understands it as an amplifier — conflating the two is one of the more common errors in orals on this topic.",
+    "notes": [
+      "Note: this is the same logic already stated in Q6 — the EF premium \"operates on top of, not instead of, the direct rate channel.\" That's not just convenient phrasing for the regression results; it's the financial accelerator, already present in how the paper's own findings are framed. Worth saying explicitly if asked — it shows the mechanism was understood, not just cited. BGG (1999) is background context only, not in the thesis's own reference list."
+    ],
+    "answer": "It's an amplifier sitting on top of the interest rate channel, not a parallel pipe running alongside it — the technical name for this is the financial accelerator (Bernanke, Gertler & Gilchrist, 1999). The motivating empirical anomaly was specific, not a vague \"the rate channel was hard to prove\": investment kept responding more strongly to firms' internal cash flow and balance-sheet strength than to the measured cost of capital alone (Fazzari, Hubbard & Petersen, 1988 — already in the thesis's own literature review). If the interest rate channel told the whole story, a firm's cash position shouldn't matter once the rate is controlled for. It did — that gap is what financial-frictions research was built to explain.\n\nThe mechanism is a loop, not a one-off effect: a rate change affects borrowers' (or lenders') net worth and perceived creditworthiness → that changes the premium charged on external finance → the changed premium feeds back into spending and asset values → which feeds back into net worth again. That feedback loop is why it's called propagation rather than just transmission — a policy shock compounds through financial markets over time rather than passing through once, which is also why financial-accelerator models tend to generate larger and more persistent real effects than pure interest-rate models, not just an independent add-on effect."
+  },
+  {
+    "id": "Q20",
+    "section": "Economic Theory",
+    "q": "The literature review mentions a shift from \"originate-and-hold\" to \"originate-and-distribute\" banking. What is that, and how does it relate to the reserve/deposit-based money creation story you've already addressed in Q14?",
+    "risk": "an examiner could use this as a second, less obvious angle on the same \"does your theoretical framing match how banking actually works\" question as Q14 — this time from the asset side of the balance sheet rather than the reserve side, to see if the understanding is genuine rather than limited to one talking point.",
+    "notes": [
+      "Good to have as the natural companion to Q14 — same \"how does modern banking actually work\" territory, approached from the asset side rather than the reserve side."
+    ],
+    "answer": "Originate-to-hold is the classical model: a bank makes a loan and keeps it on its own balance sheet, funded by its own deposits and capital, bearing the credit risk itself — this is the world the classical bank lending channel (Bernanke & Blinder, 1988) describes, where lending capacity is a direct function of the bank's own deposit base. Originate-to-distribute is the shift Loutskina & Strahan (2006) document: banks originate loans but sell them on (securitization), earning fee income and passing the credit risk to outside investors, so their lending capacity is no longer bound by their own balance sheet at all — only by what capital markets are willing to absorb.\n\nThis connects to Q14 directly, but from the other side of the balance sheet. Q14 established that money is created endogenously the moment a bank extends a loan, independent of reserve constraints. OTD adds a further point the money-multiplier framework has no room for at all: once loans can be sold on, the constraint on how much new credit-money gets created is relocated from the originating bank's own reserves or capital to the market's appetite and pricing for the risk being sold. That's not a quantity constraint in the multiplier sense — it's a market-priced constraint, conceptually the same kind of object as the EF premium itself, just sitting on the asset-disposal side of the balance sheet rather than the liability-funding side.\n\nThis is also the institutional precondition for the paper's second research question: near-bank intermediaries such as finance companies and mortgage institutions have no deposit base whatsoever, and are only viable credit suppliers because OTD-style wholesale funding and loan sales let them originate credit without ever needing deposits in the first place. That's not incidental to studying near-banks — it's the reason they can exist as lenders at all."
+  },
+  {
+    "id": "Q21",
+    "section": "Economic Theory",
+    "q": "Where does the money multiplier sit relative to IS-LM and the bank lending channel — doesn't it already acknowledge the frictions the credit channel is built on?",
+    "risk": "it's tempting to treat \"reserve requirements\" and \"credit-market frictions\" as the same kind of imperfection, since both sound like departures from a frictionless textbook world. Conflating them is an easy trap, and it would undercut the paper's own institutional argument if it went unaddressed.",
+    "notes": [
+      "Have this distinction ready if an examiner tries to collapse \"reserve requirements\" and \"credit-market frictions\" into the same idea — they are not the same kind of imperfection, and the paper's whole institutional argument for Sweden depends on keeping them separate."
+    ],
+    "answer": "The money multiplier sits alongside IS-LM pedagogically, but does a different job. IS-LM takes the money supply as a given and asks what it does to output via the interest rate; the multiplier is the separate piece of plumbing explaining how the central bank supposedly controls that money supply in the first place — it sets the monetary base, a stable reserve ratio scales that into deposits, and the money stock falls out mechanically. Textbooks present the multiplier first because IS-LM's money-supply assumption silently depends on it being true.\n\nRelative to the bank lending channel, the relationship is closer than \"alongside\" — the classical bank lending channel (Bernanke & Blinder, 1988) *is* the multiplier, aimed at a narrower target: instead of asking how a reserve change affects aggregate money, it asks how a reserve change affects bank lending specifically, since deposits are a component of the money stock and are reserve-constrained. Same mechanical chain, narrower dependent variable — which is exactly why it failed for the same reason the multiplier is a poor description of modern banking: once large banks can tap wholesale markets, or reserve requirements are abolished entirely, the constraint the multiplier depends on doesn't bind, for the money stock or for bank lending.\n\nThe correction that matters: the reserve ratio is not the kind of friction the credit channel is built on. It's a uniform, mechanical, regulatory constraint — the same for every bank regardless of quality or risk — with nothing to do with information. The credit-channel friction is informational asymmetry, priced heterogeneously by market participants, that makes external finance costlier than internal finance for some borrowers/lenders more than others. The money multiplier doesn't acknowledge that friction at all; it shares the same frictionless-credit assumption IS-LM and the monetarist view share (see Q15) — it just bolts one extra institutional rule (the reserve ratio) onto an otherwise frictionless world where any bank with excess reserves can costlessly convert them into loans, no questions asked about who's borrowing.\n\nThis is precisely why Sweden abolishing reserve requirements in 1994 doesn't kill the bank lending channel — it only kills the multiplier's version of it. The version this paper tests runs on a genuinely different kind of friction (market-priced credit risk), unrelated to reserve accounting, and therefore survives fully intact in a setting with zero reserve requirements. This is arguably the cleanest single sentence for why Sweden works as a testing ground: reserve-requirement abolition removes the one thing that would make the classical and reconceived channels look alike, leaving only the real friction standing."
+  },
+  {
+    "id": "Q36",
+    "section": "Economic Theory",
+    "q": "Section 2 cites the risk-taking channel (Loutskina & Strahan; Altunbas et al.; Jiménez et al.; Adrian & Shin; Bruno & Shin) as adjacent literature. How does it actually relate to your own EF-premium channel — are they the same mechanism described differently, or genuinely different channels?",
+    "risk": "both literatures use overlapping vocabulary (risk, bank characteristics, monetary policy), and it's easy to blur them together without a clean distinguishing line, which invites the follow-up \"so what's actually new here.\"",
+    "notes": [
+      "One-line distinction to have ready: risk-taking is about what risks a bank chooses to hold; the EF premium is about what the market charges the bank for the funding behind whatever it already holds."
+    ],
+    "answer": "Related family, genuinely different mechanism, and the distinction is which side of the balance sheet is doing the work. The risk-taking channel is an asset-side story: how monetary policy changes a bank's *appetite* for risk — classically, low rates inducing \"search for yield,\" looser credit standards, riskier asset composition. The EF-premium channel is a liability-side story: how monetary policy changes what the market charges the bank itself for its own external funding, which constrains how much it can lend independent of any change in the bank's own risk appetite. They also emphasise different directions of the same policy lever: the risk-taking literature is most often concerned with low rates encouraging more risk-taking, while this paper's channel centres on rising rates raising funding costs and contracting supply — not strictly opposite mechanisms, but different emphases within the same broader rate-cycle.\n\nWhere they genuinely overlap is vocabulary, not mechanism: the paper's own RISK variable (loan-loss provisions over total loans) is the same kind of variable this literature uses, but here it functions as a proxy for balance-sheet health feeding into funding-cost sensitivity, not a test of risk-taking behaviour itself."
+  },
+  {
+    "id": "Q25",
+    "section": "Data & Identification",
+    "q": "The empirical strategy assumes loan demand is \"largely macroeconomic\" and therefore doesn't vary systematically by which bank a borrower uses — that's what lets bank characteristics serve as a supply-side instrument. What's the actual economic argument for this, and where could it realistically break down in the Swedish data?",
+    "risk": "this is the identification assumption the entire empirical strategy rests on. A vague answer here undermines confidence in everything downstream; a sharp answer with a concrete counter-scenario shows genuine command of the identification problem.",
+    "notes": [
+      "Note: keep the aggregate-demand-behaving-oddly point (e.g. pandemic-era cheap money coexisting with a poor growth outlook) separate from this — that's about whether macro variables predict demand well in general, not about whether demand varies systematically by bank. Don't conflate the two if asked; they're different questions."
+    ],
+    "answer": "The argument is that loan demand is driven by macroeconomic fundamentals — GDP growth, market and policy rates, consumer and investor confidence, disposable income and corporate profits — none of which depend on which specific bank a borrower happens to use. If the outlook is good and the cost of capital is low, purchasing and investment decisions get front-loaded regardless of which bank services the loan; that's what makes bank-specific characteristics a viable instrument for isolating the supply side (Kashyap, Stein & Wilcox, 1993).\n\nWhere it can realistically break down: not through ordinary price competition — different banks charging different rates is exactly the supply-side variation the paper is designed to pick up, not a threat to it. The real threat is business-stealing / demand reallocation: if a bank with a genuine funding-cost advantage (Stabelo is a good concrete Swedish example, funded on favourable institutional terms that let it undercut traditional mortgage lenders) pulls borrowers away from other banks, that bank's loan growth partly reflects demand shifting between banks rather than new aggregate credit being created. A bank-level panel can show large dispersion in lending growth across banks even when total credit in the economy hasn't moved at all — the growth is reallocated, not created.\n\nThis is a well-known limitation of bank-characteristic panel identification generally, not specific to this thesis, and it's precisely the gap that loan-level, same-firm-multiple-banks designs — e.g. Khwaja & Mian (2008) — were built to close, since they can observe whether a given firm's total borrowing actually changed, not just which bank supplied it. The honest limitation to state plainly if pushed: a bank-level panel like this one, unlike loan-level microdata, cannot fully rule out reallocation as a partial driver of the cross-sectional lending patterns observed."
+  },
+  {
+    "id": "Q26",
+    "section": "Data & Identification",
+    "q": "Sweden has a highly concentrated banking sector — a handful of large banks dominate. Does high concentration make the demand-doesn't-vary-by-bank assumption more or less credible than in a more fragmented banking system, and why?",
+    "risk": "it's tempting to give a single blanket answer, but concentration cuts in two different directions depending on the borrower segment — a one-sided answer misses half the picture and invites a follow-up that exposes the gap.",
+    "notes": [
+      "Keep this separate from a different issue concentration also raises, already flagged in the paper's own limitations: with only 8 banks in the quarterly panel, there's limited cross-sectional variation to identify supply-side coefficients from at all. That's a statistical power problem (not enough variation in bank characteristics), distinct from the identification problem above (does bank choice correlate with unobserved demand) — don't conflate the two if an examiner links them, since they call for different answers."
+    ],
+    "answer": "Concentration pulls in two directions at once, and they don't point the same way.\n\n- Toward more credible: the large Nordic banks are genuinely similar in funding structure, business model, and risk profile. For retail/mortgage borrowers specifically, price comparison is easy (digital comparison tools, standardized amortization rules from Finansinspektionen), switching costs are low, and there's no obvious reason a household's demand for credit would be entangled with which of these similar banks it uses.\n\n- Toward less credible — the direction the literature actually worries about: for corporate borrowers, high concentration typically means more relationship banking, not less. With only a handful of large banks, firms — especially SMEs — tend to have one entrenched \"house bank\" relationship built on established credit history and private information the relationship bank holds that a new bank doesn't. If a firm's bank choice is sticky for relationship-specific reasons, which bank it uses stops being independent of its underlying characteristics — a firm stuck with a weaker bank isn't there by demand-side chance, it's there because switching is costly. This is why loan-level identification designs (e.g. Khwaja & Mian, 2008) lean specifically on firms with multiple bank relationships: in concentrated systems, most firms only have one, which is exactly where the assumption is weakest.\n\nThe honest answer is segment-dependent, not a single verdict — and it maps directly onto the paper's own total/household/NFC split: more credible for household lending (low switching costs, transparent pricing), more questionable for NFC lending (relationship banking, higher switching costs)."
+  },
+  {
+    "id": "Q6",
+    "section": "Data & Identification",
+    "q": "A 1% increase in wholesale funding costs is associated with a 0.04% reduction in loan supply — that's tiny. A 1% policy rate increase gets you 0.3%. Isn't your headline variable economically marginal next to the policy rate itself?",
+    "risk": "the two numbers look wildly mismatched side by side, and if you can't explain the units instantly it reads as your main effect being trivial.",
+    "notes": [
+      "Have this distinction ready verbatim — this is likely to come up and a hesitant answer here is worse than the number itself."
+    ],
+    "answer": "These aren't comparable \"1 percent\" shocks in the same units. The policy rate is measured in percentage points of an interest rate (a 1pp move is a large, discrete monetary policy shock). The CDS spread is a basis-point cost proxy — a \"1 percent increase\" in an already-small spread is a much smaller absolute shock in interest-rate-equivalent terms. The correct comparison isn't the coefficient magnitude, it's whether the EF premium channel is *statistically distinguishable from zero after controlling for the direct policy rate effect* — which it is, for total and corporate lending, even net of the policy rate's own direct effect. That's the finding: the EF premium operates *on top of*, not instead of, the direct rate channel."
+  },
+  {
+    "id": "Q42",
+    "section": "Data & Identification",
+    "q": "Companion to Q6 — how do you convert a small elasticity like −0.039% into something that actually sounds economically meaningful, on the spot, for any coefficient in the paper?",
+    "risk": "\"0.04 percent\" sounds negligible read cold, and if you can't translate it into a concrete magnitude quickly, the result reads as trivial even when it isn't.",
+    "notes": [],
+    "answer": "Use the sample mean loan book from Table 1 (≈ SEK 905,000 million for the average bank in the quarterly panel) and apply the elasticity directly: a 1% increase in the EF variable is associated with roughly SEK 350 million less lending per bank per quarter (905,000m × 0.00039). That reframes \"statistically significant\" as \"economically real\" — a nine-figure sum, not a rounding error. This is a repeatable technique, not a one-off: take any coefficient in Tables 2–4, multiply by the relevant mean from Table 1's descriptive statistics, and state the result in kronor rather than in percent. Worth having ready for any coefficient an examiner points at, not just this one."
+  },
+  {
+    "id": "Q7",
+    "section": "Data & Identification",
+    "q": "The retail funding variable is insignificant, and you treat that as confirming the deposit channel is dead. But elsewhere (near-banks) you treat an insignificant coefficient as merely inconclusive. Which is it — does insignificance mean something or not?",
+    "risk": "this is the sharpest internal-consistency challenge in the thesis. Get caught flat-footed here and it looks like you're interpreting nulls opportunistically.",
+    "notes": [],
+    "answer": "The distinction is *what the null is being asked to support*, not the null itself.\n\n- The retail-funding null is a **theory-predicted** null: Section 3 argues, on institutional grounds (no reserve requirements, low deposit ratio), that retail funding *should* show no explanatory power if the deposit channel is dead. Finding exactly that null is confirmatory *because it matches an ex-ante prediction*, not because insignificance is inherently informative.\n\n- The near-bank policy-rate null is **not theory-predicted to be zero** — theory predicts a channel should exist. The null here is attributed to a specific, identified limitation (annual rather than quarterly frequency, weakening power to detect a shock that plausibly transmits within-year). That's why it's read as inconclusive rather than confirmatory — there's no theoretical reason to expect a true zero, only a measurement reason to expect low power.\n\nState this distinction explicitly if asked — don't let it look like the same statistical event is doing two different rhetorical jobs."
+  },
+  {
+    "id": "Q8",
+    "section": "Data & Identification",
+    "q": "The Sargan test rejects the household specification at p = 0.001. Why is that result in your abstract and headline findings at all, rather than in a footnote?",
+    "risk": "presenting a result you know is econometrically invalid, without immediately flagging why it's there, looks like padding.",
+    "notes": [],
+    "answer": "It's included — with the caveat attached every time — because the *asymmetry itself* is informative: the EF channel is robust for total and corporate lending but not for households, and that pattern is worth reporting rather than suppressing. The Sargan failure means the household GMM estimate specifically shouldn't be trusted as a causal estimate; it does not mean the underlying question (does the EF channel extend to households) is answered \"no.\" Flag this actively rather than waiting to be asked: \"the household result doesn't hold up under the preferred estimator, and I've been explicit about that rather than quietly rerunning until it passed.\""
+  },
+  {
+    "id": "Q57",
+    "section": "Data & Identification",
+    "q": "Does the household specification fail the AR(2) test as well as Sargan — two diagnostics compounding the same problem — or is that a misreading?",
+    "risk": "the thesis prose describes the Sargan and AR(2) situation for household in a way that, read quickly, sounds like both diagnostics failing together. Giving a confident answer built on that reading would be factually wrong — worth resolving the ambiguity before answering rather than assuming the surface reading is correct.",
+    "notes": [
+      "This ambiguous phrasing was also a genuine clarity issue in the written thesis, not just an oral-defence nuance — corrected directly in the text alongside this entry.",
+      "So what does the fix actually change? Two things, and they cut in your favor. First, internal consistency: read literally, the original sentence could imply household has three stacking diagnostic problems — Sargan fails, second-order correlation is present, and first-order is unclear — which directly contradicts the \"exactly one precisely-located problem\" framing used everywhere else in this doc (Q7, Q8, Q9). If an examiner reads the sentence the literal way and then hears you say \"it's just the Sargan failure\" elsewhere, that's a live self-contradiction they could pull on. Second, and more important: the corrected version doesn't just remove ambiguity, it changes which claim the thesis makes — from \"possibly three things wrong\" to \"one specific, nameable thing wrong\" (invalid instruments per Sargan). That's a stronger, more defensible position, not a weaker one; a single precisely diagnosed issue is easier to stand behind than an unexplained cluster. Third, the added clause about AR(1) is doing separate, quieter work: AR(1) not rejecting (p=0.173) could tempt you to treat it as reassuring, but AR(1) is structurally uninformative either way in a first-differenced GMM setup, since differencing mechanically induces first-order correlation in the transformed errors regardless of the true data-generating process (Q28's refresher entry). The fix is careful not to lean on AR(1) as supporting evidence — same discipline as \"consistent with\" versus \"directly tests\" elsewhere in this document: say only what a diagnostic actually licenses you to say."
+    ],
+    "answer": "Only one diagnostic actually fails for household — Sargan (p = 0.001). AR(2) = 0.164 does not reject the null at any conventional threshold, which is a clean pass, not a second failure. The original phrasing (\"the second order serial correlation test is also rejected... consistent with the requirements of the second assumption\") is genuinely ambiguous on a fast read — \"rejected\" there means the *possibility* of second-order correlation is rejected (the test found none), not that the diagnostic itself failed. Read alongside \"consistent with the requirements of the second assumption\" (no serial correlation, which is what's required), the intended meaning is that AR(2) passes.\n\nThe corrected, honest framing: household's problem is narrowly one diagnostic — invalid instruments per Sargan — not a compounding pair of failures. That's actually a cleaner story to tell than \"everything about household is shaky\": the instrument-validity concern is real and precisely located, and it's the only thing wrong with that specification's diagnostics."
+  },
+  {
+    "id": "Q9",
+    "section": "Data & Identification",
+    "q": "Why is Arellano-Bond your preferred estimator when the Sargan test isn't even robust to instrument count?",
+    "risk": null,
+    "notes": [],
+    "answer": "AB-GMM is preferred because it addresses the endogeneity of the lagged dependent variable that biases FE and POLS in a dynamic panel with N=8, T≈24 — a setting where Anderson-Hsiao 2SLS is also implemented as a robustness check. The Sargan caveat is a genuine limitation, acknowledged rather than hidden, and is precisely why the household result is downgraded to \"reported for completeness\" rather than treated as a primary finding. Using an imperfect-but-standard estimator, and being explicit about where its diagnostics fail, is a more defensible position than avoiding GMM altogether and losing the ability to address dynamic panel bias."
+  },
+  {
+    "id": "Q10",
+    "section": "Data & Identification",
+    "q": "Capitalization is insignificant across both the bank and near-bank samples. Doesn't that just mean your model has no power to detect a capitalization effect, rather than capitalization genuinely not mattering?",
+    "risk": null,
+    "notes": [],
+    "answer": "The paper attributes this to a real institutional feature, not just low power: Swedish banks are well-capitalised relative to regulatory minima with limited time-series variation in CAR — there's genuinely little variation for the coefficient to be identified from, which is a different claim than \"no effect\" and is stated as such rather than overclaimed as a null finding."
+  },
+  {
+    "id": "Q27",
+    "section": "Data & Identification",
+    "q": "Equations (2) and (3) demean the bank-level variables before they enter the regression. Why does this matter — what would go wrong with the interaction terms if you didn't do this?",
+    "risk": "this is a small technical detail that's easy to wave past, but if asked directly \"why demean,\" a vague answer (\"it's standard practice\") sounds like the mechanics weren't actually understood, just copied from Ehrmann et al. (2003).",
+    "notes": [
+      "One honest caveat: the exact sequencing of equations (2) and (3) as written is a little ambiguous on the page — worth a two-minute check against your own working notes to confirm the order of operations matches this description, since this is reconstructed intent rather than an unambiguous derivation."
+    ],
+    "answer": "Demeaning gives \"zero\" an economically meaningful reference point — the average bank in the sample — rather than an arbitrary and often meaningless one. Without demeaning, SIZE (log assets, ranging roughly 9.6–15.6 in the sample) at a raw value of zero corresponds to a bank with one krona of assets, which doesn't exist in the data; the interaction coefficient would be describing behaviour at a point far outside the sample. Once size is expressed as a deviation from the sample average, a value of zero means \"an average-sized bank,\" and the main policy-rate coefficient (Δi alone) becomes directly interpretable as the effect of a rate change for that average bank. The interaction coefficient then measures how much the effect changes per unit a bank sits above or below that average — exactly the reading the paper gives it in Section 4.2. The additional layer in equation (3) — demeaning within each period, not just across the whole sample — also purges any common trend in a characteristic (e.g., banks generally growing in size over 2009–2014) before the cross-sectional deviation is taken, so what drives the interaction term is genuine cross-sectional variation between banks at a point in time, not a trend common to all of them."
+  },
+  {
+    "id": "Q28",
+    "section": "Data & Identification",
+    "q": "Why does using fixed or random effects on a model with a lagged dependent variable create bias (Nickell, 1981) — explain the mechanism in plain terms, using your own panel.",
+    "risk": "citing \"Nickell bias\" without being able to explain *why* it happens is a common tell that a term has been memorized rather than understood.",
+    "notes": [],
+    "answer": "The fixed-effects (within) transformation removes each bank's own time-average from every variable, including the lagged dependent variable. The problem is that a bank's fixed effect is itself estimated from that same bank's average outcomes over the sample — so the demeaned lagged loan-growth term and the demeaned error term end up mechanically correlated, purely as an artefact of subtracting overlapping averages, not because of anything economically meaningful. Concretely: if a bank has an unusually bad, unmodeled shock in one quarter, that shock lowers both its average outcome over the whole sample (deflating its estimated fixed effect) and its lagged value in nearby periods — creating a spurious correlation between the lagged dependent variable and the error that has nothing to do with genuine persistence in lending. This bias doesn't vanish as the number of banks (N) grows — it only shrinks as the number of time periods (T) grows, which is exactly the problem here with N=8 banks and T≈24 quarters: T isn't remotely large enough for the bias to be negligible, which is precisely why FE/RE are inconsistent and why the paper moves to Anderson-Hsiao and Arellano-Bond instead."
+  },
+  {
+    "id": "Q29",
+    "section": "Data & Identification",
+    "q": "Anderson-Hsiao gives you a choice of instrumenting the lagged dependent variable with either its level (yₜ₋₂) or its difference (Δyₜ₋₂). Why did you use the level, and why does Anderson-Hsiao lose out to Arellano-Bond regardless of which one you pick?",
+    "risk": "this tests whether the estimator choices were understood as tradeoffs or just executed as a checklist of \"standard robustness estimators.\"",
+    "notes": [],
+    "answer": "Both yₜ₋₂ and Δyₜ₋₂ are valid instruments in principle — both correlate with the endogenous Δyₜ₋₁ term and, under the no-serial-correlation assumption, are uncorrelated with the differenced error. The level variant is preferred here specifically because it requires one fewer lag of data to construct: Δyₜ₋₂ needs yₜ₋₃ as well as yₜ₋₂, dropping an additional early period for every bank. In a short panel (24 quarters), losing an extra period per bank is a real cost to sample size that the level variant avoids — exactly the tradeoff Roodman (2009) flags in recommending it.\n\nAnderson-Hsiao loses to Arellano-Bond regardless of which instrument is chosen because it only exploits a single instrument, while Arellano-Bond uses all valid lagged levels simultaneously — more moment conditions, more efficient estimates, less sensitivity to the finite-sample bias and inflated standard errors that come with relying on just one instrument. The tradeoff runs the other way too, which is why both are reported rather than just using GMM: with only 8 banks, adding too many instruments in GMM risks instrument proliferation and an unreliable Sargan test — exactly the caveat already attached to the household specification. Anderson-Hsiao is the deliberately cruder, more robust fallback; Arellano-Bond is preferred where its own diagnostics hold up."
+  },
+  {
+    "id": "Q30",
+    "section": "Data & Identification",
+    "q": "The paper substitutes zero for missing values in the Arellano-Bond instrument set rather than dropping those observations. On its face that sounds like fabricating data. Defend it.",
+    "risk": "\"we replaced missing data with zero\" sounds alarming if you can't immediately explain why it isn't what it sounds like.",
+    "notes": [],
+    "answer": "It isn't fabricating outcome data — it's a standard way of constructing the instrument matrix in an unbalanced or gappy panel, and it applies only to the instruments, not to the dependent variable or regressors themselves. Setting a missing instrument value to zero, rather than dropping the whole observation, simply means that particular moment condition contributes nothing for that particular observation — zero times an instrument is still a valid, if uninformative, moment condition, not a corrupted one. The alternative — dropping any observation with a single missing instrument — would needlessly throw away otherwise-usable data from the other, non-missing instruments and outcomes for that observation. This is the practical device described in Roodman (2009), already cited in the paper, for handling unbalanced panels within GMM without discarding informative observations."
+  },
+  {
+    "id": "Q31",
+    "section": "Data & Identification",
+    "q": "Why is EF constructed as the five-year CDS spread plus STIBOR, rather than a spot CDS spread on its own?",
+    "risk": "an examiner could probe whether the construction choice was deliberate methodology or just whatever data happened to be available.",
+    "notes": [
+      "Worth double-checking your own data construction on one point: whether \"five-year\" here refers to the five-year-tenor CDS contract (the standard, most liquid maturity traded in these markets) or a five-year rolling time-average of the spread — the paper's wording is compatible with either, and it's worth being able to state which one it actually is without hesitation."
+    ],
+    "answer": "Two separate design choices, each doing a distinct job. Adding STIBOR (the interbank benchmark) to the CDS spread converts a pure credit-risk premium into the bank's actual all-in marginal cost of wholesale funding — base rate plus the credit spread specific to that bank — which is the economically meaningful variable for a loan-supply equation, following the convention in Babihuga & Spaltro (2014). Using the five-year tenor rather than a shorter or spot-market spread is deliberate for a different reason, stated directly in the paper: it captures the medium-term, structural cost of external funding rather than high-frequency market noise that may reflect transient sentiment shifts rather than a genuine change in a bank's funding conditions — appropriate for a quarterly panel aiming to capture structural transmission, not short-term market jitters."
+  },
+  {
+    "id": "Q32",
+    "section": "Data & Identification",
+    "q": "Why are time dummies introduced yearly rather than quarterly in the fixed/random-effects specifications?",
+    "risk": "a throwaway line in the methods section that's easy to skip past, but a clean, direct answer here signals genuine command of the specification.",
+    "notes": [],
+    "answer": "A full set of quarterly time dummies would perfectly absorb all of the time-series variation in the macroeconomic controls (GDP growth, the policy rate, the yield curve spread, the corporate bond spread) — since those variables are common to every bank in a given quarter, a quarter-specific dummy and the macro variable for that quarter become collinear, leaving nothing left over to estimate the macro coefficients from. Using yearly dummies instead absorbs broader, annual-level common shocks while still leaving quarter-to-quarter variation in the macro variables available to identify their own coefficients — the standard trade-off between controlling for common time effects and preserving enough time-series variation to estimate the variables you actually care about."
+  },
+  {
+    "id": "Q35",
+    "section": "Data & Identification",
+    "q": "Table 4 shows POLS and RE giving a positive, significant policy-rate coefficient for near-banks, while FE, Anderson-Hsiao, and AB-GMM give negative. The paper leans on the Hausman test to prefer FE — can you explain economically why POLS/RE would be biased in that specific direction?",
+    "risk": "pointing at a test statistic (Hausman rejects RE) without being able to explain the economic story behind the bias looks like the diagnostic was used mechanically rather than understood.",
+    "notes": [],
+    "answer": "This is a classic between-versus-within contamination. POLS and RE use both cross-sectional (between-institution) and time-series (within-institution) variation; FE uses only the within variation. The near-bank dataset spans genuinely heterogeneous institutions — size ranges from roughly 13.5 to 21.7 in log-assets, far wider than the bank-only panel's 9.6–15.6 — and it's an unbalanced panel with uneven reporting across institutions and periods. If larger, more established institutions happen to be more heavily represented later in the sample, which also happens to coincide with periods of higher average rates, POLS/RE will pick up a spurious positive cross-sectional correlation between \"high-rate periods\" and \"high lending levels\" that has nothing to do with any individual institution's actual behavioural response to a rate change — it's composition of the sample, not a causal response. FE removes this entirely by comparing each institution only to itself over time, which is exactly why the Hausman test favors it and why the negative sign under FE/Anderson-Hsiao/AB-GMM is the one to trust."
+  },
+  {
+    "id": "Q47",
+    "section": "Data & Identification",
+    "q": "Bank- and macro-level regressors are lagged one period \"to mitigate endogeneity.\" Is that the same endogeneity problem as the lagged dependent variable's Nickell bias, or something different?",
+    "risk": "these two things sound like the same fix (lagging) for the same problem (endogeneity), so it's an easy, natural conflation — and it's exactly the kind of near-miss worth catching before an examiner does.",
+    "notes": [
+      "One-line version if pressed for time: lagging the X's guards against reverse causality; the GMM apparatus guards against a mechanical estimation artefact in the lagged Y — different problems, only one of which \"just lag it further\" can actually solve."
+    ],
+    "answer": "Different problem, same tool, for a different reason.\n\nLagging the bank- and macro-level regressors (SIZE, LIQ, CAR, GDP growth, etc.) addresses simultaneity: without lagging, a regressor and the error term in the same period could be jointly determined — a bank's current-quarter liquidity ratio and its current-quarter lending decision might both be driven by the same contemporaneous shock, or GDP growth this quarter could itself be partly caused by aggregate lending this quarter, not just the other way round. Using the one-period-lagged value breaks that contemporaneous feedback loop: the regressor's value was already fixed before this period's shock occurred, satisfying the \"predetermined\" condition rather than requiring the much stronger assumption of strict exogeneity.\n\nNickell bias (Q28) is a completely different mechanism, specific to the lagged *dependent* variable, and lagging it further doesn't fix it — it's already inherently one period behind, and the problem isn't simultaneity at all. It's that the within-transformation used to remove the bank fixed effect mechanically correlates the transformed lagged-Y term with the transformed error term, because both are constructed from overlapping bank-level averages. No amount of additional lagging removes this — it requires a genuinely different fix (instrumenting the lagged dependent variable via Anderson-Hsiao or Arellano-Bond), which is why the paper needs both the lagging convention for the X's *and* a separate GMM/2SLS apparatus for the lagged Y."
+  },
+  {
+    "id": "Q48",
+    "section": "Data & Identification",
+    "q": "Walk through every equation in the empirical strategy, in order, and explain what each one is doing.",
+    "risk": "this is the single most comprehensive test of whether the empirical strategy is genuinely understood rather than partially remembered — an examiner could ask for this to see the whole model at once rather than piecemeal.",
+    "notes": [
+      "Good to be able to narrate this front to back without notes — it shows the empirical strategy is one connected structure, not four separate regressions bolted together."
+    ],
+    "answer": "\n\n**Equation (1)** is the main loan-supply regression for the quarterly bank panel. The dependent variable, Δln(loans), is loan growth for one of three segments (total, NFC, or household — the equation loops through all three). It's regressed on: its own lagged value (Δln(loans)ₜ₋₁, the term Nickell bias attaches to); the EF variable at levels, 0–1 lags; the FUNDING vector (equation 4) at levels, 0–1 lags; macro controls M at levels, 0–1 lags; the contemporaneous and lagged policy rate change (Δiₜ₋ₖ); interaction terms between the rate change and bank characteristics (Δiₜ₋ₖ × Xᵢ,ⱼ,ₜ₋₁); the bank characteristics themselves as levels (Xᵢ,ⱼ,ₜ₋₁); and time dummies D. This is the equation behind Table 3.\n\n**Equations (2) and (3)** are the demeaning transformations applied to the bank-characteristic variables before they enter equation (1) — covered in full in Q27: they centre each characteristic on the sample average (and, in equation 3, on the period average) so the interaction coefficients are directly interpretable as the policy effect for an average bank, and so the interaction terms sum to zero over the sample.\n\n**Equation (4)** defines the FUNDING vector: five separate terms — the contemporaneous and lagged change in wholesale funding, the lagged level of wholesale funding, and the contemporaneous and lagged change in retail funding. Both levels and changes appear because the paper wants to capture both a bank's funding *composition* at a point in time and how that composition is *shifting*, not just one or the other.\n\n**Equation (5)** is the reduced-form specification used for the near-bank sample (Table 4) — a simplified version of equation (1) that drops the FUNDING vector entirely (near-banks structurally lack a comparable retail funding base, so its absence is implied rather than modelled), adds a near-bank dummy (NB), and adds a Bonds vector capturing bond-market variables specific to that sample. Fewer moving parts than equation (1), reflecting the near-bank dataset's lower information content and different reporting structure.\n\n**Equation (6) does not appear in the text — worth knowing this rather than being surprised by it.** The numbering jumps from (5) to (7); this looks like a numbering artefact in the original document rather than a deliberately omitted equation. Worth a quick check against your own working files, but not something to construct an explanation for if it genuinely isn't there.\n\n**Equation (7)** is the vector-notation representation used specifically to derive Nickell bias: yᵢ,ₜ = λyᵢ,ₜ₋₁ + X'ᵢ,ₜ₋₁B + αᵢ + ηₜ + uᵢ,ₜ. A generic dynamic panel form — bank fixed effect αᵢ, time effect ηₜ, lagged dependent variable with coefficient λ — used purely to demonstrate algebraically why the within-transformation creates the correlation between the transformed lagged-Y term and the transformed error (Q28).\n\n**Equation (8)** is the Arellano-Bond first-differenced equation: (yᵢ,ₜ − yᵢ,ₜ₋₁) = λ(yᵢ,ₜ₋₁ − yᵢ,ₜ₋₂) + (X'ᵢ,ₜ₋₁ − X'ᵢ,ₜ₋₂)B + (uᵢ,ₜ − uᵢ,ₜ₋₁). First-differencing equation (7) eliminates the fixed effect αᵢ entirely (since it doesn't vary over time, differencing removes it), leaving a differenced lagged-Y term instrumented using deeper lagged levels (yᵢ,ₜ₋₂, yᵢ,ₜ₋₃, etc.) — the actual estimating equation behind the Arellano-Bond column in Table 3."
+  },
+  {
+    "id": "Q49",
+    "section": "Data & Identification",
+    "q": "Compare POLS, RE, FE, and Arellano-Bond directly — pros, cons, and sensitivities of each, and why is Arellano-Bond ultimately preferred?",
+    "risk": "this is the natural \"walk me through your whole estimator choice\" question, and answering it well requires holding four things in your head at once rather than defending one at a time.",
+    "notes": [],
+    "answer": "\n\n**POLS (pooled OLS)** — pools all observations, ignoring bank-specific structure entirely. Pro: simplest, most efficient if its assumptions hold. Con: assumes no unobserved bank-specific heterogeneity at all, almost never credible with panel data — any persistent, unmodeled difference between banks ends up in the error term, correlated with the regressors, biasing every coefficient. Sensitivity: extremely vulnerable to omitted bank-level heterogeneity; the near-bank table's POLS/RE-vs-FE sign flip (Q35) is a direct demonstration of this going wrong.\n\n**RE (random effects)** — allows a bank-specific effect, but assumes it's uncorrelated with the regressors, and applies partial (\"quasi\") demeaning weighted by θ, keeping some between-bank variation POLS keeps entirely and FE discards entirely. Pro: more efficient than FE, since it doesn't throw away between-bank information. Con: the uncorrelated-effects assumption is \"heroic\" (the paper's own word) — implausible whenever bank characteristics like size or capitalisation are themselves correlated with unobserved bank quality, which they plausibly are here. Sensitivity: fails exactly where POLS fails, just less severely, since it relies on the same problematic assumption, only partially.\n\n**FE (fixed effects)** — demeans within each bank, removing any time-invariant bank-specific effect regardless of whether it's correlated with the regressors. Pro: robust to correlated bank effects, why it's preferred over POLS/RE whenever the Hausman test rejects RE. Con: introduces Nickell bias the moment a lagged dependent variable is on the right-hand side (Q28) — the within-transformation mechanically correlates the transformed lagged-Y term with the transformed error. Sensitivity: this bias shrinks only as T grows, not N — with T≈24 quarters here, it's not negligible.\n\n**Arellano-Bond (GMM)** — first-differences to eliminate the fixed effect entirely (equation 8), then instruments the differenced lagged dependent variable with deeper lagged levels, addressing Nickell bias directly rather than living with it. Pro: the only estimator here both robust to correlated bank effects and consistent with a lagged dependent variable present. Con: needs enough instruments to work, but not so many that they overwhelm a small N — with only 8 banks, instrument proliferation is a live risk (Q29), and its own diagnostics (Sargan, AR(2)) can fail, as they do for the household segment. Sensitivity: the most data-hungry and diagnostic-dependent of the four; when its own tests fail, the result is reported with that caveat rather than treated as fully trustworthy.\n\n**Why AB-GMM wins here specifically:** it's the only estimator addressing both problems this paper actually has — correlated bank effects (ruling out POLS and RE) and a lagged dependent variable (ruling out plain FE). And it's not just the theoretically \"correct\" choice — Q43 shows it's empirically load-bearing: FE and RE return a null on EF everywhere, and only AB-GMM reveals the significant effect. The preference isn't a methodological default; it's the estimator that makes the paper's central finding visible at all."
+  },
+  {
+    "id": "Q58",
+    "section": "Data & Identification",
+    "q": "Equation (7) sets up the FE/RE specification with a lagged dependent variable. Walk through, using the equation's own notation, exactly why the within-transformation makes the lagged dependent variable correlated with the error — the actual algebra behind Nickell bias, not just the intuition.",
+    "risk": "this is the \"can you actually derive it, not just recite the name\" version of Q28 — a natural deep-dive follow-up if an examiner wants to see the mechanism at the equation level rather than in words.",
+    "notes": [],
+    "answer": "Start from equation (7): yᵢ,ₜ = λyᵢ,ₜ₋₁ + X'ᵢ,ₜ₋₁B + αᵢ + ηₜ + uᵢ,ₜ. To remove the bank fixed effect αᵢ, the \"within\" transformation subtracts each bank's own time-average from every variable. Applied to the lagged dependent variable, this produces y*ᵢ,ₜ₋₁ = yᵢ,ₜ₋₁ − (1/(T−1))(yᵢ,₂+...+yᵢ,T), and the error becomes v*ᵢ,ₜ = vᵢ,ₜ − (1/(T−1))(vᵢ,₂+...+vᵢ,T).\n\nThe mechanical problem: y*ᵢ,ₜ₋₁ contains the raw term yᵢ,ₜ₋₁, and v*ᵢ,ₜ's average explicitly includes vᵢ,ₜ₋₁ (since t−1 falls within the averaging window 2 to T for most t). But yᵢ,ₜ₋₁ was itself generated by the same equation one period earlier — yᵢ,ₜ₋₁ = λyᵢ,ₜ₋₂ + ... + vᵢ,ₜ₋₁ — so yᵢ,ₜ₋₁ literally contains vᵢ,ₜ₋₁ as one of its components. Since v*ᵢ,ₜ's average subtracts vᵢ,ₜ₋₁ with a negative weight, and y*ᵢ,ₜ₋₁ carries yᵢ,ₜ₋₁ (which contains that same vᵢ,ₜ₋₁) directly, the two transformed terms end up correlated purely through this shared component — not because of any real relationship between today's shock and yesterday's lending growth, but because the demeaning operation was built from overlapping time-averages that share terms with each other. The same logic runs in reverse too: the −(1/(T−1))yᵢ,ₜ term inside y*ᵢ,ₜ₋₁'s own average is correlated with vᵢ,ₜ, since yᵢ,ₜ itself contains vᵢ,ₜ.\n\nThis is exactly the mechanism the Roodman (2009) example already in the thesis illustrates concretely: a firm's unmodeled negative shock in one period lowers both its estimated fixed effect (averaged into the bank's overall performance) and its lagged value in nearby periods, manufacturing a spurious correlation that has nothing to do with genuine persistence. Critically, this correlation doesn't shrink as N grows — only as T grows does the 1/(T−1) scaling shrink the contamination toward zero, which is why the bias is real and non-negligible with T≈24 quarters here, and why it requires a different fix (Arellano-Bond) rather than just more banks in the sample."
+  },
+  {
+    "id": "Q59",
+    "section": "Data & Identification",
+    "q": "Equation (8) is the Arellano-Bond first-differenced specification. Walk through the actual instrument-building logic — why does a lagged level like yᵢ,₁ serve as a valid instrument for a differenced term like (yᵢ,₂ − yᵢ,₁)?",
+    "risk": "this is the mechanical heart of the GMM apparatus, and \"the paper uses valid instruments\" is a much weaker answer than being able to say specifically which instrument goes with which term and why it's valid.",
+    "notes": [],
+    "answer": "Equation (8), (yᵢ,ₜ − yᵢ,ₜ₋₁) = λ(yᵢ,ₜ₋₁ − yᵢ,ₜ₋₂) + (X'ᵢ,ₜ₋₁ − X'ᵢ,ₜ₋₂)B + (uᵢ,ₜ − uᵢ,ₜ₋₁), comes from first-differencing equation (7) — differencing eliminates αᵢ entirely, since a bank's fixed effect doesn't change over time and cancels out. What's left is a differenced lagged dependent variable, Δyᵢ,ₜ₋₁ = yᵢ,ₜ₋₁ − yᵢ,ₜ₋₂, which is still endogenous: it contains yᵢ,ₜ₋₁, which was itself generated using uᵢ,ₜ₋₁, and that same uᵢ,ₜ₋₁ propagates into the differenced error at the prior step of the dynamic structure — so a valid instrument needs to correlate with the endogenous differenced term without correlating with the current differenced error.\n\nLagged *levels* solve this. Take t=3: the estimating equation involves Δyᵢ,₂ = yᵢ,₂ − yᵢ,₁ as the lagged-difference regressor needing an instrument. yᵢ,₁ is a valid candidate: it's clearly correlated with Δyᵢ,₂ (yᵢ,₁ is literally one of its two components), but — under the assumption that the original uᵢ,ₜ has no serial correlation — yᵢ,₁ was determined before uᵢ,₂ and uᵢ,₃ occurred, so it's uncorrelated with Δuᵢ,₃ = uᵢ,₃ − uᵢ,₂. That's exactly the paper's own example: \"yᵢ,1 as an instrument for (yᵢ,2 − yᵢ,1) for period 3.\"\n\nMove forward one period, to t=4: the regressor needing an instrument is now Δyᵢ,₃ = yᵢ,₃ − yᵢ,₂, and both yᵢ,₁ *and* yᵢ,₂ are valid instruments — any level dated two periods or more before the current one qualifies, and there are simply more of them available as t grows. That's the paper's second example, \"yᵢ,2 as an instrument for (yᵢ,3 − yᵢ,2) for period 4,\" and it's also precisely why instrument count grows mechanically with T: by the last period in the panel, every earlier level is a technically valid instrument — exactly the instrument-proliferation concern already flagged in Q29 and the Econometrics Refresher. More valid instruments isn't free: too many relative to N=8 banks risks overfitting the first stage and weakening the Sargan/Hansen tests' power to catch a real problem."
+  },
+  {
+    "id": "Q50",
+    "section": "Data & Identification",
+    "q": "What is the Hausman test, in one breath?",
+    "risk": null,
+    "notes": [],
+    "answer": "A comparison between two estimators — FE and RE — not a test of the data on its own. Both are consistent if RE's core assumption holds (the bank-specific effect is uncorrelated with the regressors); only FE stays consistent if it doesn't. Under the null, FE and RE should differ only by sampling noise; a large, significant statistic means they diverge more than noise explains, so RE's assumption has likely failed — prefer FE."
+  },
+  {
+    "id": "Q51",
+    "section": "Data & Identification",
+    "q": "What is the Breusch-Pagan LM test, in one breath?",
+    "risk": null,
+    "notes": [],
+    "answer": "A test of whether there's any bank-specific heterogeneity worth modelling at all — it tests whether the variance of the individual-specific effect is zero. Logically prior to the Hausman test: rejecting it is what licenses asking \"FE or RE?\" in the first place; not rejecting it would mean pooled OLS was defensible all along."
+  },
+  {
+    "id": "Q52",
+    "section": "Data & Identification",
+    "q": "What is Nickell bias, in one breath?",
+    "risk": null,
+    "notes": [],
+    "answer": "The inconsistency that arises specifically from using fixed or random effects on a dynamic panel — a model with a lagged dependent variable on the right-hand side. The within-transformation used to remove the bank fixed effect mechanically correlates the transformed lagged-Y term with the transformed error term, since both are built from overlapping bank-level averages. The bias shrinks only as the number of time periods (T) grows, not the number of units (N) — a real problem with N=8, T≈24. See Q28 for the full derivation with a concrete example."
+  },
+  {
+    "id": "Q53",
+    "section": "Data & Identification",
+    "q": "What is Anderson-Hsiao 2SLS, in one breath?",
+    "risk": null,
+    "notes": [],
+    "answer": "A two-stage-least-squares fix for Nickell bias that instruments the (differenced) lagged dependent variable with a deeper lag — either the level (yₜ₋₂) or the difference (Δyₜ₋₂) — correlated with the endogenous term but not with the differenced error. Consistent, but uses only one instrument, making it less efficient and more exposed to finite-sample bias than Arellano-Bond, which uses all valid lagged levels simultaneously. See Q29 for the level-vs-difference tradeoff."
+  },
+  {
+    "id": "Q54",
+    "section": "Data & Identification",
+    "q": "What is GMM (Arellano-Bond), in one breath?",
+    "risk": null,
+    "notes": [],
+    "answer": "An extension of Anderson-Hsiao that first-differences the model to eliminate the bank fixed effect entirely, then instruments the differenced lagged dependent variable using *all* valid deeper lagged levels simultaneously, rather than just one. More efficient than Anderson-Hsiao, but needs enough instruments to work without so many that they overwhelm a small cross-section — a live tension with only 8 banks (Q29)."
+  },
+  {
+    "id": "Q55",
+    "section": "Data & Identification",
+    "q": "What is the Sargan test, in one breath?",
+    "risk": null,
+    "notes": [],
+    "answer": "A test of instrument validity in an overidentified GMM model — whether the instruments are genuinely uncorrelated with the error, given there are more instruments than strictly required. Assumes homoskedastic errors. Counterintuitive property (Roodman, 2009): with many instruments relative to N, it tends to *fail to reject even when instruments are bad* — which is why the household specification's actual rejection (p=0.001) is a stronger signal than it first appears, not a weaker one."
+  },
+  {
+    "id": "Q56",
+    "section": "Data & Identification",
+    "q": "What is the Hansen test, and how does it differ from Sargan?",
+    "risk": null,
+    "notes": [],
+    "answer": "The same idea as Sargan — testing instrument validity under overidentification — but robust to heteroskedasticity, where Sargan assumes homoskedastic errors. In practice, Hansen is generally the more trustworthy of the two when errors might not be homoskedastic, though people often say \"Sargan test\" loosely to refer to either."
+  },
+  {
+    "id": "Q11",
+    "section": "Analysis",
+    "q": "Once you add the CDS spread, the funding composition variable becomes insignificant. Couldn't that just be multicollinearity between the two variables, rather than evidence that composition \"proxies\" the EF premium?",
+    "risk": null,
+    "notes": [
+      "Anticipate the obvious pushback: \"isn't some decline in significance trivially expected whenever you add any correlated variable?\" Yes — but that's the weak version of the prediction, and it's not what actually happened. Adding any correlated variable would only weakly predict some attenuation, which is nearly automatic and not very informative on its own. The theory's strong prediction is that composition should become fully insignificant — a much more specific, falsifiable claim, since if composition carried any independent information beyond funding cost, the theory would only predict partial attenuation, and composition could easily have stayed marginally significant. It didn't; it went all the way to insignificant. That full result, not a partial one, is what actually earns the \"consistent with pure proxying\" interpretation — worth stating it that way rather than just \"it became less significant.\""
+    ],
+    "answer": "This is a fair challenge and the honest answer is that the paper's claim is an *interpretive* one, not a formally tested proxying relationship (e.g., no first-stage regression of composition on CDS is presented). The claim rests on the pattern being consistent with Disyatat's (2010) theoretical account, and on the timing — composition mattered in isolation, then lost significance specifically when the direct cost variable was added, which is the pattern the theory predicts. Acknowledge in the room that this is inference from a pattern consistent with theory, not a formally identified mediation result — overclaiming precision here is the bigger risk than the underlying interpretation."
+  },
+  {
+    "id": "Q39",
+    "section": "Analysis",
+    "q": "SIZE's interaction with the policy rate is negative for total loans (−0.262) but positive for household lending (+0.804). Isn't that a contradiction?",
+    "risk": "an examiner could read the sign flip as evidence the model is unstable or the results are just noise across specifications.",
+    "notes": [],
+    "answer": "Not a contradiction — it's telling you that \"bigger\" means something different depending on the segment, and it's evidence the total-loans line is quietly blending two genuinely different stories. Within this panel of already-large, internationally active banks, size doesn't track \"safer\" the way the classical Kashyap-Stein small-vs-large-bank story assumes — it more plausibly tracks \"more wholesale/international-market funded,\" exactly the exposure the reconceived theory (Q22) predicts should make a bank's overall lending *more* sensitive to a funding-cost shock. Household lending likely rests on a more stable retail deposit base and covered-bond funding specific to mortgages, which can behave quite differently from the bank's aggregate book. The sign flip is a real, segment-specific finding, not an unstable estimate."
+  },
+  {
+    "id": "Q40",
+    "section": "Analysis",
+    "q": "LIQ shows up with three different signs across the table — a positive level effect, a positive NFC interaction, but a negative total-loans interaction. What's actually going on?",
+    "risk": "multiple, apparently conflicting signs on the same variable can look like noise unless the distinct roles are separated out explicitly.",
+    "notes": [],
+    "answer": "Three distinct things, not a contradiction. The plain level effect (+0.067, total loans) says liquid banks simply lend more in general — a baseline effect. The NFC interaction (+0.060) says the classical liquidity-buffer story holds cleanly for corporate lending — liquid banks are less sensitive to a rate shock when lending to firms. The total-loans interaction (−0.045) says that in the aggregate, more liquid banks show more negative sensitivity — which only shows up once household and NFC lending aren't separated out. Same variable, three genuinely different economic stories, each valid within its own segment."
+  },
+  {
+    "id": "Q41",
+    "section": "Results, Limitations & Conclusions",
+    "q": "The total-loans EF coefficient (−0.039) is roughly double the NFC-only coefficient (−0.021), even though total loans presumably includes NFC lending as a component. Shouldn't the total sit between the segment-specific effects?",
+    "risk": "this is a genuine, unresolved internal-consistency puzzle — pretending it isn't there, or trying to explain it away without a real answer, is worse than naming it plainly.",
+    "notes": [],
+    "answer": "Yes, naively you'd expect that, and the honest answer is that the paper doesn't reconcile it. Each dependent variable is estimated separately, with its own sample and lag structure in an unbalanced panel — different missing-data patterns across loan categories mean the three regressions aren't decomposing a single fixed total into clean additive parts. \"Total loans\" also likely includes categories beyond NFC and household (interbank, other counterparties) that aren't broken out anywhere in the paper. This is a real, nameable limitation — say so plainly rather than trying to construct a story that makes the arithmetic add up; it doesn't, and pretending otherwise is a bigger risk than acknowledging the gap."
+  },
+  {
+    "id": "Q43",
+    "section": "Results, Limitations & Conclusions",
+    "q": "Master synthesis — why does the estimator sequence in Section 4.3 matter for the actual results, not just as a methodological formality?",
+    "risk": "this is the single best \"does the student actually understand what the estimators are doing\" question available in the whole paper. Note precisely: the cross-estimator comparison below is not spelled out in the paper's own prose — it's a reading of Table 3 built by comparing cells the text doesn't explicitly connect. Present it that way if asked where this is written.",
+    "notes": [
+      "One-breath version, if asked to summarize fast: every part of this results section is really making one point three different ways — that the naive, easy version of the analysis (wrong estimator, or missing controls) hides or distorts the true effect, and the more careful version reveals it. That happens on the headline number, again on NFC's coefficient, and again in the near-bank table — which is exactly why the estimator choices in Section 4 aren't decoration."
+    ],
+    "answer": "For every segment (total, household, NFC), the EF coefficient is close to zero and statistically indistinguishable from noise under FE and RE — only Arellano-Bond produces a significant, correctly-signed effect. If the paper had stopped at FE or RE, the conclusion would have been \"the EF premium doesn't matter.\" The estimator-selection logic in Section 4.3 isn't rigor for its own sake — it's the specific step that reveals the finding at all.\n\nThe mechanism, in plain terms: think of it as a shared pool of \"explanatory credit\" the regression has to divide between the lagged dependent variable and EF. Under FE, the lag term's own estimate is already wrong (Nickell bias, Q28). Because funding costs are themselves persistent over time, in a similar rhythm to that lag term, the regression can't cleanly separate the two — some of the loan-growth variation that genuinely belongs to EF gets misattributed to the mis-estimated lag term instead, not lost, just credited to the wrong place. Arellano-Bond corrects the lag term properly, and that misattributed variation gets correctly reallocated back to EF.\n\nThis isn't a one-off coincidence — the same contamination shows up twice more. NFC's EF coefficient flips sign under RE (positive, significant) versus AB-GMM (negative, significant) — never addressed in the text, your own synthesis. And RISK's interaction with the rate in the near-bank table (Table 4) shows the identical POLS/RE-positive-but-FE-negative split as the main near-bank policy-rate result (Q35) — the pattern the text discusses for the rate coefficient, extended here to a second variable, again your own reading. Three instances of the same between/within contamination on three different variables across two tables — what makes \"trust the more rigorous estimator\" a general, evidenced argument about this dataset, not something that conveniently applies only to the one number you wanted to be significant.\n\nA second, independent version of the same lesson, from a different angle entirely and worth having ready separately: Table 2's lagged-dependent-variable coefficient collapses from 0.573*** (baseline) to near-zero or negative (0.055, −0.055, 0.068) the instant bank-characteristic controls are added. Best explanation: the baseline model let omitted bank characteristics masquerade as pure persistence in lending; once those characteristics are explicitly controlled, that apparent persistence mostly evaporates. Same theme — the naive version of the analysis hides or distorts the true story — triggered by adding controls rather than switching estimators. Not currently in the written text; oral-only ammunition, deliberately kept out of the thesis itself since Table 2 is framed as a preliminary consistency check, not a result needing its own explanatory prose."
+  },
+  {
+    "id": "Q44",
+    "section": "Results, Limitations & Conclusions",
+    "q": "The near-bank AB-GMM specification (Table 4) has better instrument diagnostics than any segment in Table 3 (Sargan 0.594, AR(2) 0.172) — yet it's the one result described as \"inconclusive.\" Doesn't that undercut the inconclusive framing?",
+    "risk": "an examiner could push that if the diagnostics are the cleanest in the paper, \"inconclusive\" sounds like a dodge rather than an honest description.",
+    "notes": [
+      "Note: this specific cross-table diagnostic comparison isn't spelled out in the paper's prose — it's a reading built by comparing Table 3's and Table 4's diagnostic rows directly. Present it that way if asked where this is written."
+    ],
+    "answer": "No — good diagnostics and low power are two different things, and this result is actually the cleanest illustration of that distinction in the whole paper. Clean Sargan/AR(2) numbers mean the instruments are valid and the specification isn't contaminated — they say nothing about whether the sample has enough variation to detect a true effect. With annual rather than quarterly data on a shorter, more heterogeneous near-bank panel, statistical power to detect the policy-rate effect is genuinely low, independent of how well-specified the model is. The best-behaved instruments in the paper sit alongside its weakest power — that's not a contradiction, it's exactly what \"inconclusive due to data frequency, not specification\" should look like in the diagnostics."
+  },
+  {
+    "id": "Q45",
+    "section": "Results, Limitations & Conclusions",
+    "q": "Quick reference — which of the results-based synthesis points above are actually written in the paper's text, and which are your own reading of the tables?",
+    "risk": "claiming a synthesis is \"in the paper\" when an examiner can't find that sentence is worse than admitting it's your own reading — the second position is actually the stronger one, provided it's stated confidently rather than apologetically.",
+    "notes": [
+      "Presenting synthesis as synthesis is the stronger position, not the weaker one — it demonstrates command of the results beyond your own written prose, provided you're upfront about it rather than implying it's already on the page."
+    ],
+    "answer": "Answer — textually grounded, safe to say \"the paper notes this\":\n\n- The Table 4 policy-rate sign flip (POLS/RE positive vs. FE/AH/AB negative) — explicitly called out in the text (Q35).\n\n- The SIZE/LIQ reversals between total and household lending — explicitly flagged, deliberately left open for future research (Q39, Q40).\n\n- The estimator-preference logic itself (why FE/RE are inconsistent, AB-GMM preferred where diagnostics hold) — directly in Section 4.3/5.1.\n\n- Table 2's Sargan rejection and borderline AR(2) values — already acknowledged in the text with the standard caveat, just not explained substantively.\n\nOwn synthesis — say so plainly if asked \"where does the paper show this\":\n\n- The cross-estimator comparison showing FE/RE null on EF everywhere, only AB-GMM finding it (Q43).\n\n- The cross-table diagnostic comparison showing near-bank Table 4 has the cleanest diagnostics in the paper (Q44).\n\n- NFC's EF sign flip under RE vs. AB-GMM (Q43).\n\n- Table 2's lag-coefficient collapse from 0.573 to near-zero once controls are added (Q43).\n\n- Extending the POLS/RE-vs-FE pattern to RISK in the near-bank table (Q43)."
+  },
+  {
+    "id": "Q46",
+    "section": "Results, Limitations & Conclusions",
+    "q": "Does the same logic that makes macroprudential and monetary tightening amplify each other also imply macroprudential tightening could dampen monetary stimulus, if the two move in opposite directions?",
+    "risk": "the conclusion only states the amplifying case (both tightening together) — an examiner could ask whether the same mechanism implies the reverse, and not having an answer ready would look like the implication wasn't fully thought through.",
+    "notes": [],
+    "answer": "Yes, and it follows directly from the same logic already in the conclusion. If monetary policy and macroprudential policy share one transmission channel (bank funding cost), that channel doesn't care which direction either lever moves — it just adds the two effects together. A rate cut lowers the risk-free component of a bank's funding cost, intending to ease loan supply; if Finansinspektionen simultaneously raises capital requirements or risk weights on mortgage lending, the bank needs more (and often costlier) capital backing the same loans, which can hold the EF premium up or push it up even as the base rate falls — partially absorbing the intended stimulus before it reaches the lending-supply decision.\n\nTwo things worth being precise about: first, this interaction between monetary and macroprudential policy is a well-established concern in central-banking circles generally, not a novel idea original to this thesis — frame it as this paper's mechanism giving a precise transmission channel for a known tension, not as a new discovery. Second, the strength of the implication varies by segment in a way that connects directly back to your own results: it's cleanest for total and NFC lending, where the EF premium is the established operative channel; it's murkier for household lending, where the paper's own results (fixed-effects rate sensitivity, the Sargan-flagged GMM specification) leave open whether the direct policy rate is doing more of the work via mortgage cash flow rather than the EF premium specifically. The offsetting-policy story is more directly grounded in your own evidence for the corporate/aggregate channel than for household lending, where it's plausible but a step further from what's actually been estimated."
+  },
+  {
+    "id": "Q12",
+    "section": "Results, Limitations & Conclusions",
+    "q": "Your abstract highlights the macroprudential policy relevance angle, but your sample ends in 2014 — a decade before the current macroprudential framework was fully built out. How relevant is a 2009–2014 result to today's policy environment?",
+    "risk": null,
+    "notes": [],
+    "answer": "The mechanism identified — that the EF premium, not deposit variation, transmits policy — is structural (tied to Sweden's 1994 reserve-requirement abolition and persistently low deposit ratios), not sample-period-specific, so there's no reason to expect it to have reversed. What has changed since the sample period is the macroprudential toolkit itself, which is precisely why the paper frames this as raising a question for future research (how conventional rate policy interacts with a now-larger macroprudential apparatus) rather than claiming to have tested that interaction directly. Don't overstate the policy-relevance claim beyond that framing."
+  },
+  {
+    "id": "Q34",
+    "section": "Results, Limitations & Conclusions",
+    "q": "Your introduction leans on the Riksbank's 2022–2023 tightening cycle (400bp, zero to 4%) to establish present-day policy relevance, but your sample (2009–2014) sits in a near-zero-rate environment. Doesn't the policy-relevance framing overreach what the data can actually support?",
+    "risk": "it's tempting to argue a regime change makes old results *more* relevant (\"look how important this turned out to be\") — that's backwards, and a careful examiner will hear it as avoiding a real structural-break concern rather than addressing it.",
+    "notes": [],
+    "answer": "The honest distinction is between the mechanism and its magnitude, and only one of those is actually supported by the data. The mechanism identified — that the EF premium rather than deposit quantity transmits policy — is structural, tied to Sweden's institutional features (no reserve requirements since 1994, persistently low deposit ratio) that don't depend on the size of a rate move. There's principled reason to expect the channel itself still operates in a different rate environment, because nothing about *why* it operates is regime-specific.\n\nWhat isn't supported, and shouldn't be implied, is the magnitude or linearity of the effect under a large tightening shock. The sample's own policy-rate variation tops out around 2 percentage points (mean 0.96%, max 2%) — nowhere near the 400bp move referenced in the introduction. A regime change of that size is exactly the kind of event that should raise caution about extrapolating estimated coefficients, not reduce it — a textbook structural-break concern: parameter instability, possibly nonlinearity in how the EF channel responds to large versus small shocks. The defensible claim: the channel plausibly still operates; whether its estimated *size* still holds under a shock four times larger than anything in the sample is untested and shouldn't be implied by the framing."
+  },
+  {
+    "id": "Q13",
+    "section": "Writing / General",
+    "q": "If you had to summarize the paper's contribution in one sentence, what would you say — and where's the biggest weakness in it?",
+    "risk": null,
+    "notes": [],
+    "answer": "\n\n\"The paper shows the operative variable in Sweden's bank lending channel is the cost of external funding, not the composition of funding or deposit variation — supported clearly for total and corporate lending, with an open question for households given an invalid instrument set, and a still-inconclusive extension to near-banks given data frequency limits.\" The biggest weakness is the household/NFC asymmetry not being fully resolved and the near-bank arm not reaching a clean answer on transmission — both flagged honestly rather than papered over."
+  },
+  {
+    "id": "Q37",
+    "section": "Writing / General",
+    "q": "This thesis was originally presented in 2016 and never formally approved. Why has it taken ten years to reach this point, and why are you defending it now?",
+    "risk": "a personally exposed question with no \"correct economics answer\" — over-explaining sounds defensive, under-explaining sounds evasive. It's also the one question on this list that isn't about the paper's content at all, which makes it easy to be caught off guard by precisely because it doesn't fit the pattern of every other question here.",
+    "notes": [
+      "Keep this answer under thirty seconds if it comes up. The instinct to over-explain the personal gap is the risk here, not the content — a short, calm, factual answer closes this down fast and gets back to the thesis itself, which is where the actual defence should live."
+    ],
+    "answer": "Answer approach — structure, not a scripted personal story; fill in your own one-line reason for the gap where marked: state the fact plainly and briefly, without over-apologizing; attribute the gap to [personal/administrative circumstance — one sentence, factual, not elaborated]; then pivot immediately to substance rather than lingering on the gap. The 2016 supervisor assessment called for only light revision, not structural rework, and the 2026 re-assessment independently confirmed the thesis was already at \"a fairly advanced stage, close to completion\" — so the path back was administrative, not a rebuild of unsound work. Close by redirecting to the work itself: the empirical strategy and findings in front of the examiner are the same ones assessed as sound in 2016 and again now — the gap was in timing, not in the underlying research."
+  },
+  {
+    "id": "Q16",
+    "section": "Writing / General",
+    "q": "Stepping back across the entire lineage — monetarist vs. Keynesian, narrowing into channels, the credit channel's break from both, the bank lending channel's reconception around funding cost — what does this thesis actually close out in that history, and what does it leave open?",
+    "risk": "this rewards synthesis across the whole arc rather than piecemeal answers, and punishes overclaiming that the paper resolves more than it does.",
+    "notes": [],
+    "answer": "What it closes out: a direct empirical demonstration that the reconceived bank lending channel — funding cost, not deposit quantity — is operative, in a setting institutionally suited to isolate it from the classical deposit-based mechanism. It also settles, for this setting, the specific methodological question of whether funding composition was itself the operative variable or just a proxy for the EF premium — it was a proxy. This holds for total lending and corporate lending.\n\nWhat it leaves open, honestly stated in the paper itself: whether the same mechanism holds for household lending (the Sargan failure means this is genuinely unresolved, not quietly answered no); whether it extends to near-bank intermediaries (inconclusive due to data frequency, not resolved either way); and how the EF-premium channel interacts with a macroprudential toolkit that didn't exist in the sample period — explicitly not tested, only motivated as a live coordination question between the Riksbank and Finansinspektionen.\n\nWhat it does not do, and shouldn't claim to: settle the original monetarist/Keynesian debate. That debate was about the economy-wide scope of monetary transmission; this paper is about one specific, narrow channel within the credit view that emerged only after the field gave up on resolving the original debate directly. It's a contribution to the literature that came after that debate, not a late answer to it."
+  }
+];
+
+const SECTIONS = [...new Set(ITEMS.map(i => i.section))];
+const PKEY = 'thesis_drill_v1';
+
+window.state = {
+  progress: {},
+  view: 'dashboard',
+  queue: [],
+  queueIndex: 0,
+  phase: 'answering',   // 'answering' | 'grading' | 'graded'
+  userAnswer: '',
+  aiResult: null,
+  gradingFailed: false,
+  sessionTally: { blanked: 0, shaky: 0, nailed: 0 },
+  sectionPick: SECTIONS[0],
+};
+
+let _saveTimer = null, _savePending = false;
+
+function defaultProgress(){
+  return { shown:0, blanked:0, shaky:0, nailed:0, lastSeen:null, priority:50 };
+}
+
+async function loadProgress(){
+  try{
+    const r = await fetch('/api/update', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action:'progGet', key:PKEY }) });
+    const j = await r.json();
+    if (j && j.state) state.progress = j.state;
+  } catch(e){
+    state.progress = {};
+  }
+  for (const it of ITEMS){
+    if (!state.progress[it.id]) state.progress[it.id] = defaultProgress();
+  }
+}
+
+function doPersist(){
+  return fetch('/api/update', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action:'progSave', key:PKEY, state: state.progress }) })
+    .then(r => { if (r.ok) _savePending = false; })
+    .catch(() => {});
+}
+function saveProgress(){
+  _savePending = true;
+  clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(doPersist, 800);
+}
+function flushSave(){
+  if (!_savePending) return;
+  try{
+    navigator.sendBeacon('/api/update', new Blob([JSON.stringify({ action:'progSave', key:PKEY, state: state.progress })], { type:'application/json' }));
+    _savePending = false;
+  } catch(e){}
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flushSave(); });
+window.addEventListener('pagehide', flushSave);
+
+function classify(p){
+  if (!p || p.shown===0) return 'unseen';
+  if (p.priority<=20) return 'strong';
+  if (p.priority<=55) return 'medium';
+  return 'weak';
+}
+
+function computeWeight(item){
+  const p = state.progress[item.id] || defaultProgress();
+  const daysSince = p.lastSeen ? (Date.now()-p.lastSeen)/(1000*60*60*24) : 999;
+  const decayBonus = Math.min(20, daysSince*2);
+  return Math.max(1, p.priority + decayBonus);
+}
+
+function weightedSample(pool, n){
+  const keyed = pool.map(item => ({ item, key: Math.pow(Math.random(), 1/computeWeight(item)) }));
+  keyed.sort((a,b) => b.key - a.key);
+  return keyed.slice(0, n).map(k => k.item);
+}
+
+function buildQueue(mode){
+  let pool = ITEMS;
+  if (mode === 'section') pool = ITEMS.filter(i => i.section === state.sectionPick);
+  if (mode === 'weak') pool = ITEMS.filter(i => classify(state.progress[i.id]) === 'weak' || classify(state.progress[i.id]) === 'unseen');
+  const n = mode === 'quick10' ? Math.min(10, pool.length) : pool.length;
+  return weightedSample(pool, n);
+}
+
+function startSession(mode){
+  const q = buildQueue(mode);
+  if (q.length === 0){ return; }
+  state.queue = q;
+  state.queueIndex = 0;
+  state.phase = 'answering';
+  state.userAnswer = '';
+  state.aiResult = null;
+  state.gradingFailed = false;
+  state.sessionTally = { blanked:0, shaky:0, nailed:0 };
+  state.view = 'drill';
+  render();
+}
+
+function resetItemState(){
+  state.phase = 'answering';
+  state.userAnswer = '';
+  state.aiResult = null;
+  state.gradingFailed = false;
+}
+
+async function gradeAnswer(item, userAnswer){
+  const response = await fetch('/api/update', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action: 'gradeThesis',
+      question: item.q,
+      risk: item.risk || '',
+      reference: item.answer,
+      notes: item.notes || [],
+      studentAnswer: userAnswer,
+    }),
+  });
+  const data = await response.json();
+  if (!data || !data.result) throw new Error('No graded result returned');
+  const parsed = data.result;
+  if (!['nailed','shaky','blanked'].includes(parsed.rating)) throw new Error('Bad rating value');
+  return parsed;
+}
+
+async function submitAnswer(){
+  const ta = document.getElementById('answerInput');
+  const val = ta ? ta.value.trim() : '';
+  state.userAnswer = val;
+  if (val === ''){ skipToAnswer(); return; }
+
+  state.phase = 'grading';
+  render();
+
+  const item = state.queue[state.queueIndex];
+  try{
+    state.aiResult = await gradeAnswer(item, val);
+    state.gradingFailed = false;
+  } catch(e){
+    console.error('Grading failed', e);
+    state.aiResult = null;
+    state.gradingFailed = true;
+  }
+  state.phase = 'graded';
+  render();
+}
+
+function skipToAnswer(){
+  state.aiResult = null;
+  state.gradingFailed = false;
+  state.phase = 'graded';
+  render();
+}
+
+function rate(rating){
+  const item = state.queue[state.queueIndex];
+  const p = state.progress[item.id];
+  p.shown++;
+  p.lastSeen = Date.now();
+  if (rating === 'blanked'){ p.blanked++; p.priority = Math.min(100, p.priority + 35); state.sessionTally.blanked++; }
+  else if (rating === 'shaky'){ p.shaky++; p.priority = Math.min(100, p.priority + 12); state.sessionTally.shaky++; }
+  else { p.nailed++; p.priority = Math.max(5, p.priority - 25); state.sessionTally.nailed++; }
+  saveProgress();
+  state.queueIndex++;
+  resetItemState();
+  if (state.queueIndex >= state.queue.length){ state.view = 'summary'; }
+  render();
+}
+
+function endSession(){ state.view = 'summary'; render(); }
+function goHome(){ state.view = 'dashboard'; render(); }
+
+async function resetProgress(){
+  if (!confirm("Reset all confidence tracking? This clears every rating you've recorded.")) return;
+  state.progress = {};
+  for (const it of ITEMS) state.progress[it.id] = defaultProgress();
+  await doPersist();
+  render();
+}
+
+// ---------- markdown-lite rendering ----------
+function escapeHtml(s){
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function inline(s){
+  let t = escapeHtml(s);
+  t = t.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  t = t.replace(/\*(.+?)\*/g, '<em>$1</em>');
+  return t;
+}
+function renderAnswerHtml(text){
+  const blocks = text.split('\n\n').filter(b => b.trim() !== '');
+  let html = '';
+  let i = 0;
+  while (i < blocks.length){
+    if (/^-\s/.test(blocks[i])){
+      html += '<ul>';
+      while (i < blocks.length && /^-\s/.test(blocks[i])){
+        html += '<li>' + inline(blocks[i].replace(/^-\s/, '')) + '</li>';
+        i++;
+      }
+      html += '</ul>';
+    } else {
+      html += '<p>' + inline(blocks[i]) + '</p>';
+      i++;
+    }
+  }
+  return html;
+}
+
+// ---------- rendering ----------
+function statCounts(){
+  const c = { unseen:0, strong:0, medium:0, weak:0 };
+  for (const it of ITEMS) c[classify(state.progress[it.id])]++;
+  return c;
+}
+function portfolioSpread(){
+  let sum = 0;
+  for (const it of ITEMS) sum += (state.progress[it.id] || defaultProgress()).priority;
+  return Math.round(sum / ITEMS.length);
+}
+
+function renderDashboard(){
+  const c = statCounts();
+  const spread = portfolioSpread();
+  const sectionOptions = SECTIONS.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
+
+  let sectionRows = '';
+  for (const sec of SECTIONS){
+    const items = ITEMS.filter(i => i.section === sec);
+    const cc = { unseen:0, strong:0, medium:0, weak:0 };
+    for (const it of items) cc[classify(state.progress[it.id])]++;
+    sectionRows += `
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--rule); font-size:13px;">
+        <span>${escapeHtml(sec)} <span style="color:var(--ink-secondary); font-family:'JetBrains Mono'; font-size:11px;">(${items.length})</span></span>
+        <span style="font-family:'JetBrains Mono'; font-size:11px; color:var(--ink-secondary);">
+          <span class="dot" style="background:var(--accent)"></span>${cc.strong}
+          <span class="dot" style="background:var(--amber); margin-left:8px;"></span>${cc.medium}
+          <span class="dot" style="background:var(--red); margin-left:8px;"></span>${cc.weak}
+          <span class="dot" style="background:var(--ink-secondary); margin-left:8px;"></span>${cc.unseen}
+        </span>
+      </div>`;
+  }
+
+  document.getElementById('app').innerHTML = `
+    <a class="backlink" href="index.html">← Board</a>
+    <div class="eyebrow">External Funding &amp; the Bank-Lending Channel — Defence Prep</div>
+    <h1 class="title">Drill Book</h1>
+    <p class="subtitle">59 entries. Type your attempt cold, get graded against the reference answer, then confirm or override the rating yourself. Weak spots resurface more often.</p>
+
+    <div class="card spread-hero">
+      <div class="spread-row">
+        <div>
+          <div class="spread-number">${spread}<span class="spread-unit">bp</span></div>
+          <div class="eyebrow" style="margin-top:2px;">portfolio confidence spread</div>
+        </div>
+        <div class="spread-label">0 = mastered across the board. 100 = everything still shaky. Narrows as you drill.</div>
+      </div>
+      <div class="spread-track"><div class="spread-marker" style="left:${spread}%;"></div></div>
+      <div class="spread-ticks"><span>0 — tight</span><span>50</span><span>100 — wide</span></div>
+
+      <div class="stat-grid">
+        <div class="stat-cell"><div class="stat-num" style="color:var(--accent)">${c.strong}</div><div class="stat-lbl">Strong</div></div>
+        <div class="stat-cell"><div class="stat-num" style="color:var(--amber)">${c.medium}</div><div class="stat-lbl">Medium</div></div>
+        <div class="stat-cell"><div class="stat-num" style="color:var(--red)">${c.weak}</div><div class="stat-lbl">Weak</div></div>
+        <div class="stat-cell"><div class="stat-num" style="color:var(--ink-secondary)">${c.unseen}</div><div class="stat-lbl">Unseen</div></div>
+      </div>
+    </div>
+
+    <h2 class="section-h">Start a round</h2>
+    <div class="mode-grid">
+      <button class="mode-btn" onclick="startSession('quick10')">
+        <div class="mb-title">Quick 10</div>
+        <div class="mb-sub">Fast pass, weighted to weak spots</div>
+      </button>
+      <button class="mode-btn" onclick="startSession('weak')">
+        <div class="mb-title">Weak Spots Only</div>
+        <div class="mb-sub">Everything not yet solid</div>
+      </button>
+    </div>
+    <div style="margin-top:10px;">
+      <button class="full-btn" onclick="startSession('full')">Full Pass — all 59, weighted order</button>
+    </div>
+
+    <h2 class="section-h">By section</h2>
+    <div class="card" style="padding:16px 18px;">
+      <select class="section-select" id="sectionSelect" onchange="state.sectionPick=this.value">
+        ${sectionOptions}
+      </select>
+      <button class="full-btn" onclick="startSession('section')">Drill this section</button>
+      <div style="margin-top:14px;">${sectionRows}</div>
+    </div>
+
+    <h2 class="section-h">Reference</h2>
+    <div class="card">
+      <details class="patterns">
+        <summary>Recurring patterns to self-check ▾</summary>
+        <div class="pattern-item"><b>1. BB1988 vs BG1995.</b> Different papers, different jobs — don't conflate the original deposit-based channel with the general credit-channel framework.</div>
+        <div class="pattern-item"><b>2. Restating vs. instantiating.</b> If asked for a concrete example, a more elaborate definition is not an example.</div>
+        <div class="pattern-item"><b>3. Wrong-direction prediction.</b> Check which direction the paper's own evidence points before answering — don't guess from intuition.</div>
+        <div class="pattern-item"><b>4. Overclaiming "directly tests."</b> Default to "consistent with" unless there's an actual test to point to.</div>
+      </details>
+    </div>
+
+    <div class="sync-note">Synced to the Life OS board — progress follows you across devices.</div>
+    <button class="reset-link" onclick="resetProgress()">Reset all progress</button>
+  `;
+  document.getElementById('sectionSelect').value = state.sectionPick;
+}
+
+function renderDrill(){
+  const item = state.queue[state.queueIndex];
+
+  let bodyHtml = '';
+
+  if (state.phase === 'answering'){
+    bodyHtml = `
+      <div class="answer-label">Your attempt — write it as if you were saying it out loud</div>
+      <textarea class="answer-input" id="answerInput" rows="6" placeholder="Type your answer here..."></textarea>
+      <div class="answer-actions">
+        <button class="full-btn" style="flex:1;" onclick="submitAnswer()">Submit for grading</button>
+        <button class="skip-link" onclick="skipToAnswer()">Skip — just show me the answer</button>
+      </div>
+    `;
+  } else if (state.phase === 'grading'){
+    bodyHtml = `
+      <div class="your-answer-box"><span class="ya-label">Your attempt</span>${inline(state.userAnswer)}</div>
+      <div class="grading-indicator"><span class="grading-dot"></span>Grading against the reference answer…</div>
+    `;
+  } else {
+    let verdictHtml = '';
+    if (state.aiResult){
+      const r = state.aiResult;
+      verdictHtml = `
+        <div class="your-answer-box"><span class="ya-label">Your attempt</span>${inline(state.userAnswer)}</div>
+        <div class="verdict-box tier-${r.rating}">
+          <div class="verdict-headline">${inline(r.verdict)}</div>
+          <div class="verdict-feedback">${inline(r.feedback)}</div>
+        </div>
+      `;
+    } else if (state.gradingFailed){
+      verdictHtml = `
+        <div class="your-answer-box"><span class="ya-label">Your attempt</span>${inline(state.userAnswer)}</div>
+        <div class="note-box">Auto-grading unavailable right now — compare your attempt to the reference yourself and rate honestly below.</div>
+      `;
+    } else if (state.userAnswer){
+      verdictHtml = `<div class="your-answer-box"><span class="ya-label">Your attempt</span>${inline(state.userAnswer)}</div>`;
+    }
+
+    const suggested = state.aiResult ? state.aiResult.rating : null;
+
+    bodyHtml = `
+      ${verdictHtml}
+      <div class="answer-block">${renderAnswerHtml(item.answer)}</div>
+      ${item.notes.map(n => `<div class="note-box">${inline(n)}</div>`).join('')}
+      <div class="selfcheck">
+        <b>Self-check:</b> Restated instead of instantiating? · Predicted the wrong direction? · Said "directly tests" without a test to point to? · Mixed up BB1988 / BG1995?
+      </div>
+      <div class="stamp-row">
+        <button class="stamp blanked ${suggested==='blanked'?'ai-suggested':''}" onclick="rate('blanked')">Blanked</button>
+        <button class="stamp shaky ${suggested==='shaky'?'ai-suggested':''}" onclick="rate('shaky')">Shaky</button>
+        <button class="stamp nailed ${suggested==='nailed'?'ai-suggested':''}" onclick="rate('nailed')">Nailed it</button>
+      </div>
+      ${suggested ? `<div style="text-align:center; font-family:'JetBrains Mono'; font-size:10px; color:var(--ink-tertiary); margin-top:8px;">ring = examiner's suggested rating — final call is yours</div>` : ''}
+    `;
+  }
+
+  document.getElementById('app').innerHTML = `
+    <div class="drill-top">
+      <span class="progress-pill">Item ${state.queueIndex+1} / ${state.queue.length}</span>
+      <button class="end-link" onclick="endSession()">End session</button>
+    </div>
+    <div class="card qcard">
+      <span class="item-id">${item.id}</span><span class="item-section">${escapeHtml(item.section)}</span>
+      <div class="qtext">${inline(item.q)}</div>
+      ${item.risk ? `<div class="risk-box"><b>Why it's a risk:</b> ${inline(item.risk)}</div>` : ''}
+      ${bodyHtml}
+    </div>
+  `;
+}
+
+function renderSummary(){
+  const t = state.sessionTally;
+  const total = t.blanked + t.shaky + t.nailed;
+  const spread = portfolioSpread();
+  document.getElementById('app').innerHTML = `
+    <a class="backlink" href="index.html">← Board</a>
+    <div class="eyebrow">Session complete</div>
+    <h1 class="title">${total} reviewed</h1>
+    <p class="subtitle">Updated portfolio spread: <b style="color:var(--ink)">${spread}bp</b></p>
+    <div class="summary-tally">
+      <div class="tally-cell"><div class="tally-num" style="color:var(--red)">${t.blanked}</div><div class="tally-lbl">Blanked</div></div>
+      <div class="tally-cell"><div class="tally-num" style="color:var(--amber)">${t.shaky}</div><div class="tally-lbl">Shaky</div></div>
+      <div class="tally-cell"><div class="tally-num" style="color:var(--accent)">${t.nailed}</div><div class="tally-lbl">Nailed</div></div>
+    </div>
+    <button class="full-btn" onclick="goHome()">Back to dashboard</button>
+  `;
+}
+
+function render(){
+  if (state.view === 'dashboard') renderDashboard();
+  else if (state.view === 'drill') renderDrill();
+  else if (state.view === 'summary') renderSummary();
+}
+
+(async function init(){
+  await loadProgress();
+  render();
+})();
+</script>
+</body>
+</html>
