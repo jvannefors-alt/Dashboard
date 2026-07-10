@@ -8,7 +8,7 @@
 import Redis from 'ioredis';
 
 const KEY = 'dashboard_v2';
-const PROG_KEYS = ['skate_v1', 'curriculum_v1'];
+const PROG_KEYS = ['skate_v1', 'curriculum_v1', 'thesis_drill_v1'];
 const DOMAIN_IDS = ['thesis','career','tree','reading','house','life','build','hobbies'];
 
 let _redis;
@@ -135,6 +135,43 @@ export default async function handler(req, res) {
         if (req.body.state === undefined) return res.status(400).json({ error: 'No state provided' });
         await redis().set(key, JSON.stringify(req.body.state));
         return res.status(200).json({ success: true });
+      }
+
+      if (action === 'gradeThesis') {
+        const { question, risk, reference, notes, studentAnswer } = req.body;
+        if (!ANTHROPIC_KEY) return res.status(200).json({ success: true, result: null });
+        const sys = `You are a rigorous but fair oral examiner for a Swedish master's thesis defence in monetary economics (the bank lending channel and the external financing premium). Grade the student's spoken-answer attempt against the reference answer for one specific question.
+
+Watch specifically for these four recurring habits and name them if they occur:
+1. Conflating Bernanke & Blinder (1988) with Bernanke & Gertler (1995) — different papers, different jobs.
+2. Restating a definition instead of instantiating it with a concrete example, when the question calls for one.
+3. Predicting the wrong direction on a result (e.g. guessing a variable should lose significance when the reference says it remains significant, or vice versa).
+4. Overclaiming "directly tests" where the reference only supports "consistent with."
+
+Respond with ONLY a JSON object, no markdown fences, no preamble, in exactly this shape:
+{"rating": "nailed" | "shaky" | "blanked", "verdict": "a short 4-8 word headline", "feedback": "2-4 sentences of specific, concrete feedback — name exactly what was captured and what was missing or wrong, in the voice of a demanding but constructive examiner, not generic praise"}`;
+        const userMsg = 'QUESTION: ' + (question || '')
+          + '\n\nWHY IT\'S A RISK: ' + (risk || 'n/a')
+          + '\n\nREFERENCE ANSWER: ' + (reference || '')
+          + '\n\nREFERENCE NOTES: ' + (notes && notes.length ? notes.join(' | ') : 'none')
+          + '\n\nSTUDENT\'S ATTEMPT: ' + (studentAnswer || '');
+        try {
+          const rr = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_KEY, 'anthropic-version': '2023-06-01' },
+            body: JSON.stringify({ model: 'claude-sonnet-5', max_tokens: 500, system: sys, messages: [{ role: 'user', content: userMsg }] })
+          });
+          if (!rr.ok) return res.status(200).json({ success: true, result: null });
+          const dd = await rr.json();
+          let t = (dd.content && dd.content[0] && dd.content[0].text || '').trim();
+          t = t.replace(/^```json/i, '').replace(/^```/, '').replace(/```$/, '').trim();
+          let parsed;
+          try { parsed = JSON.parse(t); } catch (e) { parsed = null; }
+          if (!parsed || !['nailed', 'shaky', 'blanked'].includes(parsed.rating)) return res.status(200).json({ success: true, result: null });
+          return res.status(200).json({ success: true, result: parsed });
+        } catch (e) {
+          return res.status(200).json({ success: true, result: null });
+        }
       }
 
       return res.status(400).json({ error: 'Unknown action' });
