@@ -163,7 +163,8 @@ Respond with ONLY a JSON object, no markdown fences, no preamble, in exactly thi
           });
           if (!rr.ok) return res.status(200).json({ success: true, result: null });
           const dd = await rr.json();
-          let t = (dd.content && dd.content[0] && dd.content[0].text || '').trim();
+          let t = ((dd.content || []).find(b => b.type === 'text') || {}).text || '';
+          t = t.trim();
           t = t.replace(/^```json/i, '').replace(/^```/, '').replace(/```$/, '').trim();
           let parsed;
           try { parsed = JSON.parse(t); } catch (e) { parsed = null; }
