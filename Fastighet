@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fastigheter — Life OS</title>
+<style>
+  :root{
+    --paper: #EAE6D9;
+    --paper-raised: #F3F0E4;
+    --ink: #23281F;
+    --ink-soft: #52584B;
+    --forest: #3F5D42;
+    --forest-deep: #2C4330;
+    --tegel: #A34A22;
+    --amber: #A9781F;
+    --line: #C9C2AB;
+    --line-soft: #DAD5C3;
+    --serif: 'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;
+    --mono: 'JetBrains Mono','SF Mono',ui-monospace,'Cascadia Code',Menlo,Consolas,monospace;
+    --sans: -apple-system,BlinkMacSystemFont,'Inter','Helvetica Neue',Arial,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.5;-webkit-font-smoothing:antialiased;}
+  .sheet{max-width:920px;margin:0 auto;padding:32px 28px 96px;}
+  a{color:var(--forest-deep);}
+  .backlink{font-family:var(--mono);font-size:12px;color:var(--ink-soft);text-decoration:none;display:inline-block;margin-bottom:14px;}
+  .backlink:hover{color:var(--ink);}
+  .masthead{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid var(--ink);padding-bottom:16px;margin-bottom:24px;gap:20px;flex-wrap:wrap;}
+  .masthead h1{font-family:var(--serif);font-size:32px;margin:0;}
+  .masthead .sub{font-family:var(--mono);font-size:11px;color:var(--ink-soft);letter-spacing:0.08em;text-transform:uppercase;}
+  button, .btn{font-family:var(--sans);font-size:13px;background:var(--forest-deep);color:var(--paper);border:none;padding:9px 16px;cursor:pointer;}
+  button:hover, .btn:hover{background:var(--ink);}
+  button.secondary{background:transparent;color:var(--ink);border:1px solid var(--line);}
+  button.secondary:hover{background:var(--paper-raised);}
+  textarea{width:100%;font-family:var(--mono);font-size:12px;padding:10px;border:1px solid var(--line);background:var(--paper-raised);color:var(--ink);min-height:140px;}
+  select, input[type=text]{font-family:var(--sans);font-size:13px;padding:6px 8px;border:1px solid var(--line);background:var(--paper-raised);color:var(--ink);}
+
+  /* Paste panel */
+  details.pastepanel{border:1px solid var(--line);margin-bottom:26px;background:var(--paper-raised);}
+  details.pastepanel summary{cursor:pointer;padding:12px 16px;font-family:var(--serif);font-size:15px;list-style:none;}
+  details.pastepanel summary::-webkit-details-marker{display:none;}
+  details.pastepanel summary::before{content:'▸ ';font-family:var(--mono);}
+  details.pastepanel[open] summary::before{content:'▾ ';}
+  .pastebody{padding:0 16px 16px;}
+  .pastebody p{font-size:12.5px;color:var(--ink-soft);margin:0 0 10px;}
+  .pasteactions{display:flex;gap:10px;margin-top:10px;align-items:center;}
+  .status-msg{font-family:var(--mono);font-size:11.5px;margin-left:4px;}
+  .status-msg.ok{color:var(--forest-deep);}
+  .status-msg.err{color:var(--tegel);}
+
+  /* Index list */
+  .idx-row{display:grid;grid-template-columns:1fr auto auto auto;gap:14px;align-items:center;padding:13px 4px;border-bottom:1px solid var(--line-soft);}
+  .idx-row a{font-family:var(--serif);font-size:16px;text-decoration:none;color:var(--ink);}
+  .idx-row a:hover{color:var(--forest-deep);}
+  .idx-sub{font-family:var(--mono);font-size:10.5px;color:var(--ink-soft);display:block;margin-top:2px;}
+  .idx-status{font-family:var(--mono);font-size:10px;letter-spacing:0.05em;text-transform:uppercase;padding:3px 8px;border:1px solid var(--line);white-space:nowrap;}
+  .idx-price{font-family:var(--mono);font-size:12.5px;text-align:right;white-space:nowrap;}
+  .empty-state{padding:40px 10px;text-align:center;color:var(--ink-soft);font-size:13px;}
+
+  /* Reused report components (same as vardering template) */
+  .akt{font-family:var(--mono);font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-soft);}
+  section{margin-bottom:44px;}
+  .sec-head{display:flex;align-items:baseline;gap:14px;margin-bottom:18px;}
+  .sec-num{font-family:var(--mono);font-size:13px;color:var(--forest-deep);border:1px solid var(--forest-deep);padding:2px 7px;flex-shrink:0;}
+  .sec-head h2{font-family:var(--serif);font-size:20px;font-weight:600;margin:0;}
+  .factgrid{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);}
+  .factgrid div{padding:12px 14px;border-right:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft);}
+  .factgrid .k{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:4px;}
+  .factgrid .v{font-size:14px;}
+
+  .verdict2{border:2px solid var(--ink);background:var(--paper-raised);padding:20px 22px;margin:18px 0 16px;}
+  .verdict2-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:center;}
+  .verdict2 .vlabel{font-family:var(--mono);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-soft);display:block;margin-bottom:5px;}
+  .verdict2 .vnum{font-family:var(--serif);font-size:28px;}
+  .verdict2 .vnum.ask{color:var(--tegel);}
+  .verdict2 .vnum.fair{color:var(--forest-deep);}
+  .verdict2 .vsub{font-size:11px;color:var(--ink-soft);margin-top:4px;}
+  .verdict2 .vs{text-align:center;font-family:var(--serif);font-size:14px;color:var(--ink-soft);}
+  .verdict2 .vgap{margin-top:16px;padding-top:14px;border-top:1px dashed var(--line-soft);font-size:12.5px;text-align:center;color:var(--ink-soft);}
+
+  .flagstrip{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;}
+  .fchip{display:flex;align-items:center;gap:6px;border:1.5px solid var(--line);padding:6px 11px;font-size:11.5px;background:var(--paper-raised);}
+  .fchip .fdot{width:7px;height:7px;border-radius:50%;background:var(--ink-soft);}
+  .fchip.warn{border-color:var(--tegel);} .fchip.warn .fdot{background:var(--tegel);}
+  .fchip.amber{border-color:var(--amber);} .fchip.amber .fdot{background:var(--amber);}
+  .fchip.ok{border-color:var(--forest-deep);} .fchip.ok .fdot{background:var(--forest-deep);}
+
+  .takeaway{background:var(--forest-deep);color:var(--paper);padding:18px 22px;margin-bottom:32px;}
+  .takeaway h3{font-family:var(--serif);font-size:17px;margin:0 0 10px;color:var(--paper);}
+  .takeaway p{font-size:13px;line-height:1.6;color:#DDD9C8;margin:0 0 8px;}
+
+  .timeline{position:relative;padding-top:4px;}
+  .tstop{border-left:2px solid var(--line);padding:2px 0 16px 16px;position:relative;margin-left:4px;}
+  .tstop::before{content:'';position:absolute;left:-7px;top:2px;width:11px;height:11px;border-radius:50%;background:var(--paper);border:2px solid var(--forest-deep);}
+  .tstop.flagged::before{border-color:var(--tegel);background:var(--tegel);}
+  .tstop .date{font-family:var(--mono);font-size:11px;color:var(--ink-soft);}
+  .tstop h4{font-family:var(--serif);font-size:15px;margin:3px 0 5px;}
+  .tstop p{font-size:12.5px;color:var(--ink-soft);margin:0 0 3px;}
+
+  .methodrow{display:grid;grid-template-columns:26px 1fr auto 20px;gap:14px;align-items:start;padding:13px 4px;border-bottom:1px solid var(--line-soft);cursor:pointer;}
+  .methodrow:hover{background:var(--paper-raised);}
+  .mstatus.done{color:var(--forest-deep);}
+  .mname{font-size:13.5px;font-weight:600;}
+  .mdesc{font-size:11.5px;color:var(--ink-soft);margin-top:2px;}
+  .mvalue{font-family:var(--mono);font-size:13px;text-align:right;white-space:nowrap;}
+  .chevron{font-family:var(--mono);font-size:11px;color:var(--ink-soft);transition:transform 0.2s;}
+  .methodrow.open .chevron{transform:rotate(90deg);}
+  .methoddetail{max-height:0;overflow:hidden;transition:max-height 0.25s ease;background:var(--paper-raised);}
+  .methoddetail.open{max-height:600px;}
+  .methoddetail-inner{padding:6px 16px 16px 46px;font-size:12px;color:var(--ink-soft);white-space:pre-wrap;}
+
+  .doccard{border:1px solid var(--line);margin-bottom:12px;}
+  .dochead{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--paper-raised);border-bottom:1px solid var(--line);}
+  .dochead h3{font-family:var(--serif);font-size:14.5px;margin:0;}
+  .doctag{font-family:var(--mono);font-size:9.5px;letter-spacing:0.05em;text-transform:uppercase;padding:2px 7px;border:1px solid var(--forest-deep);color:var(--forest-deep);}
+  .doctag.missing{border-color:var(--tegel);color:var(--tegel);}
+  .docbody{padding:12px 14px;font-size:12.5px;}
+  .docbody ul{margin:0;padding-left:16px;}
+
+  .attract-card{border:1px solid var(--line);margin-bottom:12px;}
+  .attract-head{padding:10px 14px;background:var(--paper-raised);border-bottom:1px solid var(--line);font-family:var(--serif);font-size:14.5px;}
+  .attract-item{display:grid;grid-template-columns:100px 1fr;gap:10px;padding:9px 14px;border-bottom:1px dotted var(--line-soft);font-size:12px;}
+  .attract-tag{font-family:var(--mono);font-size:8.5px;text-transform:uppercase;padding:2px 6px;border:1px solid;height:fit-content;text-align:center;}
+  .attract-tag.pos{border-color:var(--forest-deep);color:var(--forest-deep);}
+  .attract-tag.neg{border-color:var(--tegel);color:var(--tegel);}
+  .attract-tag.neutral{border-color:var(--amber);color:var(--amber);}
+  .attract-tag.unk{border-color:var(--ink-soft);color:var(--ink-soft);}
+
+  .outcome-box{border:1.5px dashed var(--line);padding:16px;margin-top:8px;}
+  .outcome-box label{display:block;font-family:var(--mono);font-size:10px;text-transform:uppercase;color:var(--ink-soft);margin-bottom:5px;}
+  .outcome-box .row{margin-bottom:12px;}
+  .outcome-box textarea{min-height:70px;}
+
+  footer{margin-top:36px;padding-top:14px;border-top:1px solid var(--line);font-family:var(--mono);font-size:10px;color:var(--ink-soft);}
+
+  @media (max-width:720px){
+    .factgrid{grid-template-columns:repeat(2,1fr);}
+    .verdict2-grid{grid-template-columns:1fr;text-align:left;}
+    .idx-row{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <a class="backlink" href="index.html">← Board</a>
+
+  <div class="masthead">
+    <div>
+      <span class="akt">LIFE OS · PROGRAM</span>
+      <h1>Fastigheter</h1>
+    </div>
+    <div class="sub" id="synctime">ej synkat än</div>
+  </div>
+
+  <details class="pastepanel">
+    <summary>Lägg till / uppdatera en fastighet</summary>
+    <div class="pastebody">
+      <p>Klistra in det JSON-block Claude gav dig efter en värderingskörning, eller en enklare bevakningspost med bara <code>id</code>, <code>adress</code> och <code>status</code>. Samma id skriver över en befintlig post.</p>
+      <textarea id="pasteArea" placeholder='{"id":"dundervagen2","adress":"Dundervägen 2","status":"värderad", ...}'></textarea>
+      <div class="pasteactions">
+        <button onclick="handlePaste()">Spara</button>
+        <span class="status-msg" id="pasteStatus"></span>
+      </div>
+    </div>
+  </details>
+
+  <div id="content">
+    <div class="empty-state">Laddar…</div>
+  </div>
+
+  <footer>FASTIGHETER · LIFE OS PROGRAM · DATA LAGRAD I REDIS (properties_v1) + SPEGLAD TILL NOTION</footer>
+</div>
+
+<script>
+const API = '/api/update';
+
+async function api(payload){
+  const r = await fetch(API, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify(payload)
+  });
+  return r.json();
+}
+
+async function loadProperties(){
+  try{
+    const data = await api({action:'progGet', key:'properties_v1'});
+    return (data && Array.isArray(data.state)) ? data.state : [];
+  }catch(e){
+    console.error('loadProperties failed', e);
+    return [];
+  }
+}
+
+async function saveProperties(list){
+  return api({action:'progSave', key:'properties_v1', state:list});
+}
+
+async function syncNotion(property){
+  try{
+    const res = await api({action:'notionSync', property});
+    return (res && res.notionPageId) ? res.notionPageId : null;
+  }catch(e){
+    console.error('syncNotion failed', e);
+    return null;
+  }
+}
+
+function fmt(n){
+  if(n === null || n === undefined || n === '') return '—';
+  return Number(n).toLocaleString('sv-SE') + ' kr';
+}
+
+async function handlePaste(){
+  const el = document.getElementById('pasteArea');
+  const statusEl = document.getElementById('pasteStatus');
+  statusEl.textContent = 'Sparar…'; statusEl.className = 'status-msg';
+  let parsed;
+  try{
+    parsed = JSON.parse(el.value);
+  }catch(e){
+    statusEl.textContent = 'Ogiltig JSON — kolla att du kopierade hela blocket.';
+    statusEl.className = 'status-msg err';
+    return;
+  }
+  if(!parsed.id || !parsed.adress){
+    statusEl.textContent = 'Saknar id eller adress-fält.';
+    statusEl.className = 'status-msg err';
+    return;
+  }
+  const list = await loadProperties();
+  const idx = list.findIndex(p => p.id === parsed.id);
+  if(idx >= 0){
+    parsed.notionPageId = parsed.notionPageId || list[idx].notionPageId || null;
+    list[idx] = parsed;
+  } else {
+    list.push(parsed);
+  }
+  await saveProperties(list);
+
+  const notionPageId = await syncNotion(parsed);
+  if(notionPageId && !parsed.notionPageId){
+    parsed.notionPageId = notionPageId;
+    const list2 = await loadProperties();
+    const idx2 = list2.findIndex(p => p.id === parsed.id);
+    if(idx2 >= 0){ list2[idx2] = parsed; await saveProperties(list2); }
+  }
+
+  statusEl.textContent = notionPageId ? 'Sparat + synkat till Notion.' : 'Sparat lokalt (Notion-synk misslyckades — se konsolen).';
+  statusEl.className = notionPageId ? 'status-msg ok' : 'status-msg err';
+  el.value = '';
+  render();
+}
+
+async function updateOutcome(id, field, value){
+  const list = await loadProperties();
+  const idx = list.findIndex(p => p.id === id);
+  if(idx < 0) return;
+  list[idx][field] = value;
+  await saveProperties(list);
+  syncNotion(list[idx]);
+}
+
+function toggleMethod(row){
+  const detail = row.nextElementSibling;
+  const isOpen = detail.classList.contains('open');
+  document.querySelectorAll('.methoddetail.open').forEach(d=>d.classList.remove('open'));
+  document.querySelectorAll('.methodrow.open').forEach(r=>r.classList.remove('open'));
+  if(!isOpen){ detail.classList.add('open'); row.classList.add('open'); }
+}
+
+function renderIndex(list){
+  if(!list.length){
+    return '<div class="empty-state">Inga fastigheter sparade än. Klistra in en ovan för att börja.</div>';
+  }
+  const rows = list.map(p => {
+    const v = p.vardering || {};
+    const verdikt = v.verdikt || {};
+    const price = verdikt.utgangspris || (p.scouting && p.scouting.utgangspris);
+    return `
+      <div class="idx-row">
+        <div>
+          <a href="?id=${encodeURIComponent(p.id)}">${p.adress || p.id}</a>
+          <span class="idx-sub">${p.ort || ''}</span>
+        </div>
+        <span class="idx-status">${p.status || 'bevakad'}</span>
+        <span class="idx-price">${price ? fmt(price) : '—'}</span>
+        <span class="idx-sub">${p.utfall || ''}</span>
+      </div>`;
+  }).join('');
+  return `<section><div class="sec-head"><h2>Alla fastigheter</h2></div>${rows}</section>`;
+}
+
+function renderReport(p){
+  const v = p.vardering || {};
+  const verdikt = v.verdikt || {};
+  let html = '';
+
+  html += `<div class="masthead" style="border:none;padding:0;margin-bottom:6px;">
+    <div><span class="akt">${p.fastighetsbeteckning || ''}</span><h1 style="font-size:26px;">${p.adress}</h1><div class="sub" style="text-transform:none;letter-spacing:0;">${p.ort || ''}</div></div>
+  </div>`;
+
+  if(verdikt.utgangspris){
+    html += `<div class="verdict2"><div class="verdict2-grid">
+      <div><span class="vlabel">Utgångspris</span><div class="vnum ask">${fmt(verdikt.utgangspris)}</div></div>
+      <div class="vs">vs.</div>
+      <div style="text-align:right;"><span class="vlabel">Vår bedömning</span><div class="vnum fair">${fmt(verdikt.varBedomningLag)}–${fmt(verdikt.varBedomningHog)}</div></div>
+    </div>${verdikt.gapText ? `<div class="vgap">${verdikt.gapText}</div>` : ''}</div>`;
+  }
+
+  if(v.flaggor && v.flaggor.length){
+    html += '<div class="flagstrip">' + v.flaggor.map(f=>{
+      const typ = f.typ || 'neutral';
+      const cls = typ === 'warn' ? 'warn' : typ === 'ok' ? 'ok' : 'amber';
+      return `<div class="fchip ${cls}"><span class="fdot"></span>${f.text || f}</div>`;
+    }).join('') + '</div>';
+  }
+
+  if(v.takeaway){
+    html += `<div class="takeaway"><h3>${v.takeaway.rubrik || 'Förhandlingsläge & strategi'}</h3><p>${v.takeaway.text || ''}</p>
+      ${v.takeaway.oppningsbud ? `<p><b>Öppningsbud:</b> ${v.takeaway.oppningsbud}</p>` : ''}
+      ${v.takeaway.finansiering ? `<p><b>Finansiering:</b> ${v.takeaway.finansiering}</p>` : ''}
+    </div>`;
+  }
+
+  if(v.objekt){
+    html += '<section><div class="sec-head"><span class="sec-num">§1</span><h2>Objekt i korthet</h2></div><div class="factgrid">';
+    Object.entries(v.objekt).forEach(([k,val])=>{
+      html += `<div><span class="k">${k}</span><span class="v">${val}</span></div>`;
+    });
+    html += '</div></section>';
+  }
+
+  if(v.historik && v.historik.length){
+    html += '<section><div class="sec-head"><span class="sec-num">§2</span><h2>Historik</h2></div><div class="timeline">';
+    v.historik.forEach(h=>{
+      html += `<div class="tstop ${h.flagged ? 'flagged' : ''}"><span class="date">${h.datum || ''}</span><h4>${h.titel || ''}</h4>
+        <p>${h.text || ''}</p>${h.pris ? `<p><b>${fmt(h.pris)}</b></p>` : ''}${h.avsandare ? `<p>${h.avsandare}</p>` : ''}</div>`;
+    });
+    html += '</div></section>';
+  }
+
+  if(v.metoder && v.metoder.length){
+    html += '<section><div class="sec-head"><span class="sec-num">§3</span><h2>Värderingsmetoder</h2></div>';
+    v.metoder.forEach(m=>{
+      html += `<div class="methodrow" onclick="toggleMethod(this)">
+        <span class="mstatus done">${m.status === 'done' ? '✓' : '○'}</span>
+        <div><div class="mname">${m.namn}</div><div class="mdesc">${m.beskrivning || ''}</div></div>
+        <div class="mvalue">${m.varde || ''}</div><span class="chevron">▸</span>
+      </div><div class="methoddetail"><div class="methoddetail-inner">${(m.detalj||[]).join('\\n')}</div></div>`;
+    });
+    html += '</section>';
+  }
+
+  if(v.tactics){
+    html += `<section><div class="sec-head"><span class="sec-num">§4</span><h2>Budgivningstaktik &amp; finansiering</h2></div>
+      <div class="doccard"><div class="docbody">${v.tactics.budstrategi || ''}</div></div>
+      <div class="doccard"><div class="docbody">${v.tactics.finansiering || ''}</div></div></section>`;
+  }
+
+  if(v.dokument && v.dokument.length){
+    html += '<section><div class="sec-head"><span class="sec-num">§5</span><h2>Dokumentgranskning</h2></div>';
+    v.dokument.forEach(d=>{
+      html += `<div class="doccard"><div class="dochead"><h3>${d.titel}</h3><span class="doctag ${d.tag === 'saknas' ? 'missing' : ''}">${d.tag || 'granskad'}</span></div>
+        <div class="docbody">${d.punkter ? '<ul>'+d.punkter.map(x=>`<li>${x}</li>`).join('')+'</ul>' : ''}${d.note ? `<p>${d.note}</p>` : ''}</div></div>`;
+    });
+    html += '</section>';
+  }
+
+  if(v.omradesattraktivitet && v.omradesattraktivitet.kategorier){
+    html += '<section><div class="sec-head"><span class="sec-num">§6</span><h2>Framtida områdesattraktivitet</h2></div>';
+    v.omradesattraktivitet.kategorier.forEach(k=>{
+      html += `<div class="attract-card"><div class="attract-head">${k.namn}</div>`;
+      (k.items||[]).forEach(it=>{
+        html += `<div class="attract-item"><span class="attract-tag ${it.tag}">${it.tag}</span><div>${it.text}${it.kalla ? `<br><span style="font-family:var(--mono);font-size:10px;color:var(--ink-soft);">${it.kalla}</span>` : ''}</div></div>`;
+      });
+      html += '</div>';
+    });
+    html += '</section>';
+  }
+
+  html += `<section><div class="sec-head"><h2>Utfall &amp; lärdom</h2></div><div class="outcome-box">
+    <div class="row"><label>Status</label>
+      <select onchange="updateStatus('${p.id}', this.value)">
+        ${['bevakad','kandidat','värderad','bud lagt','avslutad'].map(s=>`<option value="${s}" ${p.status===s?'selected':''}>${s}</option>`).join('')}
+      </select>
+    </div>
+    <div class="row"><label>Utfall</label>
+      <select onchange="updateOutcome('${p.id}','utfall', this.value)">
+        <option value="">—</option>
+        ${['Pågående','Köpte','Bjöd — fick inte','Avstod'].map(o=>`<option value="${o}" ${p.utfall===o?'selected':''}>${o}</option>`).join('')}
+      </select>
+    </div>
+    <div class="row"><label>Lärdom</label><textarea onblur="updateOutcome('${p.id}','lardom', this.value)">${p.lardom || ''}</textarea></div>
+  </div></section>`;
+
+  return html;
+}
+
+async function updateStatus(id, value){
+  return updateOutcome(id, 'status', value);
+}
+
+async function render(){
+  const params = new URLSearchParams(location.search);
+  const id = params.get('id');
+  const list = await loadProperties();
+  document.getElementById('synctime').textContent = list.length + ' fastighet(er) laddade — ' + new Date().toLocaleString('sv-SE');
+
+  const content = document.getElementById('content');
+  if(id){
+    const p = list.find(x => x.id === id);
+    if(!p){
+      content.innerHTML = `<div class="empty-state">Hittade ingen fastighet med id "${id}". <a href="fastighet.html">Visa alla</a></div>`;
+      return;
+    }
+    content.innerHTML = `<a class="backlink" href="fastighet.html">← Alla fastigheter</a>` + renderReport(p);
+  } else {
+    content.innerHTML = renderIndex(list);
+  }
+}
+
+render();
+</script>
+</body>
+</html>
