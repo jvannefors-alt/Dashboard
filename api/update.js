@@ -9,7 +9,7 @@
 import Redis from 'ioredis';
  
 const KEY = 'dashboard_v2';
-const PROG_KEYS = ['skate_v1', 'curriculum_v1', 'thesis_drill_v1', 'properties_v1'];
+const PROG_KEYS = ['skate_v1', 'curriculum_v1', 'thesis_drill_v1'];
 const DOMAIN_IDS = ['thesis','career','tree','reading','house','life','build','hobbies'];
  
 let _redis;
@@ -137,56 +137,7 @@ export default async function handler(req, res) {
         await redis().set(key, JSON.stringify(req.body.state));
         return res.status(200).json({ success: true });
       }
- 
-      if (action === 'notionSync') {
-        const notionToken = process.env.NOTION_TOKEN_FASTIGHET;
-        const dbId = process.env.NOTION_DATABASE_ID;
-        const property = req.body.property;
-        if (!property) return res.status(400).json({ error: 'No property provided' });
-        if (!notionToken || !dbId) return res.status(200).json({ success: true, notionPageId: null });
- 
-        const v = property.vardering || {};
-        const verdikt = v.verdikt || {};
-        const clean = s => String(s).replace(/,/g, '').slice(0, 100);
-        const props = {
-          'Adress': { title: [{ text: { content: property.adress || property.id } }] },
-          'Status': { select: { name: property.status || 'Bevakad' } },
-          'Utgångspris': { number: verdikt.utgangspris ?? property.scouting?.utgangspris ?? null },
-          'Vår bedömning låg': { number: verdikt.varBedomningLag ?? null },
-          'Vår bedömning hög': { number: verdikt.varBedomningHog ?? null },
-          'Flaggor': { multi_select: (v.flaggor || []).map(f => ({ name: clean(f.text || f) })) },
-          'Länk till rapport': { url: `https://dashboard-ten-mu-79.vercel.app/fastighet.html?id=${property.id}` },
-          'Utfall': property.utfall ? { select: { name: property.utfall } } : { select: null },
-          'Lärdom': { rich_text: [{ text: { content: property.lardom || '' } }] }
-        };
- 
-        try {
-          const endpoint = property.notionPageId
-            ? `https://api.notion.com/v1/pages/${property.notionPageId}`
-            : `https://api.notion.com/v1/pages`;
-          const method = property.notionPageId ? 'PATCH' : 'POST';
-          const payload = property.notionPageId
-            ? { properties: props }
-            : { parent: { database_id: dbId }, properties: props };
- 
-          const r = await fetch(endpoint, {
-            method,
-            headers: {
-              'Authorization': `Bearer ${notionToken}`,
-              'Notion-Version': '2022-06-28',
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload)
-          });
-          if (!r.ok) { console.error('Notion sync error:', await r.text()); return res.status(200).json({ success: true, notionPageId: null }); }
-          const data = await r.json();
-          return res.status(200).json({ success: true, notionPageId: data.id });
-        } catch (e) {
-          console.error('Notion sync exception:', e);
-          return res.status(200).json({ success: true, notionPageId: null });
-        }
-      }
- 
+  
       if (action === 'gradeThesis') {
         const { question, risk, reference, notes, studentAnswer } = req.body;
         if (!ANTHROPIC_KEY) return res.status(200).json({ success: true, result: null });
