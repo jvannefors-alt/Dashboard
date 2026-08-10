@@ -1,4 +1,4 @@
-/ api/update.js — Life OS backend on Redis (Upstash via REDIS_URL)
+// api/update.js — Life OS backend on Redis (Upstash via REDIS_URL)
 // Same contract as before, just a bigger, write-friendly store:
 //   GET                              -> { success, state }   (auto-migrates old Edge Config data on first read)
 //   POST { action:'save', state }    -> persist the whole board
