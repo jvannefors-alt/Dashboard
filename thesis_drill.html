@@ -907,9 +907,9 @@ function rate(rating){
   const p = state.progress[item.id];
   p.shown++;
   p.lastSeen = Date.now();
-  if (rating === 'blanked'){ p.blanked++; p.priority = Math.min(100, p.priority + 35); state.sessionTally.blanked++; }
-  else if (rating === 'shaky'){ p.shaky++; p.priority = Math.min(100, p.priority + 12); state.sessionTally.shaky++; }
-  else { p.nailed++; p.priority = Math.max(5, p.priority - 25); state.sessionTally.nailed++; }
+  if (rating === 'blanked'){ p.blanked++; p.priority = Math.min(100, Math.max(5, p.priority + 35)); state.sessionTally.blanked++; }
+  else if (rating === 'shaky'){ p.shaky++; p.priority = Math.min(100, Math.max(5, p.priority + 5)); state.sessionTally.shaky++; }
+  else { p.nailed++; p.priority = Math.min(100, Math.max(5, p.priority - 30)); state.sessionTally.nailed++; }
   saveProgress();
   state.queueIndex++;
   resetItemState();
@@ -996,7 +996,7 @@ function renderDashboard(){
     <a class="backlink" href="index.html">← Board</a>
     <div class="eyebrow">External Funding &amp; the Bank-Lending Channel — Defence Prep</div>
     <h1 class="title">Drill Book</h1>
-    <p class="subtitle">59 entries. Type your attempt cold, get graded against the reference answer, then confirm or override the rating yourself. Weak spots resurface more often.</p>
+    <p class="subtitle">66 entries. Type your attempt cold, get graded against the reference answer, then confirm or override the rating yourself. Weak spots resurface more often.</p>
 
     <div class="card spread-hero">
       <div class="spread-row">
@@ -1029,7 +1029,7 @@ function renderDashboard(){
       </button>
     </div>
     <div style="margin-top:10px;">
-      <button class="full-btn" onclick="startSession('full')">Full Pass — all 59, weighted order</button>
+      <button class="full-btn" onclick="startSession('full')">Full Pass — all 66, weighted order</button>
     </div>
 
     <h2 class="section-h">By section</h2>
